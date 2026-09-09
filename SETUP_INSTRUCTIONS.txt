@@ -1,0 +1,139 @@
+================================================================================
+          SMART PARKING MANAGEMENT SYSTEM (SPMS) - SETUP GUIDE
+================================================================================
+
+TABLE OF CONTENTS
+1. Prerequisites
+2. Database Setup (PostgreSQL)
+3. Backend Server Setup
+4. Frontend Client Setup
+5. Default Demo Credentials
+6. Verification & Troubleshooting
+
+================================================================================
+1. PREREQUISITES
+================================================================================
+Ensure the following software is installed on your machine:
+- Node.js (v18.x or higher) -> Check: node -v
+- npm (v9.x or higher)     -> Check: npm -v
+- PostgreSQL (v14 or higher)-> Check: psql -V
+
+================================================================================
+2. DATABASE SETUP (PostgreSQL)
+================================================================================
+Step 2.1: Open PostgreSQL command line or pgAdmin / SQL Shell (psql)
+          Run:
+          psql -U postgres
+
+Step 2.2: Create the database:
+          CREATE DATABASE spms;
+          \q
+
+Step 2.3: Initialise schema and seed initial data.
+          You can do this using either method:
+
+          METHOD A (Using psql command line - recommended):
+          Navigate to the project root directory (SEE/) and run:
+          psql -U postgres -d spms -f init_database.sql
+
+          METHOD B (Using pgAdmin / DBeaver / GUI):
+          1. Connect to PostgreSQL and select the "spms" database.
+          2. Open Query Tool / SQL Editor.
+          3. Open and execute the file: "init_database.sql".
+
+          METHOD C (Using Node.js seed script):
+          Navigate to the "server" directory and run:
+          cd server
+          npm install
+          npm run seed
+
+================================================================================
+3. BACKEND SERVER SETUP
+================================================================================
+Step 3.1: Open a terminal and navigate to the server folder:
+          cd server
+
+Step 3.2: Configure Environment Variables:
+          Check or edit the file: server/.env
+          (Or copy from the example template: cp server/.env.example server/.env)
+          Ensure the database credentials match your local PostgreSQL setup:
+
+          DB_HOST=localhost
+          DB_PORT=5432
+          DB_USER=postgres
+          DB_PASSWORD=your_postgres_password
+          DB_NAME=spms
+
+          JWT_SECRET=spms_jwt_secret_key_2026_dev
+          JWT_EXPIRES_IN=7d
+          QR_SECRET=spms_qr_hmac_secret_key_2026_dev
+
+          PORT=5000
+          CLIENT_URL=http://localhost:5173
+          NODE_ENV=development
+
+Step 3.3: Install backend dependencies:
+          npm install
+
+Step 3.4: (Optional) Seed the database if not already done in Step 2:
+          npm run seed
+
+Step 3.5: Start the backend server:
+          npm run dev
+          (or: npm start)
+
+          The server will start on: http://localhost:5000
+
+================================================================================
+4. FRONTEND CLIENT SETUP
+================================================================================
+Step 4.1: Open a second terminal window and navigate to the client folder:
+          cd client
+
+Step 4.2: Install frontend dependencies:
+          npm install
+
+Step 4.3: Start the Vite frontend development server:
+          npm run dev
+
+          The client application will run on: http://localhost:5173
+
+Step 4.4: Open your browser and navigate to:
+          http://localhost:5173
+
+================================================================================
+5. DEFAULT DEMO CREDENTIALS
+================================================================================
+The database seed comes pre-loaded with the following ready-to-use accounts:
+
+ROLE                EMAIL                PASSWORD
+--------------------------------------------------------------------------------
+Super Admin         admin@spms.com       admin123
+Security Operator   operator@spms.com    admin123
+User (Mehanna)      mehanna@spms.com     user123
+User (Aditya)       aditya@spms.com      user123
+User (Priya)        priya@spms.com       user123
+--------------------------------------------------------------------------------
+
+================================================================================
+6. VERIFICATION & TROUBLESHOOTING
+================================================================================
+Q: "password authentication failed for user postgres"
+A: Update DB_PASSWORD in `server/.env` to match your local PostgreSQL password.
+
+Q: "database spms does not exist"
+A: Create the database in psql: CREATE DATABASE spms;
+
+Q: "relation ... does not exist"
+A: Re-run the initialization script:
+   psql -U postgres -d spms -f init_database.sql
+   or:
+   cd server && npm run seed
+
+Q: "Port 5000 already in use"
+A: Change the PORT variable in `server/.env` and update the proxy or API URL
+   in the client.
+
+================================================================================
+                      SETUP COMPLETED SUCCESSFULLY!
+================================================================================

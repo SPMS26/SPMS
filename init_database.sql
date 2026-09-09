@@ -1,18 +1,43 @@
 -- ============================================================================
--- Smart Parking Management System (SPMS) - Normalized Database Seed Script
--- PostgreSQL Compatible (Raw SQL)
+-- Smart Parking Management System (SPMS)
+-- Database Initialization & Seed Script
+-- PostgreSQL Compatible
+-- ============================================================================
+-- Usage:
+--   1. Connect to PostgreSQL:
+--        psql -U postgres
+--   2. (Optional) Create database if not exists:
+--        CREATE DATABASE spms;
+--   3. Run this script:
+--        psql -U postgres -d spms -f init_database.sql
 -- ============================================================================
 
--- 1. Enable Required UUID Extensions
+-- ----------------------------------------------------------------------------
+-- 1. EXTENSIONS
+-- ----------------------------------------------------------------------------
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- 2. Drop existing tables for clean schema re-alignment
-DROP TABLE IF EXISTS admin_logs, incident_reports, notifications, slot_reassignments, 
-                     qr_codes, payments, bookings, parking_slots, parking_lots, vehicles, users 
-CASCADE;
+-- ----------------------------------------------------------------------------
+-- 2. DROP EXISTING TABLES (Clean Re-alignment)
+-- ----------------------------------------------------------------------------
+DROP TABLE IF EXISTS admin_logs CASCADE;
+DROP TABLE IF EXISTS incident_reports CASCADE;
+DROP TABLE IF EXISTS notifications CASCADE;
+DROP TABLE IF EXISTS slot_reassignments CASCADE;
+DROP TABLE IF EXISTS qr_codes CASCADE;
+DROP TABLE IF EXISTS payments CASCADE;
+DROP TABLE IF EXISTS bookings CASCADE;
+DROP TABLE IF EXISTS parking_slots CASCADE;
+DROP TABLE IF EXISTS parking_lots CASCADE;
+DROP TABLE IF EXISTS vehicles CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
 
--- 3. Schema DDL Definitions (11 Tables)
+-- ----------------------------------------------------------------------------
+-- 3. SCHEMA DEFINITIONS (11 Normalized Tables)
+-- ----------------------------------------------------------------------------
+
+-- 3.1 Users
 CREATE TABLE users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   full_name VARCHAR(100) NOT NULL,
@@ -26,6 +51,7 @@ CREATE TABLE users (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- 3.2 Vehicles
 CREATE TABLE vehicles (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -38,6 +64,7 @@ CREATE TABLE vehicles (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- 3.3 Parking Lots
 CREATE TABLE parking_lots (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name VARCHAR(150) NOT NULL,
@@ -51,6 +78,7 @@ CREATE TABLE parking_lots (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- 3.4 Parking Slots
 CREATE TABLE parking_slots (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   lot_id UUID NOT NULL REFERENCES parking_lots(id) ON DELETE CASCADE,
@@ -66,6 +94,7 @@ CREATE TABLE parking_slots (
   UNIQUE(lot_id, slot_number)
 );
 
+-- 3.5 Bookings
 CREATE TABLE bookings (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -84,6 +113,7 @@ CREATE TABLE bookings (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- 3.6 Payments
 CREATE TABLE payments (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   booking_id UUID NOT NULL REFERENCES bookings(id) ON DELETE CASCADE,
@@ -95,6 +125,7 @@ CREATE TABLE payments (
   paid_at TIMESTAMP WITH TIME ZONE
 );
 
+-- 3.7 QR Codes
 CREATE TABLE qr_codes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   booking_id UUID NOT NULL REFERENCES bookings(id) ON DELETE CASCADE,
@@ -105,6 +136,7 @@ CREATE TABLE qr_codes (
   expires_at TIMESTAMP WITH TIME ZONE
 );
 
+-- 3.8 Slot Reassignments
 CREATE TABLE slot_reassignments (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   booking_id UUID NOT NULL REFERENCES bookings(id) ON DELETE CASCADE,
@@ -115,6 +147,7 @@ CREATE TABLE slot_reassignments (
   changed_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- 3.9 Notifications
 CREATE TABLE notifications (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -125,6 +158,7 @@ CREATE TABLE notifications (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- 3.10 Incident Reports
 CREATE TABLE incident_reports (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   booking_id UUID REFERENCES bookings(id) ON DELETE SET NULL,
@@ -140,6 +174,7 @@ CREATE TABLE incident_reports (
   resolved_at TIMESTAMP WITH TIME ZONE
 );
 
+-- 3.11 Admin Logs
 CREATE TABLE admin_logs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   admin_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -150,11 +185,28 @@ CREATE TABLE admin_logs (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- ============================================================================
--- 4. INSERT SEED DATA
--- ============================================================================
+-- ----------------------------------------------------------------------------
+-- INDEXES FOR HIGH-PERFORMANCE QUERIES
+-- ----------------------------------------------------------------------------
+CREATE INDEX IF NOT EXISTS idx_vehicles_user_id ON vehicles(user_id);
+CREATE INDEX IF NOT EXISTS idx_parking_slots_lot_id ON parking_slots(lot_id);
+CREATE INDEX IF NOT EXISTS idx_parking_slots_status ON parking_slots(status);
+CREATE INDEX IF NOT EXISTS idx_bookings_user_id ON bookings(user_id);
+CREATE INDEX IF NOT EXISTS idx_bookings_slot_id ON bookings(slot_id);
+CREATE INDEX IF NOT EXISTS idx_bookings_status ON bookings(booking_status);
+CREATE INDEX IF NOT EXISTS idx_payments_booking_id ON payments(booking_id);
+CREATE INDEX IF NOT EXISTS idx_qr_codes_booking_id ON qr_codes(booking_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id);
+CREATE INDEX IF NOT EXISTS idx_incident_reports_user_id ON incident_reports(user_id);
+
+-- ----------------------------------------------------------------------------
+-- 4. SEED DATA
+-- ----------------------------------------------------------------------------
 
 -- 4.1 Users
+-- Passwords:
+--   Super Admin & Operator: admin123 ($2a$10$6IpMnxnDAjljDxLyrAPFi.LyHxd74XSjyEEOqEZpHZ9nhawCbU436)
+--   Users:                  user123  ($2a$10$9bRQRk7xgLrvRch7bNi9meSvymUtnIJL3IMufERhnO1/zHeOXGpna)
 INSERT INTO users (id, full_name, email, password_hash, phone, role, is_verified, created_at)
 VALUES 
   ('11111111-1111-1111-1111-111111111111', 'Super Admin', 'admin@spms.com', '$2a$10$6IpMnxnDAjljDxLyrAPFi.LyHxd74XSjyEEOqEZpHZ9nhawCbU436', '+91 9876543210', 'ADMIN', true, CURRENT_TIMESTAMP),
@@ -179,7 +231,7 @@ VALUES
   ('44444444-4444-4444-4444-333333333333', 'Library Parking', 'Library Building', 17.3830, 78.4840, 40, 40, 'Quiet parking zone near Central Library with shaded tree canopy'),
   ('44444444-4444-4444-4444-444444444444', 'Hostel Parking', 'Hostel Area', 17.3890, 78.4910, 40, 38, 'Resident student and visitor parking area near campus hostels');
 
--- 4.4 Parking Slots
+-- 4.4 Parking Slots (Generates 40 slots per lot: Sections A, B, C, D with 10 slots each)
 DO $$
 DECLARE
   v_lot_id UUID;
@@ -240,11 +292,11 @@ END $$;
 DO $$
 DECLARE
   v_slot_c5 UUID;
+  v_slot_b8 UUID;
+  v_slot_a4 UUID;
   v_booking_id UUID := '55555555-5555-5555-5555-111111111111';
   v_booking2_id UUID := '55555555-5555-5555-5555-222222222222';
   v_booking3_id UUID := '55555555-5555-5555-5555-333333333333';
-  v_slot_b8 UUID;
-  v_slot_a4 UUID;
 BEGIN
   SELECT id INTO v_slot_c5 FROM parking_slots 
   WHERE lot_id = '44444444-4444-4444-4444-111111111111' AND slot_number = 'C5';
@@ -283,7 +335,6 @@ BEGIN
     CURRENT_TIMESTAMP
   );
 
-  -- Store only the signature hash & lifecycle state in qr_codes
   INSERT INTO qr_codes (id, booking_id, signature_hash, version, is_active, expires_at)
   VALUES (
     '77777777-7777-7777-7777-111111111111',
@@ -424,3 +475,19 @@ INSERT INTO admin_logs (id, admin_id, action, target_table, description, created
 VALUES
   ('bbbbbbbb-bbbb-bbbb-bbbb-111111111111', '11111111-1111-1111-1111-111111111111', 'INITIAL_SEED', 'database', 'Normalized PostgreSQL database seed data loaded successfully.', CURRENT_TIMESTAMP),
   ('bbbbbbbb-bbbb-bbbb-bbbb-222222222222', '11111111-1111-1111-1111-111111111111', 'GATE_CALIBRATION', 'parking_lots', 'Gate 2 scanner optical recalibration test successful.', CURRENT_TIMESTAMP - INTERVAL '1 day');
+
+-- ----------------------------------------------------------------------------
+-- 5. VERIFICATION NOTICE
+-- ----------------------------------------------------------------------------
+DO $$
+BEGIN
+  RAISE NOTICE '=======================================================';
+  RAISE NOTICE 'SPMS PostgreSQL database initialization & seed complete!';
+  RAISE NOTICE '-------------------------------------------------------';
+  RAISE NOTICE 'Users:           admin@spms.com (admin123)';
+  RAISE NOTICE '                 operator@spms.com (admin123)';
+  RAISE NOTICE '                 mehanna@spms.com (user123)';
+  RAISE NOTICE '                 aditya@spms.com (user123)';
+  RAISE NOTICE '                 priya@spms.com (user123)';
+  RAISE NOTICE '=======================================================';
+END $$;
