@@ -89,12 +89,19 @@ const LoginPage = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-main)', padding: '1.5rem 1rem' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-main)', padding: '1.5rem 1rem' }}>
+      <div style={{ width: '100%', maxWidth: '460px', marginBottom: '1rem', display: 'flex', justifyContent: 'flex-start' }}>
+        <Link to="/" style={{ color: 'var(--text-muted)', textDecoration: 'none', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600 }}>
+          <i className="fa-solid fa-arrow-left"></i> Back to SPMS Landing Page
+        </Link>
+      </div>
       <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-bright)', borderRadius: '16px', width: '100%', maxWidth: '460px', padding: '2rem', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.7)' }}>
         <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-          <div className="brand-logo-icon" style={{ margin: '0 auto 0.75rem auto', width: '48px', height: '48px', fontSize: '1.5rem' }}>
-            <i className="fa-solid fa-square-parking"></i>
-          </div>
+          <Link to="/" style={{ textDecoration: 'none' }}>
+            <div className="brand-logo-icon" style={{ margin: '0 auto 0.75rem auto', width: '48px', height: '48px', fontSize: '1.5rem' }}>
+              <i className="fa-solid fa-square-parking"></i>
+            </div>
+          </Link>
           <h2 style={{ fontFamily: 'Outfit, sans-serif', fontSize: '1.5rem', fontWeight: 700, margin: '0 0 0.25rem 0', color: 'var(--text-main)' }}>Sign In to Smart Parking</h2>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', margin: 0 }}>Select a demo credential below or enter your login details</p>
         </div>

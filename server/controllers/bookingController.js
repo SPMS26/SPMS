@@ -74,6 +74,11 @@ exports.createLiveBooking = async (req, res, next) => {
 
     broadcastSlotUpdate(slot.lot_id, slot.id, 'reserved', slot.slot_number);
 
+    // Enrich booking object with user, slot, and vehicle details
+    booking.user = { id: req.user.id, full_name: req.user.full_name, email: req.user.email, phone: req.user.phone };
+    booking.slot = { ...slot, parking_lot: lot };
+    booking.vehicle = vehicle;
+
     res.status(201).json({
       success: true,
       message: 'Live Booking Confirmed! Live QR Pass Generated.',
@@ -161,6 +166,11 @@ exports.createPreBooking = async (req, res, next) => {
 
     broadcastSlotUpdate(slot.lot_id, slot.id, 'reserved', slot.slot_number);
 
+    // Enrich booking object with user, slot, and vehicle details
+    booking.user = { id: req.user.id, full_name: req.user.full_name, email: req.user.email, phone: req.user.phone };
+    booking.slot = { ...slot, parking_lot: lot };
+    booking.vehicle = vehicle;
+
     res.status(201).json({
       success: true,
       message: 'Pre-Booking Confirmed! Live QR Pass Generated.',
@@ -183,6 +193,7 @@ exports.getUserBookings = async (req, res, next) => {
     const queryStr = `
       SELECT 
         b.*,
+        json_build_object('id', u.id, 'full_name', u.full_name, 'email', u.email, 'phone', u.phone) AS user,
         json_build_object(
           'id', s.id,
           'slot_number', s.slot_number,
@@ -199,6 +210,7 @@ exports.getUserBookings = async (req, res, next) => {
           'version', q.version
         ) AS qr_meta
       FROM bookings b
+      LEFT JOIN users u ON b.user_id = u.id
       LEFT JOIN parking_slots s ON b.slot_id = s.id
       LEFT JOIN parking_lots l ON s.lot_id = l.id
       LEFT JOIN vehicles v ON b.vehicle_id = v.id
@@ -226,6 +238,7 @@ exports.getBookingById = async (req, res, next) => {
       SELECT 
         b.*,
         u.full_name as user_name,
+        json_build_object('id', u.id, 'full_name', u.full_name, 'email', u.email, 'phone', u.phone) AS user,
         json_build_object(
           'id', s.id,
           'slot_number', s.slot_number,

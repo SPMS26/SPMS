@@ -51,12 +51,12 @@ const ProfilePage = () => {
         <div className="card">
           <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
             <img
-              src={user && user.profile_image ? user.profile_image : 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80'}
+              src={user && user.profile_image ? user.profile_image : `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.full_name || 'User')}&background=d97706&color=fff&bold=true`}
               alt="Avatar"
               style={{ width: '80px', height: '80px', borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--accent-gold)' }}
             />
-            <h3 style={{ margin: '0.75rem 0 0.25rem 0' }}>{user ? user.full_name : 'Mehanna Reddy'}</h3>
-            <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', margin: 0 }}>{user ? user.email : 'mehanna@spms.com'}</p>
+            <h3 style={{ margin: '0.75rem 0 0.25rem 0' }}>{user ? user.full_name : 'User'}</h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', margin: 0 }}>{user ? user.email : ''}</p>
             <span style={{ background: 'var(--accent-gold-bg)', color: 'var(--accent-gold)', padding: '0.2rem 0.6rem', borderRadius: '999px', fontSize: '0.75rem', fontWeight: 700, marginTop: '0.5rem', display: 'inline-block' }}>
               Registered User
             </span>
