@@ -1,15 +1,15 @@
-const sequelize = require('../config/database');
-const User = require('./User');
-const Vehicle = require('./Vehicle');
-const ParkingLot = require('./ParkingLot');
-const ParkingSlot = require('./ParkingSlot');
-const Booking = require('./Booking');
-const Payment = require('./Payment');
-const QRCode = require('./QRCode');
-const SlotReassignment = require('./SlotReassignment');
-const Notification = require('./Notification');
-const IncidentReport = require('./IncidentReport');
-const AdminLog = require('./AdminLog');
+import sequelize from '../config/database.js';
+import User from './User.js';
+import Vehicle from './Vehicle.js';
+import ParkingLot from './ParkingLot.js';
+import ParkingSlot from './ParkingSlot.js';
+import Booking from './Booking.js';
+import Payment from './Payment.js';
+import QRCode from './QRCode.js';
+import SlotReassignment from './SlotReassignment.js';
+import Notification from './Notification.js';
+import IncidentReport from './IncidentReport.js';
+import AdminLog from './AdminLog.js';
 
 // User <-> Vehicle (1:M)
 User.hasMany(Vehicle, { foreignKey: 'user_id', as: 'vehicles' });
@@ -67,7 +67,7 @@ IncidentReport.belongsTo(User, { foreignKey: 'resolved_by', as: 'resolver' });
 User.hasMany(AdminLog, { foreignKey: 'admin_id', as: 'admin_logs' });
 AdminLog.belongsTo(User, { foreignKey: 'admin_id', as: 'admin' });
 
-module.exports = {
+export {
   sequelize,
   User,
   Vehicle,

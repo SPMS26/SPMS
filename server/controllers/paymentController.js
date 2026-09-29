@@ -1,7 +1,7 @@
-const paymentService = require('../services/paymentService');
-const db = require('../config/database');
+import paymentService from '../services/paymentService.js';
+import db from '../config/database.js';
 
-exports.createPaymentOrder = async (req, res, next) => {
+export const createPaymentOrder = async (req, res, next) => {
   try {
     const { booking_id, amount } = req.body;
     const order = await paymentService.createOrder(amount, booking_id);
@@ -15,7 +15,7 @@ exports.createPaymentOrder = async (req, res, next) => {
   }
 };
 
-exports.verifyPayment = async (req, res, next) => {
+export const verifyPayment = async (req, res, next) => {
   try {
     const { order_id, booking_id } = req.body;
     const verification = await paymentService.verifyPayment(order_id);
@@ -40,7 +40,7 @@ exports.verifyPayment = async (req, res, next) => {
   }
 };
 
-exports.getPaymentHistory = async (req, res, next) => {
+export const getPaymentHistory = async (req, res, next) => {
   try {
     const queryStr = `
       SELECT p.*, b.booking_type, b.booking_status

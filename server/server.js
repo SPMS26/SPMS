@@ -1,28 +1,31 @@
-const http = require('http');
-const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
-const morgan = require('morgan');
-const path = require('path');
-require('dotenv').config();
+import 'dotenv/config';
+import http from 'http';
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import morgan from 'morgan';
+import path from 'path';
 
-const db = require('./config/database');
-const { initDb } = require('./config/initDb');
-const { initSocket } = require('./socket/socketManager');
-const errorHandler = require('./middleware/errorHandler');
+import db from './config/database.js';
+import { initDb } from './config/initDb.js';
+import { initSocket } from './socket/socketManager.js';
+import errorHandler from './middleware/errorHandler.js';
 
 // Route imports
-const authRoutes = require('./routes/authRoutes');
-const userRoutes = require('./routes/userRoutes');
-const lotRoutes = require('./routes/lotRoutes');
-const slotRoutes = require('./routes/slotRoutes');
-const bookingRoutes = require('./routes/bookingRoutes');
-const qrRoutes = require('./routes/qrRoutes');
-const paymentRoutes = require('./routes/paymentRoutes');
-const reportRoutes = require('./routes/reportRoutes');
-const notificationRoutes = require('./routes/notificationRoutes');
-const analyticsRoutes = require('./routes/analyticsRoutes');
-const adminRoutes = require('./routes/adminRoutes');
+import authRoutes from './routes/authRoutes.js';
+import userRoutes from './routes/userRoutes.js';
+import lotRoutes from './routes/lotRoutes.js';
+import slotRoutes from './routes/slotRoutes.js';
+import bookingRoutes from './routes/bookingRoutes.js';
+import qrRoutes from './routes/qrRoutes.js';
+import paymentRoutes from './routes/paymentRoutes.js';
+import reportRoutes from './routes/reportRoutes.js';
+import notificationRoutes from './routes/notificationRoutes.js';
+import analyticsRoutes from './routes/analyticsRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Process-level crash prevention guards
 process.on('uncaughtException', (err) => {
@@ -86,8 +89,8 @@ const PORT = process.env.PORT || 5000;
 
 server.on('error', (err) => {
   if (err.code === 'EADDRINUSE') {
-    console.error(`\n❌ Port ${PORT} is already in use by another running process.`);
-    console.error(`👉 If an old node instance is running, kill it using PowerShell:`);
+    console.error(`\nPort ${PORT} is already in use by another running process.`);
+    console.error(`If an old node instance is running, kill it using PowerShell:`);
     console.error(`   Get-Process -Name node | Stop-Process -Force\n`);
   } else {
     console.error('[Server Error]:', err);

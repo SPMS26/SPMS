@@ -1,9 +1,9 @@
-const db = require('../config/database');
-const { generateQRPayload, renderQRDataURL } = require('../services/qrGenerator');
-const { broadcastSlotUpdate } = require('../socket/socketManager');
+import db from '../config/database.js';
+import { generateQRPayload, renderQRDataURL } from '../services/qrGenerator.js';
+import { broadcastSlotUpdate } from '../socket/socketManager.js';
 
 // Create Live Booking (Raw SQL + Transaction)
-exports.createLiveBooking = async (req, res, next) => {
+export const createLiveBooking = async (req, res, next) => {
   const client = await db.getClient();
   try {
     await client.query('BEGIN');
@@ -96,7 +96,7 @@ exports.createLiveBooking = async (req, res, next) => {
 };
 
 // Create Pre-Booking (Raw SQL + Transaction)
-exports.createPreBooking = async (req, res, next) => {
+export const createPreBooking = async (req, res, next) => {
   const client = await db.getClient();
   try {
     await client.query('BEGIN');
@@ -188,7 +188,7 @@ exports.createPreBooking = async (req, res, next) => {
 };
 
 // Get user bookings with live QR details (Raw SQL Join)
-exports.getUserBookings = async (req, res, next) => {
+export const getUserBookings = async (req, res, next) => {
   try {
     const queryStr = `
       SELECT 
@@ -232,7 +232,7 @@ exports.getUserBookings = async (req, res, next) => {
 };
 
 // Get single booking detail with live dynamic QR render (Raw SQL)
-exports.getBookingById = async (req, res, next) => {
+export const getBookingById = async (req, res, next) => {
   try {
     const queryStr = `
       SELECT 

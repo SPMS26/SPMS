@@ -1,6 +1,6 @@
-const crypto = require('crypto');
-const QRCodeLib = require('qrcode');
-require('dotenv').config();
+import 'dotenv/config';
+import crypto from 'crypto';
+import QRCodeLib from 'qrcode';
 
 const QR_SECRET = process.env.QR_SECRET || 'spms_qr_hmac_secret_key_2026_dev';
 
@@ -151,7 +151,7 @@ function isQRExpired(expiresAt) {
   return new Date(expiresAt) < new Date();
 }
 
-module.exports = {
+export {
   generateQRPayload,
   extractSignature,
   renderQRDataURL,

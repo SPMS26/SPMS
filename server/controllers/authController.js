@@ -1,6 +1,6 @@
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
-const db = require('../config/database');
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
+import db from '../config/database.js';
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET || 'spms_jwt_secret_key_2026_dev', {
@@ -10,7 +10,7 @@ const generateToken = (id) => {
 
 // @desc    Register a new user & default vehicle (Raw SQL)
 // @route   POST /api/auth/register
-exports.register = async (req, res, next) => {
+export const register = async (req, res, next) => {
   try {
     const { full_name, email, password, phone, vehicle_number, vehicle_type, vehicle_model, vehicle_color } = req.body;
 
@@ -58,7 +58,7 @@ exports.register = async (req, res, next) => {
 
 // @desc    Authenticate user & return JWT token (Raw SQL)
 // @route   POST /api/auth/login
-exports.login = async (req, res, next) => {
+export const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
@@ -96,7 +96,7 @@ exports.login = async (req, res, next) => {
 
 // @desc    Get current logged in user profile (Raw SQL)
 // @route   GET /api/auth/me
-exports.getMe = async (req, res, next) => {
+export const getMe = async (req, res, next) => {
   try {
     const userRes = await db.query(
       'SELECT id, full_name, email, phone, role, profile_image, is_verified, created_at FROM users WHERE id = $1',

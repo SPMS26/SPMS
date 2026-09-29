@@ -1,7 +1,7 @@
-const db = require('../config/database');
+import db from '../config/database.js';
 
 // Update User Profile (Raw SQL)
-exports.updateProfile = async (req, res, next) => {
+export const updateProfile = async (req, res, next) => {
   try {
     const { full_name, phone, profile_image } = req.body;
     const userId = req.user.id;
@@ -28,7 +28,7 @@ exports.updateProfile = async (req, res, next) => {
 };
 
 // Get User Vehicles (Raw SQL)
-exports.getVehicles = async (req, res, next) => {
+export const getVehicles = async (req, res, next) => {
   try {
     const vehRes = await db.query(
       'SELECT * FROM vehicles WHERE user_id = $1 ORDER BY is_default DESC, created_at DESC',
@@ -41,7 +41,7 @@ exports.getVehicles = async (req, res, next) => {
 };
 
 // Add New Vehicle (Raw SQL)
-exports.addVehicle = async (req, res, next) => {
+export const addVehicle = async (req, res, next) => {
   try {
     const { vehicle_number, vehicle_type, vehicle_model, vehicle_color, is_default } = req.body;
 
@@ -68,7 +68,7 @@ exports.addVehicle = async (req, res, next) => {
 };
 
 // Delete Vehicle (Raw SQL)
-exports.deleteVehicle = async (req, res, next) => {
+export const deleteVehicle = async (req, res, next) => {
   try {
     const { id } = req.params;
     const result = await db.query('DELETE FROM vehicles WHERE id = $1 AND user_id = $2 RETURNING id', [id, req.user.id]);
