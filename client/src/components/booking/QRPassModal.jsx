@@ -111,9 +111,9 @@ const QRPassModal = ({ isOpen, onClose, booking }) => {
               fontWeight: 700,
               padding: '0.15rem 0.5rem',
               borderRadius: '6px',
-              background: isExpired || isSessionComplete ? 'rgba(239, 68, 68, 0.15)' : 'rgba(16, 185, 129, 0.15)',
-              color: isExpired || isSessionComplete ? '#ef4444' : '#10b981',
-              border: `1px solid ${isExpired || isSessionComplete ? 'rgba(239, 68, 68, 0.3)' : 'rgba(16, 185, 129, 0.3)'}`
+              background: isExpired || isSessionComplete ? 'rgba(242, 114, 140, 0.15)' : 'rgba(184, 165, 240, 0.15)',
+              color: isExpired || isSessionComplete ? '#F2728C' : '#B8A5F0',
+              border: `1px solid ${isExpired || isSessionComplete ? 'rgba(242, 114, 140, 0.3)' : 'rgba(184, 165, 240, 0.3)'}`
             }}>
               <i className={`fa-solid ${isExpired || isSessionComplete ? 'fa-ban' : 'fa-circle-check'}`} style={{ marginRight: '0.25rem' }}></i>
               {isSessionComplete ? 'SESSION COMPLETED (EXPIRED)' : (isExpired ? 'EXPIRED' : 'ACTIVE PASS')}
@@ -160,21 +160,21 @@ const QRPassModal = ({ isOpen, onClose, booking }) => {
                 top: '50%',
                 left: '50%',
                 transform: 'translate(-50%, -50%) rotate(-12deg)',
-                border: '3px solid #ef4444',
-                color: '#ef4444',
+                border: '3px solid #F2728C',
+                color: '#F2728C',
                 padding: '0.35rem 1rem',
                 borderRadius: '8px',
                 fontWeight: 900,
                 fontSize: '1.1rem',
                 letterSpacing: '0.1em',
                 background: 'rgba(255, 255, 255, 0.95)',
-                boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)'
+                boxShadow: '0 4px 12px rgba(242, 114, 140, 0.3)'
               }}>
                 EXPIRED
               </div>
             )}
 
-            <div style={{ fontSize: '0.7rem', color: (isExpired || isSessionComplete) ? '#ef4444' : '#475569', fontWeight: 600, marginTop: '0.4rem' }}>
+            <div style={{ fontSize: '0.7rem', color: (isExpired || isSessionComplete) ? '#F2728C' : '#475569', fontWeight: 600, marginTop: '0.4rem' }}>
               {(isExpired || isSessionComplete) ? 'Pass Expired / Cannot be reused' : 'Cryptographically Signed & HMAC Verified'}
             </div>
           </div>
@@ -192,9 +192,9 @@ const QRPassModal = ({ isOpen, onClose, booking }) => {
             fontSize: '0.78rem'
           }}>
             <span style={{ color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-              <i className={`fa-solid ${isExpired || isSessionComplete ? 'fa-ban' : 'fa-hourglass-half'}`} style={{ color: isExpired || isSessionComplete ? '#ef4444' : 'var(--accent-gold)' }}></i> Pass Status:
+              <i className={`fa-solid ${isExpired || isSessionComplete ? 'fa-ban' : 'fa-hourglass-half'}`} style={{ color: isExpired || isSessionComplete ? '#F2728C' : 'var(--accent-gold)' }}></i> Pass Status:
             </span>
-            <span style={{ fontWeight: 700, color: isExpired || isSessionComplete ? '#ef4444' : 'var(--text-main)', fontFamily: 'monospace', fontSize: '0.85rem' }}>
+            <span style={{ fontWeight: 700, color: isExpired || isSessionComplete ? '#F2728C' : 'var(--text-main)', fontFamily: 'monospace', fontSize: '0.85rem' }}>
               {timeLeft}
             </span>
           </div>
@@ -202,7 +202,7 @@ const QRPassModal = ({ isOpen, onClose, booking }) => {
           {/* Ticket Breakdown */}
           <div style={{ textAlign: 'left', background: 'rgba(0, 0, 0, 0.3)', border: '1px solid var(--border-subtle)', padding: '0.85rem', borderRadius: '8px', fontSize: '0.8rem' }}>
             <div className="details-row"><span className="key">User Name:</span><span className="val">{userName}</span></div>
-            <div className="details-row"><span className="key">Vehicle No:</span><span className="val" style={{ color: '#a5b4fc', fontWeight: 600 }}>{vehicleNo}</span></div>
+            <div className="details-row"><span className="key">Vehicle No:</span><span className="val" style={{ color: '#D8A6C6', fontWeight: 600 }}>{vehicleNo}</span></div>
             <div className="details-row"><span className="key">Parking Location:</span><span className="val">{lotName} (Floor {floor})</span></div>
             <div className="details-row"><span className="key">Slot Allocated:</span><span className="val" style={{ color: 'var(--accent-gold)', fontWeight: 800 }}>Slot {slotCode}</span></div>
             <div className="details-row"><span className="key">Payment Status:</span><span className="val" style={{ color: 'var(--accent-emerald)', fontWeight: 800 }}>PAID (₹{amountPaid}.00)</span></div>

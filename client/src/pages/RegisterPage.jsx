@@ -37,7 +37,7 @@ const RegisterPage = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-main)', padding: '1.5rem 1rem' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'transparent', padding: '1.5rem 1rem' }}>
       <div style={{ width: '100%', maxWidth: '520px', marginBottom: '1rem', display: 'flex', justifyContent: 'flex-start' }}>
         <Link to="/" style={{ color: 'var(--text-muted)', textDecoration: 'none', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600 }}>
           <i className="fa-solid fa-arrow-left"></i> Back to SPMS Landing Page

@@ -82,7 +82,7 @@ const AdminReportsPage = () => {
                     </td>
                     <td>
                       <span style={{
-                        background: rep.status === 'solved' ? 'rgba(16, 185, 129, 0.18)' : 'rgba(245, 158, 11, 0.18)',
+                        background: rep.status === 'solved' ? 'rgba(184, 165, 240, 0.18)' : 'rgba(194, 141, 176, 0.18)',
                         color: rep.status === 'solved' ? 'var(--accent-emerald)' : 'var(--accent-gold)',
                         padding: '0.15rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 700
                       }}>

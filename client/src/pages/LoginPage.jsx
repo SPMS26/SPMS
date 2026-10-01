@@ -9,8 +9,8 @@ const DEMO_ACCOUNTS = [
     name: 'Super Admin',
     email: 'admin@spms.com',
     password: 'admin123',
-    badgeColor: '#10b981',
-    badgeBg: 'rgba(16, 185, 129, 0.15)',
+    badgeColor: '#B8A5F0',
+    badgeBg: 'rgba(184, 165, 240, 0.15)',
     icon: 'fa-shield-halved',
     note: 'Admin Dashboard'
   },
@@ -19,8 +19,8 @@ const DEMO_ACCOUNTS = [
     name: 'Security Operator',
     email: 'operator@spms.com',
     password: 'admin123',
-    badgeColor: '#10b981',
-    badgeBg: 'rgba(16, 185, 129, 0.15)',
+    badgeColor: '#B8A5F0',
+    badgeBg: 'rgba(184, 165, 240, 0.15)',
     icon: 'fa-user-shield',
     note: 'Gate & Scanner'
   },
@@ -29,8 +29,8 @@ const DEMO_ACCOUNTS = [
     name: 'Mehanna Reddy',
     email: 'mehanna@spms.com',
     password: 'user123',
-    badgeColor: '#f59e0b',
-    badgeBg: 'rgba(245, 158, 11, 0.15)',
+    badgeColor: '#C28DB0',
+    badgeBg: 'rgba(194, 141, 176, 0.15)',
     icon: 'fa-car-side',
     note: 'Slot C5 Reserved (QR)'
   },
@@ -39,8 +39,8 @@ const DEMO_ACCOUNTS = [
     name: 'Aditya Sharma',
     email: 'aditya@spms.com',
     password: 'user123',
-    badgeColor: '#f59e0b',
-    badgeBg: 'rgba(245, 158, 11, 0.15)',
+    badgeColor: '#C28DB0',
+    badgeBg: 'rgba(194, 141, 176, 0.15)',
     icon: 'fa-car',
     note: 'Slot B8 Parked'
   },
@@ -49,8 +49,8 @@ const DEMO_ACCOUNTS = [
     name: 'Priya Patel',
     email: 'priya@spms.com',
     password: 'user123',
-    badgeColor: '#38bdf8',
-    badgeBg: 'rgba(56, 189, 248, 0.15)',
+    badgeColor: '#F2B49B',
+    badgeBg: 'rgba(242, 180, 155, 0.15)',
     icon: 'fa-bolt',
     note: 'EV Driver / Past'
   }
@@ -89,7 +89,7 @@ const LoginPage = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-main)', padding: '1.5rem 1rem' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'transparent', padding: '1.5rem 1rem' }}>
       <div style={{ width: '100%', maxWidth: '460px', marginBottom: '1rem', display: 'flex', justifyContent: 'flex-start' }}>
         <Link to="/" style={{ color: 'var(--text-muted)', textDecoration: 'none', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600 }}>
           <i className="fa-solid fa-arrow-left"></i> Back to SPMS Landing Page

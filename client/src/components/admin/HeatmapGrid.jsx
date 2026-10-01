@@ -15,12 +15,12 @@ const HeatmapGrid = ({ times, days, matrix }) => {
   }
 
   const getHeatColor = (level) => {
-    if (!level || level === 0) return '#182032';
-    if (level === 1) return '#3b1c1c';
-    if (level === 2) return '#78350f';
-    if (level === 3) return '#b45309';
-    if (level === 4) return '#f59e0b';
-    return '#10b981';
+    if (!level || level === 0) return '#1A1618';
+    if (level === 1) return '#3A2A35';
+    if (level === 2) return '#5A4150';
+    if (level === 3) return '#7E5A70';
+    if (level === 4) return '#B07A9C';
+    return '#E8C2D8';
   };
 
   return (
@@ -53,7 +53,7 @@ const HeatmapGrid = ({ times, days, matrix }) => {
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '1rem', fontSize: '0.72rem', color: 'var(--text-muted)' }}>
         <span>Low</span>
-        <div style={{ height: '8px', width: '120px', borderRadius: '4px', background: 'linear-gradient(90deg, #182032, #78350f, #b45309, #f59e0b, #10b981)' }}></div>
+        <div style={{ height: '8px', width: '120px', borderRadius: '4px', background: 'linear-gradient(90deg, #1A1618, #3A2A35, #5A4150, #7E5A70, #B07A9C, #E8C2D8)' }}></div>
         <span>High</span>
       </div>
     </div>

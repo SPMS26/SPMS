@@ -425,13 +425,13 @@ const LandingPage = () => {
             </div>
           </div>
           <div className="telemetry-card">
-            <div className="telemetry-val" style={{ color: '#38bdf8' }}>&lt; 2.0s</div>
+            <div className="telemetry-val" style={{ color: '#F2B49B' }}>&lt; 2.0s</div>
             <div className="telemetry-label">
               <i className="fa-solid fa-qrcode"></i> QR Gate Validation
             </div>
           </div>
           <div className="telemetry-card">
-            <div className="telemetry-val" style={{ color: '#10b981' }}>100%</div>
+            <div className="telemetry-val" style={{ color: '#B8A5F0' }}>100%</div>
             <div className="telemetry-label">
               <i className="fa-solid fa-ticket"></i> Digital & Paperless
             </div>
@@ -464,7 +464,7 @@ const LandingPage = () => {
                     Basement 1 (B1) - Real-Time Feed
                   </h4>
                 </div>
-                <span style={{ fontSize: '0.75rem', background: 'rgba(16, 185, 129, 0.15)', color: 'var(--accent-emerald)', padding: '0.2rem 0.6rem', borderRadius: '6px', fontWeight: 700 }}>
+                <span style={{ fontSize: '0.75rem', background: 'rgba(184, 165, 240, 0.15)', color: 'var(--accent-emerald)', padding: '0.2rem 0.6rem', borderRadius: '6px', fontWeight: 700 }}>
                   Active Sensor Feed
                 </span>
               </div>
@@ -542,7 +542,7 @@ const LandingPage = () => {
                   </span>
                   <div style={{ fontSize: '0.95rem', fontWeight: 700 }}>Gate Entry & Exit Token</div>
                 </div>
-                <span style={{ background: 'rgba(16, 185, 129, 0.2)', color: 'var(--accent-emerald)', fontSize: '0.7rem', fontWeight: 700, padding: '0.2rem 0.5rem', borderRadius: '4px' }}>
+                <span style={{ background: 'rgba(184, 165, 240, 0.2)', color: 'var(--accent-emerald)', fontSize: '0.7rem', fontWeight: 700, padding: '0.2rem 0.5rem', borderRadius: '4px' }}>
                   Verified Active
                 </span>
               </div>
@@ -888,11 +888,11 @@ const LandingPage = () => {
                       fontWeight: 700,
                       background:
                         selectedSlot.status === 'available'
-                          ? 'rgba(16, 185, 129, 0.15)'
+                          ? 'rgba(184, 165, 240, 0.15)'
                           : selectedSlot.status === 'reserved'
-                          ? 'rgba(245, 158, 11, 0.15)'
+                          ? 'rgba(194, 141, 176, 0.15)'
                           : selectedSlot.status === 'occupied'
-                          ? 'rgba(239, 68, 68, 0.15)'
+                          ? 'rgba(242, 114, 140, 0.15)'
                           : 'rgba(107, 114, 128, 0.15)',
                       color:
                         selectedSlot.status === 'available'
@@ -942,7 +942,7 @@ const LandingPage = () => {
                 {/* Purely Informational Bay Telemetry */}
                 <div style={{ marginTop: '1.25rem' }}>
                   {selectedSlot.status === 'available' ? (
-                    <div style={{ background: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.25)', borderRadius: '10px', padding: '1rem' }}>
+                    <div style={{ background: 'rgba(184, 165, 240, 0.08)', border: '1px solid rgba(184, 165, 240, 0.25)', borderRadius: '10px', padding: '1rem' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--status-available)', fontWeight: 700, fontSize: '0.88rem', marginBottom: '0.35rem' }}>
                         <i className="fa-solid fa-circle-check"></i>
                         <span>Bay Available for Reservation</span>
@@ -952,7 +952,7 @@ const LandingPage = () => {
                       </p>
                     </div>
                   ) : selectedSlot.status === 'occupied' ? (
-                    <div style={{ background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.25)', borderRadius: '10px', padding: '1rem' }}>
+                    <div style={{ background: 'rgba(242, 114, 140, 0.08)', border: '1px solid rgba(242, 114, 140, 0.25)', borderRadius: '10px', padding: '1rem' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--status-occupied)', fontWeight: 700, fontSize: '0.88rem', marginBottom: '0.35rem' }}>
                         <i className="fa-solid fa-ban"></i>
                         <span>Bay Currently Occupied</span>
@@ -962,7 +962,7 @@ const LandingPage = () => {
                       </p>
                     </div>
                   ) : selectedSlot.status === 'reserved' ? (
-                    <div style={{ background: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.25)', borderRadius: '10px', padding: '1rem' }}>
+                    <div style={{ background: 'rgba(194, 141, 176, 0.08)', border: '1px solid rgba(194, 141, 176, 0.25)', borderRadius: '10px', padding: '1rem' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--status-reserved)', fontWeight: 700, fontSize: '0.88rem', marginBottom: '0.35rem' }}>
                         <i className="fa-solid fa-clock"></i>
                         <span>Bay Pre-Booked (Reserved)</span>
@@ -973,7 +973,7 @@ const LandingPage = () => {
                     </div>
                   ) : (
                     <div style={{ background: 'rgba(107, 114, 128, 0.08)', border: '1px solid rgba(107, 114, 128, 0.25)', borderRadius: '10px', padding: '1rem' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#9ca3af', fontWeight: 700, fontSize: '0.88rem', marginBottom: '0.35rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#A39AA0', fontWeight: 700, fontSize: '0.88rem', marginBottom: '0.35rem' }}>
                         <i className="fa-solid fa-wrench"></i>
                         <span>Under Scheduled Maintenance</span>
                       </div>
@@ -1039,7 +1039,7 @@ const LandingPage = () => {
                     padding: '0.75rem',
                     borderRadius: '8px',
                     border: calcMode === 'pre' ? '1.5px solid var(--accent-gold)' : '1px solid var(--border-subtle)',
-                    background: calcMode === 'pre' ? 'rgba(245, 158, 11, 0.1)' : 'var(--bg-input)',
+                    background: calcMode === 'pre' ? 'rgba(194, 141, 176, 0.1)' : 'var(--bg-input)',
                     color: calcMode === 'pre' ? 'var(--accent-gold)' : 'var(--text-muted)',
                     fontWeight: 700,
                     fontSize: '0.85rem',
@@ -1056,7 +1056,7 @@ const LandingPage = () => {
                     padding: '0.75rem',
                     borderRadius: '8px',
                     border: calcMode === 'live' ? '1.5px solid var(--accent-emerald)' : '1px solid var(--border-subtle)',
-                    background: calcMode === 'live' ? 'rgba(16, 185, 129, 0.1)' : 'var(--bg-input)',
+                    background: calcMode === 'live' ? 'rgba(184, 165, 240, 0.1)' : 'var(--bg-input)',
                     color: calcMode === 'live' ? 'var(--accent-emerald)' : 'var(--text-muted)',
                     fontWeight: 700,
                     fontSize: '0.85rem',
@@ -1210,7 +1210,7 @@ const LandingPage = () => {
                     Search parking, reserve slots in advance, access lots with mobile QR codes, and pay contactlessly.
                   </p>
                 </div>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem', background: 'rgba(245, 158, 11, 0.12)', border: '1px solid rgba(245, 158, 11, 0.3)', color: 'var(--accent-gold)', padding: '0.35rem 0.85rem', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 700 }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem', background: 'rgba(194, 141, 176, 0.12)', border: '1px solid rgba(194, 141, 176, 0.3)', color: 'var(--accent-gold)', padding: '0.35rem 0.85rem', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 700 }}>
                   <i className="fa-solid fa-id-card"></i>
                   <span>Driver & Commuter Access</span>
                 </div>
@@ -1232,14 +1232,14 @@ const LandingPage = () => {
                   </p>
                 </div>
                 <div className="perspective-feature-item">
-                  <i className="fa-solid fa-qrcode" style={{ color: '#38bdf8', fontSize: '1.3rem', marginBottom: '0.75rem' }}></i>
+                  <i className="fa-solid fa-qrcode" style={{ color: '#F2B49B', fontSize: '1.3rem', marginBottom: '0.75rem' }}></i>
                   <h4 style={{ margin: '0 0 0.35rem 0', fontSize: '1.05rem' }}>Digital QR Passes</h4>
                   <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-muted)' }}>
                     Instant QR gate entry passes stored directly in your portal. Ready for immediate camera scan at entrance and exit.
                   </p>
                 </div>
                 <div className="perspective-feature-item">
-                  <i className="fa-solid fa-receipt" style={{ color: '#a855f7', fontSize: '1.3rem', marginBottom: '0.75rem' }}></i>
+                  <i className="fa-solid fa-receipt" style={{ color: '#D8A6C6', fontSize: '1.3rem', marginBottom: '0.75rem' }}></i>
                   <h4 style={{ margin: '0 0 0.35rem 0', fontSize: '1.05rem' }}>History & Digital Receipts</h4>
                   <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-muted)' }}>
                     View complete history of your past parking sessions, duration timestamps, payments, and downloadable invoices.
@@ -1258,7 +1258,7 @@ const LandingPage = () => {
                     Live gate camera scanner, lot layout management, dynamic pricing controls, and issue triage.
                   </p>
                 </div>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem', background: 'rgba(16, 185, 129, 0.12)', border: '1px solid rgba(16, 185, 129, 0.3)', color: 'var(--accent-emerald)', padding: '0.35rem 0.85rem', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 700 }}>
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem', background: 'rgba(184, 165, 240, 0.12)', border: '1px solid rgba(184, 165, 240, 0.3)', color: 'var(--accent-emerald)', padding: '0.35rem 0.85rem', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 700 }}>
                   <i className="fa-solid fa-shield-halved"></i>
                   <span>Administrator Command Deck</span>
                 </div>
@@ -1280,7 +1280,7 @@ const LandingPage = () => {
                   </p>
                 </div>
                 <div className="perspective-feature-item">
-                  <i className="fa-solid fa-tags" style={{ color: '#38bdf8', fontSize: '1.3rem', marginBottom: '0.75rem' }}></i>
+                  <i className="fa-solid fa-tags" style={{ color: '#F2B49B', fontSize: '1.3rem', marginBottom: '0.75rem' }}></i>
                   <h4 style={{ margin: '0 0 0.35rem 0', fontSize: '1.05rem' }}>Pricing & Tariff Control</h4>
                   <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-muted)' }}>
                     Configure base fares and hourly parking tariffs per lot or individual slot to match campus parking policies.
@@ -1346,7 +1346,7 @@ const LandingPage = () => {
           </div>
 
           <div className="benchmark-card">
-            <i className="fa-solid fa-lock" style={{ color: '#38bdf8', fontSize: '1.6rem', marginBottom: '1rem' }}></i>
+            <i className="fa-solid fa-lock" style={{ color: '#F2B49B', fontSize: '1.6rem', marginBottom: '1rem' }}></i>
             <h4 style={{ margin: '0 0 0.5rem 0', fontFamily: 'Outfit, sans-serif', fontSize: '1.2rem' }}>
               Zero Double-Booking
             </h4>
@@ -1360,7 +1360,7 @@ const LandingPage = () => {
           </div>
 
           <div className="benchmark-card">
-            <i className="fa-solid fa-shield-check" style={{ color: '#a855f7', fontSize: '1.6rem', marginBottom: '1rem' }}></i>
+            <i className="fa-solid fa-shield-check" style={{ color: '#D8A6C6', fontSize: '1.6rem', marginBottom: '1rem' }}></i>
             <h4 style={{ margin: '0 0 0.5rem 0', fontFamily: 'Outfit, sans-serif', fontSize: '1.2rem' }}>
               Security & Confidentiality
             </h4>
@@ -1420,7 +1420,7 @@ const LandingPage = () => {
           ==================================================================== */}
       <section className="landing-section">
         <div className="landing-cta-banner">
-          <div className="section-pill-tag" style={{ background: 'rgba(245, 158, 11, 0.15)' }}>
+          <div className="section-pill-tag" style={{ background: 'rgba(194, 141, 176, 0.15)' }}>
             <i className="fa-solid fa-car-side"></i> Ready to Park?
           </div>
           <h2 style={{ fontFamily: 'Outfit, sans-serif', fontSize: '2.5rem', fontWeight: 800, margin: '1rem 0' }}>
@@ -1585,7 +1585,7 @@ const LandingPage = () => {
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
                     <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>Mehanna Reddy</span>
-                    <span style={{ fontSize: '0.65rem', background: 'rgba(245, 158, 11, 0.15)', color: 'var(--accent-gold)', padding: '0.1rem 0.4rem', borderRadius: '4px', fontWeight: 700 }}>
+                    <span style={{ fontSize: '0.65rem', background: 'rgba(194, 141, 176, 0.15)', color: 'var(--accent-gold)', padding: '0.1rem 0.4rem', borderRadius: '4px', fontWeight: 700 }}>
                       DRIVER
                     </span>
                   </div>
@@ -1619,21 +1619,21 @@ const LandingPage = () => {
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
                     <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>Super Admin</span>
-                    <span style={{ fontSize: '0.65rem', background: 'rgba(16, 185, 129, 0.15)', color: 'var(--accent-emerald)', padding: '0.1rem 0.4rem', borderRadius: '4px', fontWeight: 700 }}>
+                    <span style={{ fontSize: '0.65rem', background: 'rgba(184, 165, 240, 0.15)', color: 'var(--accent-emerald)', padding: '0.1rem 0.4rem', borderRadius: '4px', fontWeight: 700 }}>
                       ADMINISTRATOR
                     </span>
                   </div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                     admin@spms.com • Pass: admin123
                   </div>
-                  <div style={{ fontSize: '0.7rem', color: '#38bdf8', marginTop: '0.2rem' }}>
+                  <div style={{ fontSize: '0.7rem', color: '#F2B49B', marginTop: '0.2rem' }}>
                     Facility CRUD, Pricing, Gate Scanner & Analytics
                   </div>
                 </div>
                 <Link
                   to="/login"
                   className="btn-landing-primary"
-                  style={{ fontSize: '0.75rem', padding: '0.45rem 0.85rem', background: 'linear-gradient(135deg, var(--accent-emerald), #059669)' }}
+                  style={{ fontSize: '0.75rem', padding: '0.45rem 0.85rem', background: 'linear-gradient(135deg, var(--accent-emerald), #8F7AD9)' }}
                 >
                   Admin Login
                 </Link>
@@ -1653,7 +1653,7 @@ const LandingPage = () => {
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
                     <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>Security Operator</span>
-                    <span style={{ fontSize: '0.65rem', background: 'rgba(16, 185, 129, 0.15)', color: 'var(--accent-emerald)', padding: '0.1rem 0.4rem', borderRadius: '4px', fontWeight: 700 }}>
+                    <span style={{ fontSize: '0.65rem', background: 'rgba(184, 165, 240, 0.15)', color: 'var(--accent-emerald)', padding: '0.1rem 0.4rem', borderRadius: '4px', fontWeight: 700 }}>
                       GATE ADMIN
                     </span>
                   </div>

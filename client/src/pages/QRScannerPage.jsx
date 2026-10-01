@@ -443,8 +443,8 @@ const QRScannerPage = () => {
                 width: '14px',
                 height: '14px',
                 borderRadius: '50%',
-                background: cameraActive ? '#10b981' : '#f59e0b',
-                boxShadow: cameraActive ? '0 0 14px #10b981' : 'none',
+                background: cameraActive ? '#B8A5F0' : '#C28DB0',
+                boxShadow: cameraActive ? '0 0 14px #B8A5F0' : 'none',
                 display: 'inline-block'
               }}
             />
@@ -492,7 +492,7 @@ const QRScannerPage = () => {
             alignItems: 'center',
             justifyContent: 'center',
             gap: '0.5rem',
-            background: gateMode === 'auto' ? 'linear-gradient(135deg, rgba(245,158,11,0.25), rgba(16,185,129,0.25))' : 'var(--bg-card)',
+            background: gateMode === 'auto' ? 'linear-gradient(135deg, rgba(194,141,176,0.25), rgba(184,165,240,0.25))' : 'var(--bg-card)',
             border: gateMode === 'auto' ? '2px solid var(--accent-gold)' : '1px solid var(--border-subtle)',
             color: gateMode === 'auto' ? 'var(--accent-gold)' : 'var(--text-muted)'
           }}
@@ -515,9 +515,9 @@ const QRScannerPage = () => {
             alignItems: 'center',
             justifyContent: 'center',
             gap: '0.5rem',
-            background: gateMode === 'entry' ? 'rgba(16, 185, 129, 0.25)' : 'var(--bg-card)',
-            border: gateMode === 'entry' ? '2px solid #10b981' : '1px solid var(--border-subtle)',
-            color: gateMode === 'entry' ? '#10b981' : 'var(--text-muted)'
+            background: gateMode === 'entry' ? 'rgba(184, 165, 240, 0.25)' : 'var(--bg-card)',
+            border: gateMode === 'entry' ? '2px solid #B8A5F0' : '1px solid var(--border-subtle)',
+            color: gateMode === 'entry' ? '#B8A5F0' : 'var(--text-muted)'
           }}
         >
           <i className="fa-solid fa-door-open"></i>
@@ -538,9 +538,9 @@ const QRScannerPage = () => {
             alignItems: 'center',
             justifyContent: 'center',
             gap: '0.5rem',
-            background: gateMode === 'exit' ? 'rgba(56, 189, 248, 0.25)' : 'var(--bg-card)',
-            border: gateMode === 'exit' ? '2px solid #38bdf8' : '1px solid var(--border-subtle)',
-            color: gateMode === 'exit' ? '#38bdf8' : 'var(--text-muted)'
+            background: gateMode === 'exit' ? 'rgba(242, 180, 155, 0.25)' : 'var(--bg-card)',
+            border: gateMode === 'exit' ? '2px solid #F2B49B' : '1px solid var(--border-subtle)',
+            color: gateMode === 'exit' ? '#F2B49B' : 'var(--text-muted)'
           }}
         >
           <i className="fa-solid fa-door-closed"></i>
@@ -561,8 +561,8 @@ const QRScannerPage = () => {
               overflow: 'hidden',
               padding: 0,
               borderRadius: '16px',
-              border: isBarrierOpen ? '3px solid #10b981' : (isProcessing ? '3px solid var(--accent-gold)' : '2px solid var(--border-bright)'),
-              boxShadow: isBarrierOpen ? '0 0 35px rgba(16, 185, 129, 0.4)' : '0 10px 30px rgba(0,0,0,0.5)',
+              border: isBarrierOpen ? '3px solid #B8A5F0' : (isProcessing ? '3px solid var(--accent-gold)' : '2px solid var(--border-bright)'),
+              boxShadow: isBarrierOpen ? '0 0 35px rgba(184, 165, 240, 0.4)' : '0 10px 30px rgba(0,0,0,0.5)',
               background: '#040711',
               minHeight: '520px',
               height: isKioskMode ? 'calc(100vh - 220px)' : '540px',
@@ -585,7 +585,7 @@ const QRScannerPage = () => {
               alignItems: 'center'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#ffffff', fontWeight: 700, fontSize: '0.95rem' }}>
-                <i className="fa-solid fa-camera" style={{ color: '#10b981' }}></i>
+                <i className="fa-solid fa-camera" style={{ color: '#B8A5F0' }}></i>
                 <span>Universal Omnidirectional Optical Scanner</span>
               </div>
 
@@ -595,8 +595,8 @@ const QRScannerPage = () => {
                   fontWeight: 800,
                   padding: '0.3rem 0.75rem',
                   borderRadius: '20px',
-                  background: isProcessing ? 'rgba(245, 158, 11, 0.3)' : (isBarrierOpen ? 'rgba(16, 185, 129, 0.3)' : 'rgba(16, 185, 129, 0.2)'),
-                  color: isProcessing ? '#f59e0b' : (isBarrierOpen ? '#10b981' : '#10b981'),
+                  background: isProcessing ? 'rgba(194, 141, 176, 0.3)' : (isBarrierOpen ? 'rgba(184, 165, 240, 0.3)' : 'rgba(184, 165, 240, 0.2)'),
+                  color: isProcessing ? '#C28DB0' : (isBarrierOpen ? '#B8A5F0' : '#B8A5F0'),
                   border: '1px solid currentColor',
                   backdropFilter: 'blur(8px)'
                 }}>
@@ -605,7 +605,7 @@ const QRScannerPage = () => {
 
                 <label style={{
                   fontSize: '0.75rem',
-                  background: 'rgba(22, 28, 43, 0.8)',
+                  background: 'rgba(13, 11, 12, 0.8)',
                   border: '1px solid var(--border-bright)',
                   padding: '0.3rem 0.75rem',
                   borderRadius: '8px',
@@ -655,15 +655,15 @@ const QRScannerPage = () => {
                 <div style={{
                   width: '320px',
                   height: '320px',
-                  border: '2px solid rgba(16, 185, 129, 0.35)',
+                  border: '2px solid rgba(184, 165, 240, 0.35)',
                   borderRadius: '24px',
                   position: 'relative'
                 }}>
                   {/* Glowing Reticles */}
-                  <div style={{ position: 'absolute', top: '-3px', left: '-3px', width: '32px', height: '32px', borderTop: '5px solid #10b981', borderLeft: '5px solid #10b981', borderRadius: '6px 0 0 0', boxShadow: '0 0 12px #10b981' }} />
-                  <div style={{ position: 'absolute', top: '-3px', right: '-3px', width: '32px', height: '32px', borderTop: '5px solid #10b981', borderRight: '5px solid #10b981', borderRadius: '0 6px 0 0', boxShadow: '0 0 12px #10b981' }} />
-                  <div style={{ position: 'absolute', bottom: '-3px', left: '-3px', width: '32px', height: '32px', borderBottom: '5px solid #10b981', borderLeft: '5px solid #10b981', borderRadius: '0 0 0 6px', boxShadow: '0 0 12px #10b981' }} />
-                  <div style={{ position: 'absolute', bottom: '-3px', right: '-3px', width: '32px', height: '32px', borderBottom: '5px solid #10b981', borderRight: '5px solid #10b981', borderRadius: '0 0 6px 0', boxShadow: '0 0 12px #10b981' }} />
+                  <div style={{ position: 'absolute', top: '-3px', left: '-3px', width: '32px', height: '32px', borderTop: '5px solid #B8A5F0', borderLeft: '5px solid #B8A5F0', borderRadius: '6px 0 0 0', boxShadow: '0 0 12px #B8A5F0' }} />
+                  <div style={{ position: 'absolute', top: '-3px', right: '-3px', width: '32px', height: '32px', borderTop: '5px solid #B8A5F0', borderRight: '5px solid #B8A5F0', borderRadius: '0 6px 0 0', boxShadow: '0 0 12px #B8A5F0' }} />
+                  <div style={{ position: 'absolute', bottom: '-3px', left: '-3px', width: '32px', height: '32px', borderBottom: '5px solid #B8A5F0', borderLeft: '5px solid #B8A5F0', borderRadius: '0 0 0 6px', boxShadow: '0 0 12px #B8A5F0' }} />
+                  <div style={{ position: 'absolute', bottom: '-3px', right: '-3px', width: '32px', height: '32px', borderBottom: '5px solid #B8A5F0', borderRight: '5px solid #B8A5F0', borderRadius: '0 0 6px 0', boxShadow: '0 0 12px #B8A5F0' }} />
 
                   {/* Laser Line */}
                   <div
@@ -672,8 +672,8 @@ const QRScannerPage = () => {
                       left: '5%',
                       right: '5%',
                       height: '3px',
-                      background: 'linear-gradient(90deg, transparent, #10b981, #f59e0b, #10b981, transparent)',
-                      boxShadow: '0 0 16px #10b981',
+                      background: 'linear-gradient(90deg, transparent, #B8A5F0, #C28DB0, #B8A5F0, transparent)',
+                      boxShadow: '0 0 16px #B8A5F0',
                       animation: 'scannerLaser 2s ease-in-out infinite'
                     }}
                   />
@@ -702,7 +702,7 @@ const QRScannerPage = () => {
 
             {cameraError && (
               <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', padding: '2rem', color: 'var(--text-muted)', zIndex: 10 }}>
-                <i className="fa-solid fa-video-slash" style={{ fontSize: '3rem', color: '#f59e0b', marginBottom: '0.75rem' }}></i>
+                <i className="fa-solid fa-video-slash" style={{ fontSize: '3rem', color: '#C28DB0', marginBottom: '0.75rem' }}></i>
                 <div style={{ fontWeight: 700, color: 'var(--text-main)', fontSize: '1.1rem', marginBottom: '0.35rem' }}>Camera Stream Notice</div>
                 <div style={{ fontSize: '0.85rem' }}>{cameraError}</div>
               </div>
@@ -724,7 +724,7 @@ const QRScannerPage = () => {
                     flex: 1,
                     width: '100%',
                     fontSize: '0.9rem',
-                    background: 'rgba(19, 24, 38, 0.95)',
+                    background: 'rgba(13, 11, 12, 0.95)',
                     backdropFilter: 'blur(10px)',
                     border: '1px solid var(--border-bright)',
                     padding: '0.65rem 1rem',
@@ -744,7 +744,7 @@ const QRScannerPage = () => {
                     padding: '0.65rem 1.5rem',
                     fontWeight: 700,
                     background: 'linear-gradient(135deg, var(--primary), var(--primary-hover))',
-                    boxShadow: '0 4px 14px rgba(217, 119, 6, 0.4)'
+                    boxShadow: '0 4px 14px rgba(176, 122, 156, 0.4)'
                   }}
                   disabled={isProcessing || !manualInput.trim()}
                 >
@@ -769,7 +769,7 @@ const QRScannerPage = () => {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
                 <div>
-                  <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#10b981', marginBottom: '0.4rem' }}>
+                  <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#B8A5F0', marginBottom: '0.4rem' }}>
                     <i className="fa-solid fa-arrow-down-to-bracket"></i> Arriving (Reserved)
                   </div>
                   <div style={{ maxHeight: '140px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
@@ -793,9 +793,9 @@ const QRScannerPage = () => {
                         >
                           <div>
                             <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-main)' }}>{item.userName}</div>
-                            <div style={{ fontSize: '0.7rem', color: '#a5b4fc', fontFamily: 'monospace' }}>{item.vehicleNo} • Slot {item.slotCode}</div>
+                            <div style={{ fontSize: '0.7rem', color: '#D8A6C6', fontFamily: 'monospace' }}>{item.vehicleNo} • Slot {item.slotCode}</div>
                           </div>
-                          <span style={{ fontSize: '0.68rem', background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', padding: '0.15rem 0.45rem', borderRadius: '4px', fontWeight: 700 }}>
+                          <span style={{ fontSize: '0.68rem', background: 'rgba(184, 165, 240, 0.15)', color: '#B8A5F0', padding: '0.15rem 0.45rem', borderRadius: '4px', fontWeight: 700 }}>
                             Check-In
                           </span>
                         </div>
@@ -805,7 +805,7 @@ const QRScannerPage = () => {
                 </div>
 
                 <div>
-                  <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#38bdf8', marginBottom: '0.4rem' }}>
+                  <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#F2B49B', marginBottom: '0.4rem' }}>
                     <i className="fa-solid fa-arrow-right-from-bracket"></i> Departing (Parked)
                   </div>
                   <div style={{ maxHeight: '140px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
@@ -829,9 +829,9 @@ const QRScannerPage = () => {
                         >
                           <div>
                             <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-main)' }}>{item.userName}</div>
-                            <div style={{ fontSize: '0.7rem', color: '#a5b4fc', fontFamily: 'monospace' }}>{item.vehicleNo} • Slot {item.slotCode}</div>
+                            <div style={{ fontSize: '0.7rem', color: '#D8A6C6', fontFamily: 'monospace' }}>{item.vehicleNo} • Slot {item.slotCode}</div>
                           </div>
-                          <span style={{ fontSize: '0.68rem', background: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', padding: '0.15rem 0.45rem', borderRadius: '4px', fontWeight: 700 }}>
+                          <span style={{ fontSize: '0.68rem', background: 'rgba(242, 180, 155, 0.15)', color: '#F2B49B', padding: '0.15rem 0.45rem', borderRadius: '4px', fontWeight: 700 }}>
                             Check-Out
                           </span>
                         </div>
@@ -852,9 +852,9 @@ const QRScannerPage = () => {
             className="card"
             style={{
               textAlign: 'center',
-              border: isBarrierOpen ? '2px solid #10b981' : (exitPaymentSession ? '2px solid #f59e0b' : (scanResult?.error ? '2px solid #ef4444' : '1px solid var(--border-subtle)')),
-              background: isBarrierOpen ? 'rgba(16, 185, 129, 0.08)' : (exitPaymentSession ? 'rgba(245, 158, 11, 0.08)' : (scanResult?.error ? 'rgba(239, 68, 68, 0.08)' : 'var(--bg-card)')),
-              boxShadow: isBarrierOpen ? '0 0 35px rgba(16, 185, 129, 0.25)' : (exitPaymentSession ? '0 0 35px rgba(245, 158, 11, 0.25)' : 'none'),
+              border: isBarrierOpen ? '2px solid #B8A5F0' : (exitPaymentSession ? '2px solid #C28DB0' : (scanResult?.error ? '2px solid #F2728C' : '1px solid var(--border-subtle)')),
+              background: isBarrierOpen ? 'rgba(184, 165, 240, 0.08)' : (exitPaymentSession ? 'rgba(194, 141, 176, 0.08)' : (scanResult?.error ? 'rgba(242, 114, 140, 0.08)' : 'var(--bg-card)')),
+              boxShadow: isBarrierOpen ? '0 0 35px rgba(184, 165, 240, 0.25)' : (exitPaymentSession ? '0 0 35px rgba(194, 141, 176, 0.25)' : 'none'),
               transition: 'all 0.35s ease'
             }}
           >
@@ -882,8 +882,8 @@ const QRScannerPage = () => {
                   width: '14px',
                   height: '14px',
                   borderRadius: '50%',
-                  background: isBarrierOpen ? '#10b981' : (exitPaymentSession ? '#f59e0b' : '#ef4444'),
-                  boxShadow: isBarrierOpen ? '0 0 10px #10b981' : (exitPaymentSession ? '0 0 10px #f59e0b' : '0 0 10px #ef4444')
+                  background: isBarrierOpen ? '#B8A5F0' : (exitPaymentSession ? '#C28DB0' : '#F2728C'),
+                  boxShadow: isBarrierOpen ? '0 0 10px #B8A5F0' : (exitPaymentSession ? '0 0 10px #C28DB0' : '0 0 10px #F2728C')
                 }} />
               </div>
 
@@ -893,12 +893,12 @@ const QRScannerPage = () => {
                 bottom: '48px',
                 width: '180px',
                 height: '10px',
-                background: 'repeating-linear-gradient(45deg, #ef4444, #ef4444 15px, #ffffff 15px, #ffffff 30px)',
+                background: 'repeating-linear-gradient(45deg, #F2728C, #F2728C 15px, #ffffff 15px, #ffffff 30px)',
                 borderRadius: '4px',
                 transformOrigin: 'left center',
                 transform: isBarrierOpen ? 'rotate(-75deg)' : 'rotate(0deg)',
                 transition: 'transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)',
-                boxShadow: isBarrierOpen ? '0 0 15px rgba(16, 185, 129, 0.5)' : 'none',
+                boxShadow: isBarrierOpen ? '0 0 15px rgba(184, 165, 240, 0.5)' : 'none',
                 zIndex: 1
               }} />
 
@@ -913,12 +913,12 @@ const QRScannerPage = () => {
               }} />
             </div>
 
-            <div style={{ fontSize: '1.3rem', fontWeight: 800, color: isBarrierOpen ? '#10b981' : (exitPaymentSession ? '#f59e0b' : (scanResult?.error ? '#ef4444' : 'var(--text-muted)')) }}>
+            <div style={{ fontSize: '1.3rem', fontWeight: 800, color: isBarrierOpen ? '#B8A5F0' : (exitPaymentSession ? '#C28DB0' : (scanResult?.error ? '#F2728C' : 'var(--text-muted)')) }}>
               {isBarrierOpen ? 'ACCESS GRANTED • BARRIER OPENED' : (exitPaymentSession ? 'PAYMENT REQUIRED • BARRIER CLOSED' : (scanResult?.error ? 'ACCESS DENIED • BARRIER LOCKED' : 'BARRIER CLOSED • READY'))}
             </div>
 
             {isBarrierOpen && (
-              <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: '#10b981', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
+              <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: '#B8A5F0', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
                 <i className="fa-solid fa-clock"></i> Auto-closing barrier in {barrierCountdown}s
               </div>
             )}
@@ -933,9 +933,9 @@ const QRScannerPage = () => {
               </h3>
 
               {exitPaymentSession ? (
-                <div style={{ background: 'var(--bg-input)', borderRadius: '12px', border: '1px solid #f59e0b', padding: '1.25rem' }}>
+                <div style={{ background: 'var(--bg-input)', borderRadius: '12px', border: '1px solid #C28DB0', padding: '1.25rem' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 800, padding: '0.2rem 0.55rem', borderRadius: '4px', background: 'rgba(245, 158, 11, 0.2)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.4)' }}>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 800, padding: '0.2rem 0.55rem', borderRadius: '4px', background: 'rgba(194, 141, 176, 0.2)', color: '#C28DB0', border: '1px solid rgba(194, 141, 176, 0.4)' }}>
                       <i className="fa-solid fa-clock" style={{ marginRight: '0.3rem' }}></i>
                       EXIT PAYMENT CONFIRMATION
                     </span>
@@ -947,7 +947,7 @@ const QRScannerPage = () => {
                   {/* Specification items */}
                   <div className="details-row">
                     <span className="key">Vehicle:</span>
-                    <span className="val" style={{ color: '#a5b4fc', fontWeight: 700 }}>
+                    <span className="val" style={{ color: '#D8A6C6', fontWeight: 700 }}>
                       {exitPaymentSession.booking?.vehicle_number} {exitPaymentSession.booking?.vehicle_model ? `(${exitPaymentSession.booking?.vehicle_model})` : ''}
                     </span>
                   </div>
@@ -1001,7 +1001,7 @@ const QRScannerPage = () => {
                     </span>
                   </div>
 
-                  <div className="details-row" style={{ background: 'rgba(245, 158, 11, 0.1)', padding: '0.4rem', borderRadius: '6px', margin: '0.4rem 0' }}>
+                  <div className="details-row" style={{ background: 'rgba(194, 141, 176, 0.1)', padding: '0.4rem', borderRadius: '6px', margin: '0.4rem 0' }}>
                     <span className="key" style={{ fontWeight: 800, color: 'var(--text-main)' }}>Total amount:</span>
                     <span className="val" style={{ color: 'var(--accent-emerald)', fontWeight: 900, fontSize: '1.15rem' }}>
                       ₹{parseFloat(exitPaymentSession.booking?.total_amount || exitPaymentSession.payment?.amount || 0).toFixed(2)}
@@ -1011,7 +1011,7 @@ const QRScannerPage = () => {
                   <div className="details-row">
                     <span className="key">Payment status:</span>
                     <span className="val">
-                      <span style={{ fontSize: '0.72rem', fontWeight: 800, padding: '0.15rem 0.5rem', borderRadius: '4px', background: 'rgba(245, 158, 11, 0.2)', color: '#f59e0b', textTransform: 'uppercase' }}>
+                      <span style={{ fontSize: '0.72rem', fontWeight: 800, padding: '0.15rem 0.5rem', borderRadius: '4px', background: 'rgba(194, 141, 176, 0.2)', color: '#C28DB0', textTransform: 'uppercase' }}>
                         {exitPaymentSession.payment?.status || 'PENDING'}
                       </span>
                     </span>
@@ -1035,7 +1035,7 @@ const QRScannerPage = () => {
 
                   {/* Payment Timeout Indicator */}
                   {isExitPaymentExpired ? (
-                    <div style={{ background: 'rgba(239, 68, 68, 0.15)', border: '1px solid #ef4444', borderRadius: '8px', padding: '0.6rem', textAlign: 'center', margin: '0.75rem 0', color: '#ef4444', fontWeight: 700, fontSize: '0.85rem' }}>
+                    <div style={{ background: 'rgba(242, 114, 140, 0.15)', border: '1px solid #F2728C', borderRadius: '8px', padding: '0.6rem', textAlign: 'center', margin: '0.75rem 0', color: '#F2728C', fontWeight: 700, fontSize: '0.85rem' }}>
                       <i className="fa-solid fa-triangle-exclamation" style={{ marginRight: '0.4rem' }}></i>
                       Payment session expired. Please scan again.
                     </div>
@@ -1056,7 +1056,7 @@ const QRScannerPage = () => {
                       <button
                         type="button"
                         className="btn-select-slot"
-                        style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', fontWeight: 800, marginTop: 0 }}
+                        style={{ background: 'linear-gradient(135deg, #C28DB0, #B07A9C)', fontWeight: 800, marginTop: 0 }}
                         onClick={() => executeSecurityValidation(exitPaymentSession.rawCodeOrId)}
                         disabled={isProcessing}
                       >
@@ -1066,7 +1066,7 @@ const QRScannerPage = () => {
                       <button
                         type="button"
                         className="btn-select-slot"
-                        style={{ background: 'linear-gradient(135deg, #10b981, #059669)', fontWeight: 800, marginTop: 0, boxShadow: '0 4px 14px rgba(16, 185, 129, 0.4)' }}
+                        style={{ background: 'linear-gradient(135deg, #B8A5F0, #8F7AD9)', fontWeight: 800, marginTop: 0, boxShadow: '0 4px 14px rgba(184, 165, 240, 0.4)' }}
                         onClick={handleConfirmExitPayment}
                         disabled={isConfirmingExitPayment}
                       >
@@ -1090,15 +1090,15 @@ const QRScannerPage = () => {
                 </div>
               ) : scanResult ? (
                 scanResult.error ? (
-                  <div style={{ background: 'rgba(239, 68, 68, 0.12)', border: '1px solid rgba(239, 68, 68, 0.35)', borderRadius: '10px', padding: '1.25rem', textAlign: 'center' }}>
-                    <i className="fa-solid fa-triangle-exclamation" style={{ color: '#ef4444', fontSize: '2.5rem', marginBottom: '0.5rem' }}></i>
-                    <h4 style={{ color: '#ef4444', margin: '0 0 0.35rem 0', fontSize: '1.1rem' }}>Validation Rejected</h4>
+                  <div style={{ background: 'rgba(242, 114, 140, 0.12)', border: '1px solid rgba(242, 114, 140, 0.35)', borderRadius: '10px', padding: '1.25rem', textAlign: 'center' }}>
+                    <i className="fa-solid fa-triangle-exclamation" style={{ color: '#F2728C', fontSize: '2.5rem', marginBottom: '0.5rem' }}></i>
+                    <h4 style={{ color: '#F2728C', margin: '0 0 0.35rem 0', fontSize: '1.1rem' }}>Validation Rejected</h4>
                     <p style={{ fontSize: '0.85rem', color: '#fca5a5', margin: 0 }}>{scanResult.message}</p>
                   </div>
                 ) : (
                   <div style={{ background: 'var(--bg-input)', borderRadius: '12px', border: '1px solid var(--border-bright)', padding: '1.25rem' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                      <span style={{ fontSize: '0.75rem', fontWeight: 800, padding: '0.2rem 0.55rem', borderRadius: '4px', background: 'rgba(16, 185, 129, 0.2)', color: '#10b981' }}>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 800, padding: '0.2rem 0.55rem', borderRadius: '4px', background: 'rgba(184, 165, 240, 0.2)', color: '#B8A5F0' }}>
                         <i className="fa-solid fa-circle-check" style={{ marginRight: '0.3rem' }}></i>
                         {scanResult.action === 'ENTRY' ? 'GATE ENTRY CLEARED' : 'GATE EXIT CLEARED'}
                       </span>
@@ -1111,19 +1111,19 @@ const QRScannerPage = () => {
                       Welcome, {scanResult.user_name}!
                     </div>
 
-                    <div className="details-row"><span className="key">Vehicle Number:</span><span className="val" style={{ color: '#a5b4fc', fontWeight: 700 }}>{scanResult.vehicle_number}</span></div>
+                    <div className="details-row"><span className="key">Vehicle Number:</span><span className="val" style={{ color: '#D8A6C6', fontWeight: 700 }}>{scanResult.vehicle_number}</span></div>
                     <div className="details-row"><span className="key">Allocated Location:</span><span className="val">{scanResult.lot_name} (Floor {scanResult.floor})</span></div>
                     
                     {scanResult.action === 'ENTRY' ? (
-                      <div className="details-row" style={{ background: 'rgba(245, 158, 11, 0.1)', padding: '0.4rem', borderRadius: '6px', margin: '0.4rem 0' }}>
+                      <div className="details-row" style={{ background: 'rgba(194, 141, 176, 0.1)', padding: '0.4rem', borderRadius: '6px', margin: '0.4rem 0' }}>
                         <span className="key" style={{ color: 'var(--accent-gold)', fontWeight: 700 }}>Assigned Spot:</span>
                         <span className="val" style={{ color: 'var(--accent-gold)', fontWeight: 900, fontSize: '1.05rem' }}>Slot {scanResult.slot_number}</span>
                       </div>
                     ) : (
                       <>
-                        <div className="details-row"><span className="key">Slot Freed:</span><span className="val" style={{ color: '#10b981', fontWeight: 700 }}>Slot {scanResult.slot_freed}</span></div>
+                        <div className="details-row"><span className="key">Slot Freed:</span><span className="val" style={{ color: '#B8A5F0', fontWeight: 700 }}>Slot {scanResult.slot_freed}</span></div>
                         <div className="details-row"><span className="key">Duration Parked:</span><span className="val">{scanResult.duration_minutes} mins</span></div>
-                        <div className="details-row"><span className="key">Total Fee Settled:</span><span className="val" style={{ color: '#10b981', fontWeight: 800 }}>₹{scanResult.total_fee}.00</span></div>
+                        <div className="details-row"><span className="key">Total Fee Settled:</span><span className="val" style={{ color: '#B8A5F0', fontWeight: 800 }}>₹{scanResult.total_fee}.00</span></div>
                       </>
                     )}
 
@@ -1141,7 +1141,7 @@ const QRScannerPage = () => {
             </div>
 
             <div style={{ fontSize: '0.72rem', color: 'var(--text-dim)', textAlign: 'center', marginTop: '1rem', borderTop: '1px solid var(--border-subtle)', paddingTop: '0.6rem' }}>
-              <i className="fa-solid fa-lock" style={{ marginRight: '0.25rem', color: '#10b981' }}></i> Unattended Mode: Automatic barrier opens on cryptographically valid QR passes.
+              <i className="fa-solid fa-lock" style={{ marginRight: '0.25rem', color: '#B8A5F0' }}></i> Unattended Mode: Automatic barrier opens on cryptographically valid QR passes.
             </div>
           </div>
         </div>

@@ -16,7 +16,6 @@ const Sidebar = ({ onClose }) => {
             <div className="sidebar-brand">
               <div
                 className="brand-logo-icon"
-                style={isAdmin ? { background: 'linear-gradient(135deg, var(--accent-emerald), #059669)' } : {}}
               >
                 <i className={`fa-solid ${isAdmin ? 'fa-shapes' : 'fa-square-parking'}`}></i>
               </div>

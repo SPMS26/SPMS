@@ -430,7 +430,7 @@ const ProfilePage = () => {
                     {v.is_default ? (
                       <span
                         style={{
-                          background: 'rgba(217, 119, 6, 0.15)',
+                          background: 'rgba(176, 122, 156, 0.15)',
                           color: 'var(--accent-gold)',
                           border: '1px solid var(--accent-gold)',
                           fontSize: '0.75rem',
@@ -457,7 +457,7 @@ const ProfilePage = () => {
                     )}
                     <button
                       className="change-btn"
-                      style={{ borderColor: 'rgba(239, 68, 68, 0.4)', color: 'var(--status-occupied)', minWidth: '80px' }}
+                      style={{ borderColor: 'rgba(242, 114, 140, 0.4)', color: 'var(--status-occupied)', minWidth: '80px' }}
                       onClick={() => handleDeleteVehicle(v.id)}
                     >
                       <i className="fa-solid fa-trash"></i> Remove
