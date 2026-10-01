@@ -30,6 +30,18 @@ const BookingsPage = () => {
     setShowQRModal(true);
   };
 
+  const handlePayReservation = async (booking) => {
+    try {
+      const res = await bookingService.confirmPayment(booking.id);
+      toast.success('Reservation payment confirmed! Digital QR Pass generated.');
+      await fetchBookings();
+      setSelectedQRBooking(res.booking || { ...booking, qr_image: res.qr_image, qr_code: res.qr_code, payment_status: 'paid', booking_status: 'reserved' });
+      setShowQRModal(true);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Payment confirmation failed.');
+    }
+  };
+
   return (
     <AppLayout>
       <div className="page-header-row">
@@ -55,11 +67,12 @@ const BookingsPage = () => {
             const isCompleted = booking.booking_status === 'completed';
             const isParked = booking.booking_status === 'active' || booking.booking_status === 'parked';
             const isReserved = booking.booking_status === 'reserved';
+            const isPaymentPending = booking.payment_status === 'pending' || booking.booking_status === 'pending_payment';
             const expiresAt = booking.qr_meta?.expires_at || booking.expires_at;
             const isExpired = expiresAt && new Date(expiresAt) < new Date();
 
             return (
-              <div key={booking.id} className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', border: isReserved ? '1px solid var(--accent-gold)' : '1px solid var(--border-subtle)' }}>
+              <div key={booking.id} className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', border: isPaymentPending ? '1px solid #f59e0b' : (isReserved ? '1px solid var(--accent-gold)' : '1px solid var(--border-subtle)') }}>
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
                     <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--accent-gold)', background: 'var(--accent-gold-bg)', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>
@@ -70,10 +83,10 @@ const BookingsPage = () => {
                       fontWeight: 700,
                       padding: '0.2rem 0.5rem',
                       borderRadius: '4px',
-                      background: isParked ? 'rgba(16, 185, 129, 0.15)' : (isReserved ? 'rgba(245, 158, 11, 0.15)' : 'rgba(107, 114, 128, 0.15)'),
-                      color: isParked ? '#10b981' : (isReserved ? '#f59e0b' : '#9ca3af')
+                      background: isPaymentPending ? 'rgba(245, 158, 11, 0.2)' : (isParked ? 'rgba(16, 185, 129, 0.15)' : (isReserved ? 'rgba(245, 158, 11, 0.15)' : 'rgba(107, 114, 128, 0.15)')),
+                      color: isPaymentPending ? '#f59e0b' : (isParked ? '#10b981' : (isReserved ? '#f59e0b' : '#9ca3af'))
                     }}>
-                      {isParked ? 'PARKED' : (isReserved ? 'RESERVED' : booking.booking_status.toUpperCase())}
+                      {isPaymentPending ? 'PAYMENT PENDING' : (isParked ? 'PARKED' : (isReserved ? 'RESERVED' : booking.booking_status.toUpperCase()))}
                     </span>
                   </div>
 
@@ -99,11 +112,11 @@ const BookingsPage = () => {
                     <span className="val" style={{ color: '#a5b4fc' }}>{booking.vehicle ? booking.vehicle.vehicle_number : 'TS09 AB 1234'}</span>
                   </div>
                   <div className="details-row">
-                    <span className="key">Amount:</span>
-                    <span className="val" style={{ color: 'var(--accent-emerald)', fontWeight: 700 }}>₹{booking.total_amount || 30}.00</span>
+                    <span className="key">Reservation Fee:</span>
+                    <span className="val" style={{ color: 'var(--accent-emerald)', fontWeight: 700 }}>₹{booking.pre_booking_fee || booking.total_amount || 10}.00</span>
                   </div>
 
-                  {expiresAt && (
+                  {expiresAt && !isPaymentPending && (
                     <div className="details-row">
                       <span className="key">Pass Validity:</span>
                       <span className="val" style={{ color: isExpired ? '#ef4444' : 'var(--text-muted)', fontSize: '0.75rem' }}>
@@ -113,13 +126,23 @@ const BookingsPage = () => {
                   )}
                 </div>
 
-                <button
-                  className="btn-select-slot"
-                  style={{ marginTop: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}
-                  onClick={() => handleOpenQR(booking)}
-                >
-                  <i className="fa-solid fa-qrcode"></i> View Live QR Pass
-                </button>
+                {isPaymentPending ? (
+                  <button
+                    className="btn-select-slot"
+                    style={{ marginTop: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', background: 'linear-gradient(135deg, var(--accent-gold), #d97706)' }}
+                    onClick={() => handlePayReservation(booking)}
+                  >
+                    <i className="fa-solid fa-lock"></i> Pay ₹{booking.pre_booking_fee || 10}.00 & Generate Pass
+                  </button>
+                ) : (
+                  <button
+                    className="btn-select-slot"
+                    style={{ marginTop: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}
+                    onClick={() => handleOpenQR(booking)}
+                  >
+                    <i className="fa-solid fa-qrcode"></i> View Live QR Pass
+                  </button>
+                )}
               </div>
             );
           })}

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 
-const PaymentModal = ({ isOpen, onClose, slot, lot, onSubmitPayment }) => {
+const PaymentModal = ({ isOpen, onClose, slot, lot, preBookingFee = 10, onSubmitPayment }) => {
   const { user, selectedVehicle } = useAuth();
   const [loading, setLoading] = useState(false);
 
@@ -14,11 +14,17 @@ const PaymentModal = ({ isOpen, onClose, slot, lot, onSubmitPayment }) => {
     setLoading(false);
   };
 
+  const formattedFee = parseFloat(preBookingFee || 10).toFixed(2);
+  const hourlyRate = slot ? parseFloat(slot.hourly_price || 30).toFixed(2) : '30.00';
+
   return (
     <div className={`modal-overlay ${isOpen ? 'active' : ''}`}>
-      <div className="modal-box">
+      <div className="modal-box" style={{ maxWidth: '460px' }}>
         <div className="modal-header">
-          <h3>Confirm Payment & Booking</h3>
+          <h3>
+            <i className="fa-solid fa-ticket" style={{ color: 'var(--accent-gold)', marginRight: '0.4rem' }}></i>
+            Confirm Reservation & Payment
+          </h3>
           <button className="modal-close" onClick={onClose}>&times;</button>
         </div>
 
@@ -30,7 +36,7 @@ const PaymentModal = ({ isOpen, onClose, slot, lot, onSubmitPayment }) => {
             </div>
             <div className="details-row">
               <span className="key">Vehicle Registration:</span>
-              <span className="val" style={{ color: 'var(--accent-gold)' }}>
+              <span className="val" style={{ color: 'var(--accent-gold)', fontWeight: 700 }}>
                 {selectedVehicle ? selectedVehicle.vehicle_number : 'TS09 AB 1234'}
               </span>
             </div>
@@ -38,25 +44,37 @@ const PaymentModal = ({ isOpen, onClose, slot, lot, onSubmitPayment }) => {
               <span className="key">Assigned Slot:</span>
               <span className="val">{slot ? slot.slot_number : 'C5'} ({lot ? lot.name : 'Central Parking'})</span>
             </div>
-            <div className="details-row">
-              <span className="key">Base Fare Amount:</span>
-              <span className="val" style={{ color: 'var(--accent-emerald)', fontWeight: 800 }}>
-                ₹{slot ? slot.hourly_price : 30}.00
+            <div className="details-row" style={{ background: 'rgba(245, 158, 11, 0.08)', padding: '0.4rem 0.5rem', borderRadius: '6px', margin: '0.35rem 0' }}>
+              <span className="key" style={{ fontWeight: 700, color: 'var(--text-main)' }}>Pre-Booking Fee:</span>
+              <span className="val" style={{ color: 'var(--accent-gold)', fontWeight: 800, fontSize: '1.05rem' }}>
+                ₹{formattedFee}
               </span>
             </div>
             <div className="details-row">
-              <span className="key">Payment Gateway:</span>
+              <span className="key">Hourly Parking Rate:</span>
+              <span className="val" style={{ color: 'var(--accent-emerald)', fontWeight: 700 }}>
+                ₹{hourlyRate} / hour (Billed upon Exit)
+              </span>
+            </div>
+            <div className="details-row">
+              <span className="key">Payment Method:</span>
               <span className="val">
-                <i className="fa-solid fa-credit-card"></i> Simulated Payment Engine
+                <i className="fa-solid fa-shield-check" style={{ color: '#10b981', marginRight: '0.3rem' }}></i>
+                Project Simulated Payment
               </span>
             </div>
           </div>
 
+          <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '1rem', textAlign: 'center' }}>
+            <i className="fa-solid fa-circle-info" style={{ marginRight: '0.3rem', color: 'var(--accent-gold)' }}></i>
+            Reservation fee confirms your slot reservation. Your Digital QR Parking Pass will be generated instantly upon payment.
+          </div>
+
           <button type="submit" className="btn-select-slot" disabled={loading}>
             {loading ? (
-              <span><i className="fa-solid fa-circle-notch fa-spin"></i> Processing Payment...</span>
+              <span><i className="fa-solid fa-circle-notch fa-spin"></i> Processing Reservation Payment...</span>
             ) : (
-              <span><i className="fa-solid fa-lock"></i> Pay ₹{slot ? slot.hourly_price : 30} & Generate QR Code</span>
+              <span><i className="fa-solid fa-lock"></i> Pay ₹{formattedFee} Reservation Fee & Get QR Pass</span>
             )}
           </button>
         </form>

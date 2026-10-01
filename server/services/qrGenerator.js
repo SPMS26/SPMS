@@ -153,9 +153,12 @@ function isQRExpired(expiresAt) {
 
 export {
   generateQRPayload,
+  generateExitPaymentQRPayload,
   extractSignature,
   renderQRDataURL,
   renderQRSVG,
   verifyQRPayload,
+  verifyExitPaymentQRPayload,
   isQRExpired
 };
+

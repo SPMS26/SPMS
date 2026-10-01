@@ -69,11 +69,45 @@ const QRScannerPage = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isKioskMode, setIsKioskMode] = useState(false);
 
+  // Manual Exit Payment Session States
+  const [exitPaymentSession, setExitPaymentSession] = useState(null);
+  const [exitPaymentSecondsLeft, setExitPaymentSecondsLeft] = useState(null);
+  const [isExitPaymentExpired, setIsExitPaymentExpired] = useState(false);
+  const [isConfirmingExitPayment, setIsConfirmingExitPayment] = useState(false);
+
   const html5QrCodeRef = useRef(null);
   const isProcessingRef = useRef(false);
   const lastScannedPayloadRef = useRef('');
   const lastScanTimestampRef = useRef(0);
   const countdownIntervalRef = useRef(null);
+
+  // Track Exit Payment Session Expiry from backend system_settings (not hardcoded)
+  useEffect(() => {
+    if (!exitPaymentSession) {
+      setExitPaymentSecondsLeft(null);
+      setIsExitPaymentExpired(false);
+      return;
+    }
+
+    const expiresAtStr = exitPaymentSession.payment?.expires_at || exitPaymentSession.exit_payment_qr?.expires_at;
+    if (!expiresAtStr) return;
+
+    const updateTimer = () => {
+      const diff = new Date(expiresAtStr) - new Date();
+      const seconds = Math.floor(diff / 1000);
+      if (seconds <= 0) {
+        setExitPaymentSecondsLeft(0);
+        setIsExitPaymentExpired(true);
+      } else {
+        setExitPaymentSecondsLeft(seconds);
+        setIsExitPaymentExpired(false);
+      }
+    };
+
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
+    return () => clearInterval(interval);
+  }, [exitPaymentSession]);
 
   useEffect(() => {
     isProcessingRef.current = isProcessing;
@@ -228,8 +262,39 @@ const QRScannerPage = () => {
         res = await qrService.autoValidate(rawCodeOrId, { preferred_mode: 'auto' });
       }
 
+      // Check if exit payment is required (Barrier must stay CLOSED)
+      if (res.action === 'PAYMENT_REQUIRED' || res.barrier_status === 'CLOSED' || res.payment_required) {
+        setIsBarrierOpen(false);
+        if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
+
+        playAudioFeedback('error');
+        toast(res.message || 'Exit payment required. Barrier remains closed until payment confirmed.', {
+          icon: '⚠️',
+          duration: 4000
+        });
+
+        const bookingData = res.booking || res.details || {};
+        const paymentData = res.payment || {};
+        const qrData = res.exit_payment_qr || {};
+
+        setExitPaymentSession({
+          booking: bookingData,
+          payment: paymentData,
+          exit_payment_qr: qrData,
+          rawCodeOrId
+        });
+        setIsExitPaymentExpired(false);
+        setScanResult(null);
+
+        fetchQueue();
+        setManualInput('');
+        return;
+      }
+
+      // Access cleared (Entry or completed Exit)
       playAudioFeedback('success');
       toast.success(res.message || 'Access Granted! Barrier Opening.');
+      setExitPaymentSession(null);
       setScanResult({
         success: true,
         ...res
@@ -274,6 +339,63 @@ const QRScannerPage = () => {
     } finally {
       setIsProcessing(false);
       isProcessingRef.current = false;
+    }
+  };
+
+  const handleConfirmExitPayment = async () => {
+    if (!exitPaymentSession || isExitPaymentExpired) return;
+    try {
+      setIsConfirmingExitPayment(true);
+      const bookingId = exitPaymentSession.booking?.id || exitPaymentSession.details?.booking_id;
+      const paymentId = exitPaymentSession.payment?.id || exitPaymentSession.details?.payment_id;
+
+      const res = await qrService.confirmExitPayment({
+        booking_id: bookingId,
+        payment_id: paymentId,
+        notes: 'Payment confirmed manually by security operator'
+      });
+
+      playAudioFeedback('success');
+      toast.success(res.message || 'Exit payment confirmed! Barrier opening.');
+
+      setIsBarrierOpen(true);
+      setBarrierCountdown(6);
+
+      setScanResult({
+        success: true,
+        action: 'EXIT',
+        ...res
+      });
+
+      setExitPaymentSession(null);
+      setIsExitPaymentExpired(false);
+
+      if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
+      countdownIntervalRef.current = setInterval(() => {
+        setBarrierCountdown((prev) => {
+          if (prev <= 1) {
+            clearInterval(countdownIntervalRef.current);
+            setIsBarrierOpen(false);
+            setTimeout(() => {
+              setScanResult(null);
+            }, 1000);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      fetchQueue();
+      setManualInput('');
+    } catch (err) {
+      playAudioFeedback('error');
+      const errorMsg = err.response?.data?.message || 'Failed to confirm exit payment.';
+      toast.error(errorMsg);
+      if (err.response?.data?.isExpired) {
+        setIsExitPaymentExpired(true);
+      }
+    } finally {
+      setIsConfirmingExitPayment(false);
     }
   };
 
@@ -720,9 +842,9 @@ const QRScannerPage = () => {
             className="card"
             style={{
               textAlign: 'center',
-              border: isBarrierOpen ? '2px solid #10b981' : (scanResult?.error ? '2px solid #ef4444' : '1px solid var(--border-subtle)'),
-              background: isBarrierOpen ? 'rgba(16, 185, 129, 0.08)' : (scanResult?.error ? 'rgba(239, 68, 68, 0.08)' : 'var(--bg-card)'),
-              boxShadow: isBarrierOpen ? '0 0 35px rgba(16, 185, 129, 0.25)' : 'none',
+              border: isBarrierOpen ? '2px solid #10b981' : (exitPaymentSession ? '2px solid #f59e0b' : (scanResult?.error ? '2px solid #ef4444' : '1px solid var(--border-subtle)')),
+              background: isBarrierOpen ? 'rgba(16, 185, 129, 0.08)' : (exitPaymentSession ? 'rgba(245, 158, 11, 0.08)' : (scanResult?.error ? 'rgba(239, 68, 68, 0.08)' : 'var(--bg-card)')),
+              boxShadow: isBarrierOpen ? '0 0 35px rgba(16, 185, 129, 0.25)' : (exitPaymentSession ? '0 0 35px rgba(245, 158, 11, 0.25)' : 'none'),
               transition: 'all 0.35s ease'
             }}
           >
@@ -750,8 +872,8 @@ const QRScannerPage = () => {
                   width: '14px',
                   height: '14px',
                   borderRadius: '50%',
-                  background: isBarrierOpen ? '#10b981' : '#ef4444',
-                  boxShadow: isBarrierOpen ? '0 0 10px #10b981' : '0 0 10px #ef4444'
+                  background: isBarrierOpen ? '#10b981' : (exitPaymentSession ? '#f59e0b' : '#ef4444'),
+                  boxShadow: isBarrierOpen ? '0 0 10px #10b981' : (exitPaymentSession ? '0 0 10px #f59e0b' : '0 0 10px #ef4444')
                 }} />
               </div>
 
@@ -781,8 +903,8 @@ const QRScannerPage = () => {
               }} />
             </div>
 
-            <div style={{ fontSize: '1.3rem', fontWeight: 800, color: isBarrierOpen ? '#10b981' : (scanResult?.error ? '#ef4444' : 'var(--text-muted)') }}>
-              {isBarrierOpen ? 'ACCESS GRANTED • BARRIER OPENED' : (scanResult?.error ? 'ACCESS DENIED • BARRIER LOCKED' : 'BARRIER CLOSED • READY')}
+            <div style={{ fontSize: '1.3rem', fontWeight: 800, color: isBarrierOpen ? '#10b981' : (exitPaymentSession ? '#f59e0b' : (scanResult?.error ? '#ef4444' : 'var(--text-muted)')) }}>
+              {isBarrierOpen ? 'ACCESS GRANTED • BARRIER OPENED' : (exitPaymentSession ? 'PAYMENT REQUIRED • BARRIER CLOSED' : (scanResult?.error ? 'ACCESS DENIED • BARRIER LOCKED' : 'BARRIER CLOSED • READY'))}
             </div>
 
             {isBarrierOpen && (
@@ -800,7 +922,163 @@ const QRScannerPage = () => {
                 Driver Clearance & Location Guidance
               </h3>
 
-              {scanResult ? (
+              {exitPaymentSession ? (
+                <div style={{ background: 'var(--bg-input)', borderRadius: '12px', border: '1px solid #f59e0b', padding: '1.25rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 800, padding: '0.2rem 0.55rem', borderRadius: '4px', background: 'rgba(245, 158, 11, 0.2)', color: '#f59e0b', border: '1px solid rgba(245, 158, 11, 0.4)' }}>
+                      <i className="fa-solid fa-clock" style={{ marginRight: '0.3rem' }}></i>
+                      EXIT PAYMENT CONFIRMATION
+                    </span>
+                    <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--accent-gold)', fontFamily: 'monospace' }}>
+                      {exitPaymentSession.booking?.pass_code || `BK-${exitPaymentSession.booking?.id?.substring(0, 8).toUpperCase()}`}
+                    </span>
+                  </div>
+
+                  {/* Specification items */}
+                  <div className="details-row">
+                    <span className="key">Vehicle:</span>
+                    <span className="val" style={{ color: '#a5b4fc', fontWeight: 700 }}>
+                      {exitPaymentSession.booking?.vehicle_number} {exitPaymentSession.booking?.vehicle_model ? `(${exitPaymentSession.booking?.vehicle_model})` : ''}
+                    </span>
+                  </div>
+
+                  <div className="details-row">
+                    <span className="key">Slot:</span>
+                    <span className="val" style={{ color: 'var(--accent-gold)', fontWeight: 700 }}>
+                      Slot {exitPaymentSession.booking?.slot_number} (Floor {exitPaymentSession.booking?.floor} • {exitPaymentSession.booking?.lot_name})
+                    </span>
+                  </div>
+
+                  <div className="details-row">
+                    <span className="key">Entry time:</span>
+                    <span className="val">
+                      {exitPaymentSession.booking?.entry_time ? new Date(exitPaymentSession.booking?.entry_time).toLocaleTimeString() : 'N/A'}
+                    </span>
+                  </div>
+
+                  <div className="details-row">
+                    <span className="key">Exit time:</span>
+                    <span className="val">
+                      {exitPaymentSession.booking?.exit_time ? new Date(exitPaymentSession.booking?.exit_time).toLocaleTimeString() : 'N/A'}
+                    </span>
+                  </div>
+
+                  <div className="details-row">
+                    <span className="key">Duration:</span>
+                    <span className="val" style={{ fontWeight: 700 }}>
+                      {exitPaymentSession.booking?.duration_minutes != null ? `${exitPaymentSession.booking?.duration_minutes} mins (${exitPaymentSession.booking?.duration_hours || Math.ceil(exitPaymentSession.booking?.duration_minutes / 60)} hrs)` : 'N/A'}
+                    </span>
+                  </div>
+
+                  <div className="details-row">
+                    <span className="key">Parking rate:</span>
+                    <span className="val" style={{ color: 'var(--accent-gold)' }}>
+                      ₹{parseFloat(exitPaymentSession.booking?.hourly_rate || 30).toFixed(2)} / hour
+                    </span>
+                  </div>
+
+                  <div className="details-row">
+                    <span className="key">Parking charge:</span>
+                    <span className="val" style={{ fontWeight: 700 }}>
+                      ₹{parseFloat(exitPaymentSession.booking?.parking_charge || exitPaymentSession.payment?.amount || 0).toFixed(2)}
+                    </span>
+                  </div>
+
+                  <div className="details-row">
+                    <span className="key">Pre-booking fee:</span>
+                    <span className="val">
+                      ₹{parseFloat(exitPaymentSession.booking?.pre_booking_fee || 0).toFixed(2)}
+                    </span>
+                  </div>
+
+                  <div className="details-row" style={{ background: 'rgba(245, 158, 11, 0.1)', padding: '0.4rem', borderRadius: '6px', margin: '0.4rem 0' }}>
+                    <span className="key" style={{ fontWeight: 800, color: 'var(--text-main)' }}>Total amount:</span>
+                    <span className="val" style={{ color: 'var(--accent-emerald)', fontWeight: 900, fontSize: '1.15rem' }}>
+                      ₹{parseFloat(exitPaymentSession.booking?.total_amount || exitPaymentSession.payment?.amount || 0).toFixed(2)}
+                    </span>
+                  </div>
+
+                  <div className="details-row">
+                    <span className="key">Payment status:</span>
+                    <span className="val">
+                      <span style={{ fontSize: '0.72rem', fontWeight: 800, padding: '0.15rem 0.5rem', borderRadius: '4px', background: 'rgba(245, 158, 11, 0.2)', color: '#f59e0b', textTransform: 'uppercase' }}>
+                        {exitPaymentSession.payment?.status || 'PENDING'}
+                      </span>
+                    </span>
+                  </div>
+
+                  {/* Exit Payment QR display */}
+                  <div style={{ textAlign: 'center', margin: '0.85rem 0 0.5rem 0', background: '#ffffff', padding: '0.75rem', borderRadius: '10px' }}>
+                    {exitPaymentSession.exit_payment_qr?.qr_image ? (
+                      <img
+                        src={exitPaymentSession.exit_payment_qr.qr_image}
+                        alt="Exit Payment QR"
+                        style={{ width: '150px', height: '150px', display: 'block', margin: '0 auto', filter: isExitPaymentExpired ? 'grayscale(100%) opacity(0.35)' : 'none' }}
+                      />
+                    ) : (
+                      <div style={{ padding: '1rem', color: '#64748b' }}>QR Reference Generated</div>
+                    )}
+                    <div style={{ fontSize: '0.72rem', color: '#475569', fontWeight: 600, marginTop: '0.35rem' }}>
+                      Exit Payment QR (Reference for amount to pay outside system)
+                    </div>
+                  </div>
+
+                  {/* Payment Timeout Indicator */}
+                  {isExitPaymentExpired ? (
+                    <div style={{ background: 'rgba(239, 68, 68, 0.15)', border: '1px solid #ef4444', borderRadius: '8px', padding: '0.6rem', textAlign: 'center', margin: '0.75rem 0', color: '#ef4444', fontWeight: 700, fontSize: '0.85rem' }}>
+                      <i className="fa-solid fa-triangle-exclamation" style={{ marginRight: '0.4rem' }}></i>
+                      Payment session expired. Please scan again.
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(0,0,0,0.25)', border: '1px solid var(--border-subtle)', borderRadius: '6px', padding: '0.4rem 0.75rem', margin: '0.65rem 0', fontSize: '0.78rem' }}>
+                      <span style={{ color: 'var(--text-muted)' }}>
+                        <i className="fa-regular fa-clock" style={{ marginRight: '0.3rem', color: 'var(--accent-gold)' }}></i> Session Expiry:
+                      </span>
+                      <span style={{ fontWeight: 800, color: 'var(--accent-gold)', fontFamily: 'monospace' }}>
+                        {exitPaymentSecondsLeft != null ? `${Math.floor(exitPaymentSecondsLeft / 60)}m ${exitPaymentSecondsLeft % 60}s` : 'Active'}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Action Buttons */}
+                  <div style={{ marginTop: '0.85rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    {isExitPaymentExpired ? (
+                      <button
+                        type="button"
+                        className="btn-select-slot"
+                        style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)', fontWeight: 800, marginTop: 0 }}
+                        onClick={() => executeSecurityValidation(exitPaymentSession.rawCodeOrId)}
+                        disabled={isProcessing}
+                      >
+                        <i className="fa-solid fa-arrows-rotate"></i> Re-scan / Refresh Session
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        className="btn-select-slot"
+                        style={{ background: 'linear-gradient(135deg, #10b981, #059669)', fontWeight: 800, marginTop: 0, boxShadow: '0 4px 14px rgba(16, 185, 129, 0.4)' }}
+                        onClick={handleConfirmExitPayment}
+                        disabled={isConfirmingExitPayment}
+                      >
+                        {isConfirmingExitPayment ? (
+                          <span><i className="fa-solid fa-circle-notch fa-spin"></i> Verifying Exit Payment...</span>
+                        ) : (
+                          <span><i className="fa-solid fa-circle-check"></i> Confirm Payment Received</span>
+                        )}
+                      </button>
+                    )}
+
+                    <button
+                      type="button"
+                      className="change-btn"
+                      style={{ width: '100%', padding: '0.5rem', marginTop: 0 }}
+                      onClick={() => setExitPaymentSession(null)}
+                    >
+                      Cancel / Dismiss
+                    </button>
+                  </div>
+                </div>
+              ) : scanResult ? (
                 scanResult.error ? (
                   <div style={{ background: 'rgba(239, 68, 68, 0.12)', border: '1px solid rgba(239, 68, 68, 0.35)', borderRadius: '10px', padding: '1.25rem', textAlign: 'center' }}>
                     <i className="fa-solid fa-triangle-exclamation" style={{ color: '#ef4444', fontSize: '2.5rem', marginBottom: '0.5rem' }}></i>

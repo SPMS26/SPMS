@@ -9,6 +9,7 @@ router.use(protect);
 
 router.post('/', upload.single('image'), reportController.createReport);
 router.get('/', reportController.getReports);
+router.get('/all', reportController.getReports);
 router.put('/:id/status', requireRole('ADMIN'), reportController.updateReportStatus);
 
 export default router;

@@ -152,12 +152,41 @@ CREATE TABLE IF NOT EXISTS admin_logs (
   description TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+-- 12. System Settings Table (Dynamic Configuration)
+CREATE TABLE IF NOT EXISTS system_settings (
+  key VARCHAR(100) PRIMARY KEY,
+  value VARCHAR(255) NOT NULL,
+  description TEXT,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Schema Additions
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS pre_booking_fee NUMERIC(10, 2) DEFAULT 0.00;
+ALTER TABLE bookings ADD COLUMN IF NOT EXISTS parking_charge NUMERIC(10, 2) DEFAULT 0.00;
+ALTER TABLE payments ADD COLUMN IF NOT EXISTS payment_type VARCHAR(30) DEFAULT 'reservation';
+ALTER TABLE payments ADD COLUMN IF NOT EXISTS expires_at TIMESTAMP WITH TIME ZONE;
 `;
 
 async function initDb() {
   try {
     await db.query(createTablesSQL);
-    console.log('[Database] All 11 PostgreSQL tables created or verified successfully using normalized DDL SQL.');
+
+    // Seed default PRE_BOOKING_FEE setting if not exists
+    await db.query(
+      `INSERT INTO system_settings (key, value, description)
+       VALUES ('PRE_BOOKING_FEE', '10.00', 'Configurable pre-booking reservation fee in INR')
+       ON CONFLICT (key) DO NOTHING`
+    );
+
+    // Seed default EXIT_PAYMENT_TIMEOUT_SECONDS setting if not exists
+    await db.query(
+      `INSERT INTO system_settings (key, value, description)
+       VALUES ('EXIT_PAYMENT_TIMEOUT_SECONDS', '300', 'Configurable exit parking payment timeout in seconds')
+       ON CONFLICT (key) DO NOTHING`
+    );
+
+    console.log('[Database] PostgreSQL tables & system_settings verified successfully using normalized DDL SQL.');
   } catch (err) {
     console.error('[Database] Error executing table DDL SQL:', err);
     throw err;

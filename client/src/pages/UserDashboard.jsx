@@ -25,12 +25,24 @@ const UserDashboard = () => {
   const [activeFloor, setActiveFloor] = useState('B1');
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [userBookings, setUserBookings] = useState([]);
+  const [preBookingFee, setPreBookingFee] = useState(10);
 
   // Modals
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showQRModal, setShowQRModal] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);
   const [activeQRBooking, setActiveQRBooking] = useState(null);
+
+  const fetchBookingConfig = async () => {
+    try {
+      const config = await bookingService.getBookingConfig();
+      if (config && config.pre_booking_fee !== undefined) {
+        setPreBookingFee(Number(config.pre_booking_fee));
+      }
+    } catch (err) {
+      console.warn('Could not load booking config:', err);
+    }
+  };
 
   const fetchLots = async () => {
     try {
@@ -69,6 +81,7 @@ const UserDashboard = () => {
   useEffect(() => {
     fetchLots();
     fetchUserBookings();
+    fetchBookingConfig();
   }, []);
 
   useEffect(() => {
@@ -109,9 +122,31 @@ const UserDashboard = () => {
 
   const handleProcessPayment = async () => {
     try {
-      const res = await bookingService.createLiveBooking(selectedSlot.id, selectedVehicle.id);
+      // Step 1: Create pre-booking (reserves slot, pending payment, no QR generated yet)
+      const preRes = await bookingService.createPreBooking(
+        selectedSlot.id,
+        selectedVehicle.id,
+        new Date().toISOString(),
+        2
+      );
+
+      const bookingId = preRes.booking?.id;
+      if (!bookingId) {
+        throw new Error('Failed to create pre-booking session');
+      }
+
+      // Step 2: Pay reservation fee through simulated/manual project payment mechanism
+      const confirmRes = await bookingService.confirmPayment(bookingId);
+
       setShowPaymentModal(false);
-      toast.success('Live Booking confirmed!');
+      toast.success('Reservation confirmed! Digital QR Parking Pass generated.');
+
+      const activeBookingData = confirmRes.booking || {
+        ...preRes.booking,
+        qr_image: confirmRes.qr_image,
+        qr_code: confirmRes.qr_code,
+        booking_status: 'reserved'
+      };
 
       setActiveQRBooking({
         ...res.booking,
@@ -126,7 +161,7 @@ const UserDashboard = () => {
       fetchUserBookings();
       fetchLots();
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Payment processing failed.');
+      toast.error(err.response?.data?.message || err.message || 'Payment processing failed.');
     }
   };
 
@@ -329,6 +364,7 @@ const UserDashboard = () => {
         onClose={() => setShowPaymentModal(false)}
         slot={selectedSlot}
         lot={selectedLot}
+        preBookingFee={preBookingFee}
         onSubmitPayment={handleProcessPayment}
       />
 
