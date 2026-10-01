@@ -72,7 +72,7 @@ const BookingsPage = () => {
             const isExpired = expiresAt && new Date(expiresAt) < new Date();
 
             return (
-              <div key={booking.id} className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', border: isPaymentPending ? '1px solid #C28DB0' : (isReserved ? '1px solid var(--accent-gold)' : '1px solid var(--border-subtle)') }}>
+              <div key={booking.id} className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', border: isPaymentPending ? '1px solid #E4E4E7' : (isReserved ? '1px solid var(--accent-gold)' : '1px solid var(--border-subtle)') }}>
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
                     <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--accent-gold)', background: 'var(--accent-gold-bg)', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>
@@ -83,8 +83,8 @@ const BookingsPage = () => {
                       fontWeight: 700,
                       padding: '0.2rem 0.5rem',
                       borderRadius: '4px',
-                      background: isPaymentPending ? 'rgba(194, 141, 176, 0.2)' : (isParked ? 'rgba(184, 165, 240, 0.15)' : (isReserved ? 'rgba(194, 141, 176, 0.15)' : 'rgba(107, 114, 128, 0.15)')),
-                      color: isPaymentPending ? '#C28DB0' : (isParked ? '#B8A5F0' : (isReserved ? '#C28DB0' : '#A39AA0'))
+                      background: isPaymentPending ? 'rgba(229, 229, 231, 0.2)' : (isParked ? 'rgba(237, 237, 239, 0.15)' : (isReserved ? 'rgba(229, 229, 231, 0.15)' : 'rgba(107, 114, 128, 0.15)')),
+                      color: isPaymentPending ? '#E4E4E7' : (isParked ? '#EDEDEF' : (isReserved ? '#E4E4E7' : '#9A9A9E'))
                     }}>
                       {isPaymentPending ? 'PAYMENT PENDING' : (isParked ? 'PARKED' : (isReserved ? 'RESERVED' : booking.booking_status.toUpperCase()))}
                     </span>
@@ -109,7 +109,7 @@ const BookingsPage = () => {
                   </div>
                   <div className="details-row">
                     <span className="key">Vehicle:</span>
-                    <span className="val" style={{ color: '#D8A6C6' }}>{booking.vehicle ? booking.vehicle.vehicle_number : 'TS09 AB 1234'}</span>
+                    <span className="val" style={{ color: '#F2F2F3' }}>{booking.vehicle ? booking.vehicle.vehicle_number : 'TS09 AB 1234'}</span>
                   </div>
                   <div className="details-row">
                     <span className="key">Reservation Fee:</span>
@@ -119,7 +119,7 @@ const BookingsPage = () => {
                   {expiresAt && !isPaymentPending && (
                     <div className="details-row">
                       <span className="key">Pass Validity:</span>
-                      <span className="val" style={{ color: isExpired ? '#F2728C' : 'var(--text-muted)', fontSize: '0.75rem' }}>
+                      <span className="val" style={{ color: isExpired ? '#9A9A9F' : 'var(--text-muted)', fontSize: '0.75rem' }}>
                         {isExpired ? 'Expired' : `Until ${new Date(expiresAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
                       </span>
                     </div>
@@ -129,7 +129,7 @@ const BookingsPage = () => {
                 {isPaymentPending ? (
                   <button
                     className="btn-select-slot"
-                    style={{ marginTop: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', background: 'linear-gradient(135deg, var(--accent-gold), #B07A9C)' }}
+                    style={{ marginTop: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', background: 'linear-gradient(135deg, var(--accent-gold), #BDBDC2)' }}
                     onClick={() => handlePayReservation(booking)}
                   >
                     <i className="fa-solid fa-lock"></i> Pay ₹{booking.pre_booking_fee || 10}.00 & Generate Pass

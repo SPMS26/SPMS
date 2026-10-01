@@ -283,7 +283,7 @@ const AdminDashboard = () => {
       </div>
 
       {/* Section: Admin QR Code Scanner & Barrier Control Hub */}
-      <div className="card" style={{ marginBottom: '1.75rem', background: 'linear-gradient(135deg, rgba(13, 11, 12, 0.95), rgba(13, 11, 12, 0.95))', border: '1px solid var(--border-bright)' }}>
+      <div className="card" style={{ marginBottom: '1.75rem', background: 'linear-gradient(135deg, rgba(10, 10, 10, 0.95), rgba(10, 10, 10, 0.95))', border: '1px solid var(--border-bright)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
           <div>
             <h3 style={{ margin: '0 0 0.25rem 0', fontSize: '1.15rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -304,8 +304,8 @@ const AdminDashboard = () => {
                 display: 'inline-flex',
                 alignItems: 'center',
                 gap: '0.5rem',
-                background: 'linear-gradient(135deg, var(--accent-emerald), #8F7AD9)',
-                boxShadow: '0 4px 15px rgba(184, 165, 240, 0.3)'
+                background: 'linear-gradient(135deg, var(--accent-emerald), #A1A1A6)',
+                boxShadow: '0 4px 15px rgba(237, 237, 239, 0.3)'
               }}
             >
               <i className="fa-solid fa-camera"></i> Open Fullscreen Camera Scanner
@@ -356,7 +356,7 @@ const AdminDashboard = () => {
           <div style={{ background: 'var(--bg-input)', padding: '1.25rem', borderRadius: '12px', border: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
             <div>
               <div style={{ fontSize: '0.82rem', fontWeight: 700, color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.6rem' }}>
-                <i className="fa-solid fa-video" style={{ color: '#F2B49B' }}></i>
+                <i className="fa-solid fa-video" style={{ color: '#C8C8CC' }}></i>
                 Dedicated Optical Camera Gate Terminals:
               </div>
               
@@ -365,12 +365,12 @@ const AdminDashboard = () => {
                   href="/admin/scanner"
                   style={{
                     textDecoration: 'none',
-                    background: 'rgba(184, 165, 240, 0.1)',
-                    border: '1px solid rgba(184, 165, 240, 0.3)',
+                    background: 'rgba(237, 237, 239, 0.1)',
+                    border: '1px solid rgba(237, 237, 239, 0.3)',
                     borderRadius: '8px',
                     padding: '0.65rem',
                     textAlign: 'center',
-                    color: '#B8A5F0',
+                    color: '#EDEDEF',
                     fontSize: '0.8rem',
                     fontWeight: 700,
                     display: 'block'
@@ -384,12 +384,12 @@ const AdminDashboard = () => {
                   href="/admin/scanner"
                   style={{
                     textDecoration: 'none',
-                    background: 'rgba(242, 180, 155, 0.1)',
-                    border: '1px solid rgba(242, 180, 155, 0.3)',
+                    background: 'rgba(200, 200, 204, 0.1)',
+                    border: '1px solid rgba(200, 200, 204, 0.3)',
                     borderRadius: '8px',
                     padding: '0.65rem',
                     textAlign: 'center',
-                    color: '#F2B49B',
+                    color: '#C8C8CC',
                     fontSize: '0.8rem',
                     fontWeight: 700,
                     display: 'block'
@@ -440,7 +440,7 @@ const AdminDashboard = () => {
                     <td style={{ fontSize: '0.8rem', color: 'var(--text-muted)', maxWidth: '220px' }}>{rep.description}</td>
                     <td>
                       <span style={{
-                        background: rep.status === 'solved' ? 'rgba(184, 165, 240, 0.18)' : 'rgba(194, 141, 176, 0.18)',
+                        background: rep.status === 'solved' ? 'rgba(237, 237, 239, 0.18)' : 'rgba(229, 229, 231, 0.18)',
                         color: rep.status === 'solved' ? 'var(--accent-emerald)' : 'var(--accent-gold)',
                         fontSize: '0.72rem', padding: '0.2rem 0.55rem', borderRadius: '4px', fontWeight: 700
                       }}>
@@ -486,12 +486,12 @@ const AdminDashboard = () => {
                 <tr key={log.id}>
                   <td><strong style={{ color: 'var(--accent-gold)' }}>{log.bookingId}</strong></td>
                   <td>{log.userName}</td>
-                  <td><span style={{ fontWeight: 700, color: '#D8A6C6' }}>{log.vehicleNo}</span></td>
+                  <td><span style={{ fontWeight: 700, color: '#F2F2F3' }}>{log.vehicleNo}</span></td>
                   <td><strong>{log.slotCode}</strong> ({log.lotName})</td>
                   <td style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{log.timestamp}</td>
                   <td><span style={{ color: 'var(--accent-emerald)', fontWeight: 700 }}>{log.amountPaid}</span></td>
                   <td>
-                    <span style={{ background: 'rgba(184, 165, 240, 0.15)', color: 'var(--status-available)', fontSize: '0.72rem', padding: '0.2rem 0.5rem', borderRadius: '4px', fontWeight: 700 }}>
+                    <span style={{ background: 'rgba(237, 237, 239, 0.15)', color: 'var(--status-available)', fontSize: '0.72rem', padding: '0.2rem 0.5rem', borderRadius: '4px', fontWeight: 700 }}>
                       <i className="fa-solid fa-check-double"></i> {log.status}
                     </span>
                   </td>
@@ -514,13 +514,13 @@ const AdminDashboard = () => {
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={monthlyData}>
                 <CartesianGrid stroke="rgba(255, 255, 255, 0.16)" strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="month" stroke="#A39AA0" fontSize={10} />
-                <YAxis yAxisId="bookings" stroke="#A39AA0" fontSize={10} allowDecimals={false} />
-                <YAxis yAxisId="revenue" orientation="right" stroke="#A39AA0" fontSize={10} />
-                <Tooltip contentStyle={{ background: '#0D0B0C', borderColor: 'rgba(255, 255, 255, 0.16)', borderRadius: '8px' }} />
+                <XAxis dataKey="month" stroke="#9A9A9E" fontSize={10} />
+                <YAxis yAxisId="bookings" stroke="#9A9A9E" fontSize={10} allowDecimals={false} />
+                <YAxis yAxisId="revenue" orientation="right" stroke="#9A9A9E" fontSize={10} />
+                <Tooltip contentStyle={{ background: '#0A0A0A', borderColor: 'rgba(255, 255, 255, 0.16)', borderRadius: '8px' }} />
                 <Legend wrapperStyle={{ fontSize: '0.72rem' }} />
-                <Bar yAxisId="bookings" dataKey="bookings" name="Bookings" fill="#C28DB0" radius={[4, 4, 0, 0]} />
-                <Line yAxisId="revenue" type="monotone" dataKey="revenue" name="Revenue (INR)" stroke="#F2B49B" strokeWidth={2} dot={{ fill: '#F2B49B' }} />
+                <Bar yAxisId="bookings" dataKey="bookings" name="Bookings" fill="#E4E4E7" radius={[4, 4, 0, 0]} />
+                <Line yAxisId="revenue" type="monotone" dataKey="revenue" name="Revenue (INR)" stroke="#C8C8CC" strokeWidth={2} dot={{ fill: '#C8C8CC' }} />
               </ComposedChart>
             </ResponsiveContainer>
           </div>
@@ -542,10 +542,10 @@ const AdminDashboard = () => {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={dailyRevenueData}>
                 <CartesianGrid stroke="rgba(255, 255, 255, 0.16)" strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="day" stroke="#A39AA0" fontSize={10} />
-                <YAxis stroke="#A39AA0" fontSize={10} />
-                <Tooltip contentStyle={{ background: '#0D0B0C', borderColor: 'rgba(255, 255, 255, 0.16)', borderRadius: '8px' }} />
-                <Bar dataKey="revenue" name="Revenue (INR)" fill="#B07A9C" radius={[2, 2, 0, 0]} />
+                <XAxis dataKey="day" stroke="#9A9A9E" fontSize={10} />
+                <YAxis stroke="#9A9A9E" fontSize={10} />
+                <Tooltip contentStyle={{ background: '#0A0A0A', borderColor: 'rgba(255, 255, 255, 0.16)', borderRadius: '8px' }} />
+                <Bar dataKey="revenue" name="Revenue (INR)" fill="#BDBDC2" radius={[2, 2, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>

@@ -28,7 +28,7 @@ const LotCard = ({ lot, selected, onSelect }) => {
         </div>
         <span
           style={{
-            background: isBusy ? 'rgba(194, 141, 176, 0.15)' : 'rgba(184, 165, 240, 0.15)',
+            background: isBusy ? 'rgba(229, 229, 231, 0.15)' : 'rgba(237, 237, 239, 0.15)',
             color: isBusy ? 'var(--status-reserved)' : 'var(--status-available)',
             fontSize: '0.68rem',
             padding: '0.15rem 0.45rem',

@@ -9,8 +9,8 @@ const DEMO_ACCOUNTS = [
     name: 'Super Admin',
     email: 'admin@spms.com',
     password: 'admin123',
-    badgeColor: '#B8A5F0',
-    badgeBg: 'rgba(184, 165, 240, 0.15)',
+    badgeColor: '#EDEDEF',
+    badgeBg: 'rgba(237, 237, 239, 0.15)',
     icon: 'fa-shield-halved',
     note: 'Admin Dashboard'
   },
@@ -19,8 +19,8 @@ const DEMO_ACCOUNTS = [
     name: 'Security Operator',
     email: 'operator@spms.com',
     password: 'admin123',
-    badgeColor: '#B8A5F0',
-    badgeBg: 'rgba(184, 165, 240, 0.15)',
+    badgeColor: '#EDEDEF',
+    badgeBg: 'rgba(237, 237, 239, 0.15)',
     icon: 'fa-user-shield',
     note: 'Gate & Scanner'
   },
@@ -29,8 +29,8 @@ const DEMO_ACCOUNTS = [
     name: 'Mehanna Reddy',
     email: 'mehanna@spms.com',
     password: 'user123',
-    badgeColor: '#C28DB0',
-    badgeBg: 'rgba(194, 141, 176, 0.15)',
+    badgeColor: '#E4E4E7',
+    badgeBg: 'rgba(229, 229, 231, 0.15)',
     icon: 'fa-car-side',
     note: 'Slot C5 Reserved (QR)'
   },
@@ -39,8 +39,8 @@ const DEMO_ACCOUNTS = [
     name: 'Aditya Sharma',
     email: 'aditya@spms.com',
     password: 'user123',
-    badgeColor: '#C28DB0',
-    badgeBg: 'rgba(194, 141, 176, 0.15)',
+    badgeColor: '#E4E4E7',
+    badgeBg: 'rgba(229, 229, 231, 0.15)',
     icon: 'fa-car',
     note: 'Slot B8 Parked'
   },
@@ -49,8 +49,8 @@ const DEMO_ACCOUNTS = [
     name: 'Priya Patel',
     email: 'priya@spms.com',
     password: 'user123',
-    badgeColor: '#F2B49B',
-    badgeBg: 'rgba(242, 180, 155, 0.15)',
+    badgeColor: '#C8C8CC',
+    badgeBg: 'rgba(200, 200, 204, 0.15)',
     icon: 'fa-bolt',
     note: 'EV Driver / Past'
   }

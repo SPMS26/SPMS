@@ -76,7 +76,7 @@ const SlotDetailsPanel = ({ selectedSlot, activeFloor, onConfirmSelect, isAdmin 
           </button>
           <button
             className="btn-select-slot"
-            style={{ background: 'linear-gradient(135deg, var(--accent-emerald), #8F7AD9)', boxShadow: 'none', marginTop: 0 }}
+            style={{ background: 'linear-gradient(135deg, var(--accent-emerald), #A1A1A6)', boxShadow: 'none', marginTop: 0 }}
             onClick={() => onAdminAction('available')}
           >
             <i className="fa-solid fa-circle-check"></i> Set Available

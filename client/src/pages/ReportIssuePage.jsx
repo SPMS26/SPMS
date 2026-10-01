@@ -91,7 +91,7 @@ const ReportIssuePage = () => {
     }
     return (
       <span style={{
-        background: 'rgba(242, 114, 140, 0.15)',
+        background: 'rgba(154, 154, 159, 0.15)',
         color: 'var(--status-occupied)',
         border: '1px solid var(--status-occupied-border)',
         padding: '0.2rem 0.6rem',
