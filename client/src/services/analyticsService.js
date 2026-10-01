@@ -16,7 +16,7 @@ export const analyticsService = {
     return res.data;
   },
 
-  async getDailyRevenue() {
+  async getDayWiseRevenue() {
     const res = await api.get('/analytics/daily-revenue');
     return res.data;
   }

@@ -151,6 +151,53 @@ function isQRExpired(expiresAt) {
   return new Date(expiresAt) < new Date();
 }
 
+/**
+ * Generate signed payload for the exit payment QR (type SPMS_EXIT_PAY)
+ */
+function generateExitPaymentQRPayload({ paymentId, bookingId, passCode, expiresAt }) {
+  const exp = expiresAt instanceof Date ? expiresAt.toISOString() : new Date(expiresAt).toISOString();
+  const fullSignature = crypto
+    .createHmac('sha256', QR_SECRET)
+    .update(`${paymentId}:${bookingId}:${passCode}:${exp}`)
+    .digest('hex');
+
+  const payload = {
+    type: 'SPMS_EXIT_PAY',
+    pid: paymentId,
+    id: bookingId,
+    code: passCode,
+    exp,
+    sig: fullSignature.substring(0, 16)
+  };
+
+  return { payloadString: JSON.stringify(payload), signatureHash: fullSignature, expiresAt: exp };
+}
+
+/**
+ * Verify signature and expiry of an exit payment QR payload (string or object)
+ */
+function verifyExitPaymentQRPayload(payloadStr) {
+  try {
+    const p = typeof payloadStr === 'string' ? JSON.parse(payloadStr) : payloadStr;
+    if (!p || p.type !== 'SPMS_EXIT_PAY' || !p.id || !p.pid) {
+      return { isValid: false, isExpired: false, reason: 'Invalid exit payment QR' };
+    }
+    if (p.exp && new Date(p.exp) < new Date()) {
+      return { isValid: false, isExpired: true, reason: 'Exit payment session expired' };
+    }
+    const expected = crypto
+      .createHmac('sha256', QR_SECRET)
+      .update(`${p.pid}:${p.id}:${p.code}:${p.exp}`)
+      .digest('hex');
+    if (p.sig !== expected.substring(0, 16) && p.sig !== expected) {
+      return { isValid: false, isExpired: false, reason: 'Invalid exit payment QR signature' };
+    }
+    return { isValid: true, isExpired: false, bookingId: p.id, paymentId: p.pid, passCode: p.code };
+  } catch (err) {
+    return { isValid: false, isExpired: false, reason: 'Malformed exit payment QR' };
+  }
+}
+
 export {
   generateQRPayload,
   generateExitPaymentQRPayload,

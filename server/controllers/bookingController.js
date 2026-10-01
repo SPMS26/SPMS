@@ -1,4 +1,5 @@
 import db from '../config/database.js';
+import settingService from '../services/settingService.js';
 import { generateQRPayload, renderQRDataURL } from '../services/qrGenerator.js';
 import { broadcastSlotUpdate } from '../socket/socketManager.js';
 
@@ -181,7 +182,7 @@ export const createPreBooking = async (req, res, next) => {
 
 // Confirm Pre-Booking Reservation Payment
 // Stage 2: Confirms payment of pre-booking reservation fee, changes status to 'reserved' and 'paid', generates signed HMAC QR Pass
-exports.confirmPreBookingPayment = async (req, res, next) => {
+export const confirmPreBookingPayment = async (req, res, next) => {
   const client = await db.getClient();
   try {
     await client.query('BEGIN');
@@ -301,13 +302,13 @@ exports.confirmPreBookingPayment = async (req, res, next) => {
 
     // Enrich booking object with user, slot, and vehicle details
     booking.user = { id: req.user.id, full_name: req.user.full_name, email: req.user.email, phone: req.user.phone };
-    booking.slot = { ...slot, parking_lot: lot };
-    booking.vehicle = vehicle;
+    booking.slot = { ...slotObj, parking_lot: lotObj };
+    booking.vehicle = vehicleObj;
 
     res.status(201).json({
       success: true,
       message: 'Reservation payment confirmed! Digital QR Pass generated.',
-      booking: updatedBooking,
+      booking: { ...updatedBooking, user: booking.user, slot: booking.slot, vehicle: booking.vehicle },
       qr_code: payloadString,
       qr_image: qrDataURL,
       expires_at: expiresAt
@@ -454,3 +455,14 @@ export const getBookingById = async (req, res, next) => {
   }
 };
 
+
+// Public booking configuration (dynamic fees from system_settings)
+export const getBookingConfig = async (req, res, next) => {
+  try {
+    const preBookingFee = await settingService.getNumericSetting('PRE_BOOKING_FEE', 10.00);
+    const exitPaymentTimeoutSeconds = await settingService.getNumericSetting('EXIT_PAYMENT_TIMEOUT_SECONDS', 300);
+    res.json({ success: true, pre_booking_fee: preBookingFee, exit_payment_timeout_seconds: exitPaymentTimeoutSeconds });
+  } catch (err) {
+    next(err);
+  }
+};

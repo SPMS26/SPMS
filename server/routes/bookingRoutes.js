@@ -3,7 +3,7 @@ const router = express.Router();
 import * as bookingController from '../controllers/bookingController.js';
 import { protect } from '../middleware/auth.js';
 
-const qrController = require('../controllers/qrController');
+import * as qrController from '../controllers/qrController.js';
 
 router.use(protect);
 

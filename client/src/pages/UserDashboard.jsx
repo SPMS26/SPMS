@@ -147,10 +147,12 @@ const UserDashboard = () => {
       };
 
       setActiveQRBooking({
-        ...res.booking,
-        user: res.booking?.user || user,
-        vehicle: res.booking?.vehicle || selectedVehicle,
-        slot: res.booking?.slot || { ...selectedSlot, parking_lot: selectedLot }
+        ...activeBookingData,
+        qr_image: confirmRes.qr_image,
+        qr_code: confirmRes.qr_code,
+        user: activeBookingData.user || user,
+        vehicle: activeBookingData.vehicle || selectedVehicle,
+        slot: activeBookingData.slot || { ...selectedSlot, parking_lot: selectedLot }
       });
       setShowQRModal(true);
 

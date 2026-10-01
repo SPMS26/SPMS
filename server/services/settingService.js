@@ -1,4 +1,4 @@
-const db = require('../config/database');
+import db from '../config/database.js';
 
 /**
  * Service to manage dynamic system settings stored in PostgreSQL
@@ -47,4 +47,4 @@ const settingService = {
   }
 };
 
-module.exports = settingService;
+export default settingService;

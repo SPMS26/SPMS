@@ -1,5 +1,7 @@
 import db from '../config/database.js';
-import { generateQRPayload, verifyQRPayload, renderQRDataURL } from '../services/qrGenerator.js';
+import settingService from '../services/settingService.js';
+import { getPaymentProvider } from '../services/paymentProvider.js';
+import { generateQRPayload, generateExitPaymentQRPayload, verifyQRPayload, verifyExitPaymentQRPayload, renderQRDataURL } from '../services/qrGenerator.js';
 import { broadcastSlotUpdate, broadcastGateEvent } from '../socket/socketManager.js';
 
 /**
@@ -497,7 +499,7 @@ export const validateExit = async (req, res, next) => {
  * frees slot to AVAILABLE, deactivates QR, logs audit record, broadcasts Socket.io,
  * and OPENS THE GATE (barrier_status: 'OPENED', gate_authorized: true).
  */
-exports.confirmExitPayment = async (req, res, next) => {
+export const confirmExitPayment = async (req, res, next) => {
   const client = await db.getClient();
   try {
     await client.query('BEGIN');

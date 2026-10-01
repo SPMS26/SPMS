@@ -39,6 +39,13 @@ process.on('unhandledRejection', (reason, promise) => {
 const app = express();
 const server = http.createServer(app);
 
+// API responses are dynamic: disable ETags so clients never get 304 with no body
+app.set('etag', false);
+app.use('/api', (req, res, next) => {
+  res.set('Cache-Control', 'no-store');
+  next();
+});
+
 // CORS & Middleware
 app.use(cors({
   origin: process.env.CLIENT_URL || '*',

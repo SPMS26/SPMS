@@ -4,7 +4,7 @@
  * No external payment gateways are used.
  */
 
-class ManualPaymentProvider {
+export class ManualPaymentProvider {
   /**
    * Create a manual exit payment session reference
    */
@@ -41,11 +41,7 @@ class ManualPaymentProvider {
 
 const manualProvider = new ManualPaymentProvider();
 
-function getPaymentProvider() {
+export function getPaymentProvider() {
   return manualProvider;
 }
 
-module.exports = {
-  ManualPaymentProvider,
-  getPaymentProvider
-};
