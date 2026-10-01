@@ -9,10 +9,5 @@ export const adminService = {
   async getScanHistory() {
     const res = await api.get('/admin/scan-history');
     return res.data;
-  },
-
-  async getAdminLogs() {
-    const res = await api.get('/admin/logs');
-    return res.data;
   }
 };

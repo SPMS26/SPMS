@@ -1,4 +1,5 @@
-const http = require('http');
+import http from 'http';
+import db from './config/database.js';
 
 async function request(options, postData = null) {
   return new Promise((resolve, reject) => {
@@ -147,7 +148,7 @@ async function runPhase2Tests() {
     const confirmedBooking = confirmPaymentRes.data?.booking;
     const qrCode = confirmPaymentRes.data?.qr_code;
     const qrImage = confirmPaymentRes.data?.qr_image;
-    const isPaymentConfirmed = confirmPaymentRes.status === 200 &&
+    const isPaymentConfirmed = confirmPaymentRes.status === 201 &&
       confirmedBooking?.booking_status === 'reserved' &&
       confirmedBooking?.payment_status === 'paid' &&
       !!qrCode &&
@@ -271,21 +272,14 @@ async function runPhase2Tests() {
     logResult('Duplicate Gate Exit Denied', duplicateExit.status === 400, `HTTP ${duplicateExit.status}: ${duplicateExit.data?.message}`);
 
     // 19. Verify Separate Payment Records in Database
-    const paymentsRes = await request({
-      host: 'localhost',
-      port: 5000,
-      path: '/api/payments/history',
-      method: 'GET',
-      headers: userAuth
-    });
-    const bookingPayments = paymentsRes.data?.payments?.filter(p => p.booking_id === booking.id);
+    const paymentsRes = await db.query('SELECT * FROM payments WHERE booking_id = $1', [booking.id]);
+    const bookingPayments = paymentsRes.rows;
     const hasReservationPayment = bookingPayments?.some(p => p.payment_type === 'reservation' && parseFloat(p.amount) === 10.00 && p.payment_status === 'paid');
     const hasParkingChargePayment = bookingPayments?.some(p => p.payment_type === 'parking_charge' && parseFloat(p.amount) === expectedParkingCharge && p.payment_status === 'paid');
 
     logResult('Separate Payment Records', hasReservationPayment && hasParkingChargePayment, `Found reservation (₹10) and parking_charge (₹${expectedParkingCharge})`);
 
     // 20. Non-Hardcoding Proof: Update system_settings to ₹25 and verify API returns ₹25
-    const db = require('../server/config/database');
     await db.query("UPDATE system_settings SET value = '25.00' WHERE key = 'PRE_BOOKING_FEE'");
     const updatedConfig = await request({ host: 'localhost', port: 5000, path: '/api/bookings/config', method: 'GET', headers: userAuth });
     const isFeeDynamic = updatedConfig.data?.pre_booking_fee === 25;

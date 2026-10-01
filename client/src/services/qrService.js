@@ -21,11 +21,6 @@ export const qrService = {
     return res.data;
   },
 
-  async getLiveQR(bookingId) {
-    const res = await api.get(`/qr/booking/${bookingId}`);
-    return res.data;
-  },
-
   async getGateQueue() {
     const res = await api.get('/qr/gate-queue');
     return res.data;

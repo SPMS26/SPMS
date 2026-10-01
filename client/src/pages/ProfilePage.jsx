@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import AppLayout from '../components/layout/AppLayout';
 import { useAuth } from '../context/AuthContext';
-import api from '../services/api';
+import { userService } from '../services/userService';
 import toast from 'react-hot-toast';
 
 const ProfilePage = () => {
@@ -38,7 +38,7 @@ const ProfilePage = () => {
 
   const handleSaveProfile = async () => {
     try {
-      await api.put('/users/profile', {
+      await userService.updateProfile({
         phone: editData.phone,
         email: editData.email
       });
@@ -67,9 +67,7 @@ const ProfilePage = () => {
 
     setSavingPassword(true);
     try {
-      await api.put('/users/password', {
-        password: passwordData.newPassword
-      });
+      await userService.changePassword(passwordData.newPassword);
       toast.success('Password updated successfully!');
       setPasswordData({ newPassword: '', confirmPassword: '' });
       setIsEditingPassword(false);
@@ -83,7 +81,7 @@ const ProfilePage = () => {
   const handleAddVehicle = async (e) => {
     e.preventDefault();
     try {
-      await api.post('/users/vehicles', vehData);
+      await userService.addVehicle(vehData);
       toast.success('Vehicle added successfully!');
       setShowAddVehicle(false);
       setVehData({ vehicle_number: '', vehicle_type: 'four_wheeler', vehicle_model: '', vehicle_color: '' });
@@ -95,7 +93,7 @@ const ProfilePage = () => {
 
   const handleDeleteVehicle = async (id) => {
     try {
-      await api.delete(`/users/vehicles/${id}`);
+      await userService.deleteVehicle(id);
       toast.success('Vehicle removed.');
       window.location.reload();
     } catch (err) {
@@ -105,7 +103,7 @@ const ProfilePage = () => {
 
   const handleSetDefault = async (v) => {
     try {
-      await api.put(`/users/vehicles/${v.id}/default`);
+      await userService.setDefaultVehicle(v.id);
       if (setVehicles) {
         setVehicles(prev => prev.map(veh => ({
           ...veh,

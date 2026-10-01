@@ -37,7 +37,7 @@ const AdminReportsPage = () => {
       <div className="page-header-row">
         <div className="page-title-box">
           <h1>Incident Reports Management</h1>
-          <p>Review user-reported issues, blocked slots, QR scanner failures, and photo evidence (FR26)</p>
+          <p>Review user-reported issues, blocked slots, QR scanner failures, and photo evidence</p>
         </div>
       </div>
 
@@ -68,7 +68,7 @@ const AdminReportsPage = () => {
                 {reports.map(rep => (
                   <tr key={rep.id}>
                     <td><strong style={{ color: 'var(--accent-gold)' }}>{rep.id.substring(0, 7).toUpperCase()}</strong></td>
-                    <td>{rep.user ? rep.user.full_name : 'Mehanna Reddy'}</td>
+                    <td>{rep.user ? rep.user.full_name : 'N/A'}</td>
                     <td><strong>{rep.incident_type}</strong></td>
                     <td style={{ fontSize: '0.8rem', color: 'var(--text-muted)', maxWidth: '250px' }}>{rep.description}</td>
                     <td>

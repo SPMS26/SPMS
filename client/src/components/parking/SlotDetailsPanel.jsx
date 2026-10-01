@@ -1,9 +1,18 @@
 import React from 'react';
+import { floorLabel } from './SlotGrid';
 
 const SlotDetailsPanel = ({ selectedSlot, activeFloor, onConfirmSelect, isAdmin = false, onAdminAction }) => {
-  const slotCode = selectedSlot ? selectedSlot.slot_number : 'C5';
-  const status = selectedSlot ? selectedSlot.status : 'available';
-  const price = selectedSlot ? selectedSlot.hourly_price : 30;
+  if (!selectedSlot) {
+    return (
+      <div className="slot-details-panel">
+        <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '1.5rem 0' }}>Select a slot to see its details.</div>
+      </div>
+    );
+  }
+
+  const slotCode = selectedSlot.slot_number;
+  const status = selectedSlot.status;
+  const price = selectedSlot.hourly_price;
 
   const getBadgeStyle = (st) => {
     if (st === 'available') return { bg: 'var(--status-available-bg)', color: 'var(--status-available)', border: '1px solid var(--status-available-border)' };
@@ -35,11 +44,11 @@ const SlotDetailsPanel = ({ selectedSlot, activeFloor, onConfirmSelect, isAdmin 
 
         <div className="details-row">
           <span className="key">Location</span>
-          <span className="val">{activeFloor === 'B1' ? 'Basement 1' : activeFloor === 'GF' ? 'Ground Floor' : 'First Floor'}</span>
+          <span className="val">{floorLabel(selectedSlot.floor || activeFloor)}</span>
         </div>
         <div className="details-row">
           <span className="key">Type</span>
-          <span className="val">Car</span>
+          <span className="val" style={{ textTransform: 'capitalize' }}>{selectedSlot.slot_type}</span>
         </div>
         <div className="details-row">
           <span className="key">Price</span>

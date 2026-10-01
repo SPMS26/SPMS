@@ -44,12 +44,6 @@ const Sidebar = ({ onClose }) => {
         </div>
 
         <ul className="sidebar-menu">
-          <li className={`nav-item ${isActive('/') ? 'active' : ''}`}>
-            <Link to="/" onClick={onClose}>
-              <i className="fa-solid fa-compass"></i>
-              <span>System Overview</span>
-            </Link>
-          </li>
           {!isAdmin ? (
             <>
               <li className={`nav-item ${isActive('/dashboard') ? 'active' : ''}`}>

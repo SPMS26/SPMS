@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import AppLayout from '../components/layout/AppLayout';
 import KPICard from '../components/admin/KPICard';
-import SlotGrid from '../components/parking/SlotGrid';
+import SlotGrid, { sortFloors } from '../components/parking/SlotGrid';
 import SlotDetailsPanel from '../components/parking/SlotDetailsPanel';
+import LotMonitor from '../components/admin/LotMonitor';
 import HeatmapGrid from '../components/admin/HeatmapGrid';
 import AdminReserveModal from '../components/admin/AdminReserveModal';
 
@@ -12,22 +13,24 @@ import { lotService } from '../services/lotService';
 import { qrService } from '../services/qrService';
 import { reportService } from '../services/reportService';
 import { useSocket } from '../context/SocketContext';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Line, ComposedChart } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, CartesianGrid, ResponsiveContainer, Line, ComposedChart } from 'recharts';
 import toast from 'react-hot-toast';
 
 const AdminDashboard = () => {
   const { socket } = useSocket();
   const [kpis, setKpis] = useState({
-    totalBookings: '1,248',
-    activeVehicles: '312',
-    revenueGenerated: '₹ 2,48,760',
-    totalSlots: '420'
+    totalBookings: '—',
+    activeVehicles: '—',
+    revenueGenerated: '—',
+    totalSlots: '—',
+    bookingTrend: null,
+    revenueTrend: null
   });
 
   const [lots, setLots] = useState([]);
   const [selectedLot, setSelectedLot] = useState(null);
   const [slots, setSlots] = useState([]);
-  const [activeFloor, setActiveFloor] = useState('B1');
+  const [activeFloor, setActiveFloor] = useState('');
   const [selectedAdminSlot, setSelectedAdminSlot] = useState(null);
 
   const [scanHistory, setScanHistory] = useState([]);
@@ -47,7 +50,9 @@ const AdminDashboard = () => {
         totalBookings: res.kpis.totalBookings.toLocaleString(),
         activeVehicles: res.kpis.activeVehicles.toLocaleString(),
         revenueGenerated: `₹ ${res.kpis.revenueGenerated.toLocaleString()}`,
-        totalSlots: res.kpis.totalSlots.toString()
+        totalSlots: res.kpis.totalSlots.toString(),
+        bookingTrend: res.kpis.bookingTrendPct,
+        revenueTrend: res.kpis.revenueTrendPct
       });
     } catch (err) {
       console.error('Error fetching KPIs:', err);
@@ -59,30 +64,44 @@ const AdminDashboard = () => {
       const res = await lotService.getAllLots();
       setLots(res.lots || []);
       if (res.lots && res.lots.length > 0) {
-        const defaultLot = res.lots[0];
-        setSelectedLot(defaultLot);
-        const slotRes = await lotService.getSlotsByLot(defaultLot.id, activeFloor);
-        setSlots(slotRes.slots || []);
-        if (slotRes.slots && slotRes.slots.length > 0) {
-          setSelectedAdminSlot(slotRes.slots.find(s => s.slot_number === 'C5') || slotRes.slots[0]);
-        }
+        setSelectedLot(res.lots[0]);
       }
     } catch (err) {
       console.error('Error fetching lots and slots:', err);
     }
   };
 
-  const fetchAdminTables = async () => {
+  // Refresh lot counts only, without changing the selected lot
+  const refreshLots = async () => {
+    try {
+      const res = await lotService.getAllLots();
+      setLots(res.lots || []);
+    } catch (err) {
+      console.error('Error refreshing lots:', err);
+    }
+  };
+
+  const fetchScanHistory = async () => {
     try {
       const scanRes = await adminService.getScanHistory();
       setScanHistory(scanRes.history || []);
       setQrSelectOptions(scanRes.history || []);
+    } catch (err) {
+      console.error('Error fetching scan history:', err);
+    }
+  };
 
+  const fetchReports = async () => {
+    try {
       const reportRes = await reportService.getReports();
       setReports(reportRes.reports || []);
     } catch (err) {
-      console.error('Error fetching admin tables:', err);
+      console.error('Error fetching reports:', err);
     }
+  };
+
+  const fetchAdminTables = async () => {
+    await Promise.all([fetchScanHistory(), fetchReports()]);
   };
 
   const fetchAnalyticsCharts = async () => {
@@ -128,21 +147,34 @@ const AdminDashboard = () => {
     fetchAnalyticsCharts();
   }, []);
 
+  // Default to the lot's first floor (floors come from the database)
   useEffect(() => {
-    if (selectedLot) {
-      lotService.getSlotsByLot(selectedLot.id, activeFloor).then(res => setSlots(res.slots || []));
+    const floors = selectedLot ? sortFloors(selectedLot.floors) : [];
+    if (floors.length > 0 && !floors.includes(activeFloor)) {
+      setActiveFloor(floors[0]);
     }
+  }, [selectedLot]);
+
+  useEffect(() => {
+    if (!selectedLot || !activeFloor) return;
+    lotService.getSlotsByLot(selectedLot.id, activeFloor).then(res => {
+      const floorSlots = res.slots || [];
+      setSlots(floorSlots);
+      setSelectedAdminSlot(prev => floorSlots.find(s => prev && s.id === prev.id) || floorSlots[0] || null);
+    });
   }, [selectedLot, activeFloor]);
 
   // Socket.io real-time updates
   useEffect(() => {
-    if (socket) {
-      socket.on('slot:statusChanged', ({ slotId, status }) => {
-        setSlots(prev => prev.map(s => s.id === slotId ? { ...s, status } : s));
-        fetchKpis();
-        fetchAdminTables();
-      });
-    }
+    if (!socket) return;
+    const onSlotStatusChanged = ({ slotId, status }) => {
+      setSlots(prev => prev.map(s => s.id === slotId ? { ...s, status } : s));
+      fetchKpis();
+      fetchScanHistory(); // reports don't change on slot events
+      refreshLots();
+    };
+    socket.on('slot:statusChanged', onSlotStatusChanged);
+    return () => socket.off('slot:statusChanged', onSlotStatusChanged);
   }, [socket]);
 
   const handleAdminSlotAction = async (actionType) => {
@@ -212,20 +244,17 @@ const AdminDashboard = () => {
           <p>Overview of parking system, slot maintenance & incident reports</p>
         </div>
 
-        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)', padding: '0.5rem 1rem', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
-          <i className="fa-regular fa-calendar"></i>
-          <span>May 01 - May 31, 2025</span>
-          <i className="fa-solid fa-chevron-down" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginLeft: '0.5rem' }}></i>
-        </div>
       </div>
 
       {/* KPI Row */}
       <div className="admin-kpi-grid">
-        <KPICard title="Total Bookings" value={kpis.totalBookings} trend="18.6%" iconClass="fa-calendar-check" colorClass="kpi-icon-gold" sparklinePoints={[12, 18, 15, 24, 20, 28, 35, 30, 42]} />
-        <KPICard title="Active Vehicles" value={kpis.activeVehicles} trend="14.2%" iconClass="fa-car" colorClass="kpi-icon-green" sparklinePoints={[8, 14, 12, 18, 22, 19, 25, 29, 31]} />
-        <KPICard title="Revenue Generated" value={kpis.revenueGenerated} trend="22.4%" iconClass="fa-indian-rupee-sign" colorClass="kpi-icon-purple" sparklinePoints={[10, 15, 22, 19, 28, 34, 30, 42, 50]} />
-        <KPICard title="Total Slots" value={kpis.totalSlots} trend="" iconClass="fa-parking" colorClass="kpi-icon-orange" sparklinePoints={[30, 30, 30, 30, 30, 30, 30, 30, 30]} />
+        <KPICard title="Total Bookings" value={kpis.totalBookings} trend={kpis.bookingTrend} iconClass="fa-calendar-check" colorClass="kpi-icon-gold" />
+        <KPICard title="Active Vehicles" value={kpis.activeVehicles} iconClass="fa-car" colorClass="kpi-icon-green" />
+        <KPICard title="Revenue Generated" value={kpis.revenueGenerated} trend={kpis.revenueTrend} iconClass="fa-indian-rupee-sign" colorClass="kpi-icon-purple" />
+        <KPICard title="Total Slots" value={kpis.totalSlots} iconClass="fa-parking" colorClass="kpi-icon-orange" />
       </div>
+
+      <LotMonitor lots={lots} selectedLotId={selectedLot?.id} onSelectLot={setSelectedLot} />
 
       {/* Section: Admin Interactive Parking Slot Grid */}
       <div style={{ marginBottom: '2rem' }}>
@@ -237,6 +266,7 @@ const AdminDashboard = () => {
         <div className="slot-booking-layout">
           <SlotGrid
             slots={slots}
+            floors={selectedLot ? selectedLot.floors : []}
             selectedSlot={selectedAdminSlot}
             activeFloor={activeFloor}
             onFloorChange={(f) => setActiveFloor(f)}
@@ -260,15 +290,9 @@ const AdminDashboard = () => {
               <i className="fa-solid fa-qrcode" style={{ color: 'var(--accent-gold)' }}></i>
               Automated Optical QR Scanner & Barrier Terminal Hub
             </h3>
-            <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-              Optical video camera scanning • Instant HMAC security validation • Automated barrier control (Req-7, Req-8)
-            </p>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <span style={{ fontSize: '0.75rem', color: 'var(--accent-emerald)', background: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.3)', padding: '0.3rem 0.75rem', borderRadius: '20px', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <i className="fa-solid fa-circle" style={{ fontSize: '0.55rem' }}></i> Optical Engine Ready
-            </span>
             <a
               href="/admin/scanner"
               className="btn-select-slot"
@@ -377,10 +401,6 @@ const AdminDashboard = () => {
               </div>
             </div>
 
-            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span>Autonomous Gate Mode: <strong style={{ color: '#10b981' }}>Enabled</strong></span>
-              <span>Audio Chime: <strong style={{ color: 'var(--accent-gold)' }}>Active</strong></span>
-            </div>
           </div>
 
         </div>
@@ -390,9 +410,8 @@ const AdminDashboard = () => {
       <div className="card" style={{ marginBottom: '1.75rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
           <h3 style={{ margin: 0, fontSize: '1rem' }}>
-            <i className="fa-solid fa-triangle-exclamation" style={{ color: 'var(--accent-gold)' }}></i> Incident Reports Management (FR26)
+            <i className="fa-solid fa-triangle-exclamation" style={{ color: 'var(--accent-gold)' }}></i> Incident Reports Management
           </h3>
-          <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Manage user complaints & issues</span>
         </div>
 
         <div style={{ overflowX: 'auto' }}>
@@ -416,7 +435,7 @@ const AdminDashboard = () => {
                 reports.map(rep => (
                   <tr key={rep.id}>
                     <td><strong style={{ color: 'var(--accent-gold)' }}>{rep.id.substring(0, 7).toUpperCase()}</strong></td>
-                    <td>{rep.user ? rep.user.full_name : 'Mehanna Reddy'}</td>
+                    <td>{rep.user ? rep.user.full_name : 'N/A'}</td>
                     <td><strong>{rep.incident_type}</strong></td>
                     <td style={{ fontSize: '0.8rem', color: 'var(--text-muted)', maxWidth: '220px' }}>{rep.description}</td>
                     <td>
@@ -447,7 +466,6 @@ const AdminDashboard = () => {
           <h3 style={{ margin: 0, fontSize: '1rem' }}>
             <i className="fa-solid fa-clock-rotate-left" style={{ color: 'var(--accent-gold)' }}></i> User Booking & Scanned Entry History
           </h3>
-          <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Real-time database sync</span>
         </div>
 
         <div style={{ overflowX: 'auto' }}>
@@ -490,19 +508,19 @@ const AdminDashboard = () => {
         <div className="card">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
             <h3 style={{ margin: 0, fontSize: '0.95rem' }}><i className="fa-regular fa-calendar"></i> Month Wise History</h3>
-            <select style={{ background: 'var(--bg-input)', border: '1px solid var(--border-subtle)', color: 'var(--text-main)', padding: '0.25rem 0.6rem', borderRadius: '6px', fontSize: '0.78rem' }}>
-              <option>This Year</option>
-            </select>
           </div>
 
           <div style={{ height: '220px', width: '100%' }}>
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={monthlyData}>
+                <CartesianGrid stroke="#354360" strokeDasharray="3 3" vertical={false} />
                 <XAxis dataKey="month" stroke="#9ca3af" fontSize={10} />
-                <YAxis stroke="#9ca3af" fontSize={10} />
+                <YAxis yAxisId="bookings" stroke="#9ca3af" fontSize={10} allowDecimals={false} />
+                <YAxis yAxisId="revenue" orientation="right" stroke="#9ca3af" fontSize={10} />
                 <Tooltip contentStyle={{ background: '#161c28', borderColor: '#354360', borderRadius: '8px' }} />
-                <Bar dataKey="bookings" fill="#f59e0b" radius={[4, 4, 0, 0]} />
-                <Line type="monotone" dataKey="revenue" stroke="#10b981" strokeWidth={2} dot={{ fill: '#10b981' }} />
+                <Legend wrapperStyle={{ fontSize: '0.72rem' }} />
+                <Bar yAxisId="bookings" dataKey="bookings" name="Bookings" fill="#f59e0b" radius={[4, 4, 0, 0]} />
+                <Line yAxisId="revenue" type="monotone" dataKey="revenue" name="Revenue (INR)" stroke="#10b981" strokeWidth={2} dot={{ fill: '#10b981' }} />
               </ComposedChart>
             </ResponsiveContainer>
           </div>
@@ -510,7 +528,7 @@ const AdminDashboard = () => {
 
         {/* Chart 2: Peak Times Heatmap */}
         <div className="card">
-          <h3 style={{ margin: '0 0 0.75rem 0', fontSize: '0.95rem' }}><i className="fa-regular fa-clock"></i> Peak Times (This Month)</h3>
+          <h3 style={{ margin: '0 0 0.75rem 0', fontSize: '0.95rem' }}><i className="fa-regular fa-clock"></i> Peak Times</h3>
           <HeatmapGrid times={peakTimesData.times} days={peakTimesData.days} matrix={peakTimesData.matrix} />
         </div>
 
@@ -518,18 +536,16 @@ const AdminDashboard = () => {
         <div className="card">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
             <h3 style={{ margin: 0, fontSize: '0.95rem' }}><i className="fa-solid fa-indian-rupee-sign"></i> Revenue (Day Wise)</h3>
-            <select style={{ background: 'var(--bg-input)', border: '1px solid var(--border-subtle)', color: 'var(--text-main)', padding: '0.25rem 0.6rem', borderRadius: '6px', fontSize: '0.78rem' }}>
-              <option>This Month</option>
-            </select>
           </div>
 
           <div style={{ height: '220px', width: '100%' }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={dailyRevenueData}>
+                <CartesianGrid stroke="#354360" strokeDasharray="3 3" vertical={false} />
                 <XAxis dataKey="day" stroke="#9ca3af" fontSize={10} />
                 <YAxis stroke="#9ca3af" fontSize={10} />
                 <Tooltip contentStyle={{ background: '#161c28', borderColor: '#354360', borderRadius: '8px' }} />
-                <Bar dataKey="revenue" fill="#d97706" radius={[2, 2, 0, 0]} />
+                <Bar dataKey="revenue" name="Revenue (INR)" fill="#d97706" radius={[2, 2, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>

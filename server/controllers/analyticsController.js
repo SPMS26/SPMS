@@ -1,28 +1,43 @@
 import db from '../config/database.js';
 
+// Format a month-over-month change; null when there is no previous-month baseline
+const formatTrend = (current, previous) => {
+  if (!previous) return null;
+  const pct = ((current - previous) / previous) * 100;
+  return `${pct >= 0 ? '+' : ''}${pct.toFixed(1)}%`;
+};
+
 // Get Dashboard KPIs (Raw SQL)
 export const getKPIs = async (req, res, next) => {
   try {
-    const bookingCountRes = await db.query('SELECT COUNT(*)::int AS count FROM bookings');
-    const activeCountRes = await db.query('SELECT COUNT(*)::int AS count FROM bookings WHERE booking_status = \'active\'');
-    const slotCountRes = await db.query('SELECT COUNT(*)::int AS count FROM parking_slots WHERE is_active = true');
-    const revenueSumRes = await db.query('SELECT COALESCE(SUM(amount), 0)::float AS sum FROM payments WHERE payment_status = \'paid\'');
-
-    const dbTotalBookings = bookingCountRes.rows[0].count;
-    const dbActiveVehicles = activeCountRes.rows[0].count;
-    const dbTotalSlots = slotCountRes.rows[0].count;
-    const dbRevenue = revenueSumRes.rows[0].sum;
+    const [totals, active, slots, revenue, bookingMonths, revenueMonths] = await Promise.all([
+      db.query('SELECT COUNT(*)::int AS count FROM bookings'),
+      db.query("SELECT COUNT(*)::int AS count FROM bookings WHERE booking_status = 'active'"),
+      db.query('SELECT COUNT(*)::int AS count FROM parking_slots WHERE is_active = true'),
+      db.query("SELECT COALESCE(SUM(amount), 0)::float AS sum FROM payments WHERE payment_status = 'paid'"),
+      db.query(
+        `SELECT
+           COUNT(*) FILTER (WHERE date_trunc('month', created_at) = date_trunc('month', CURRENT_TIMESTAMP))::int AS current,
+           COUNT(*) FILTER (WHERE date_trunc('month', created_at) = date_trunc('month', CURRENT_TIMESTAMP - INTERVAL '1 month'))::int AS previous
+         FROM bookings`
+      ),
+      db.query(
+        `SELECT
+           COALESCE(SUM(amount) FILTER (WHERE date_trunc('month', paid_at) = date_trunc('month', CURRENT_TIMESTAMP)), 0)::float AS current,
+           COALESCE(SUM(amount) FILTER (WHERE date_trunc('month', paid_at) = date_trunc('month', CURRENT_TIMESTAMP - INTERVAL '1 month')), 0)::float AS previous
+         FROM payments WHERE payment_status = 'paid'`
+      )
+    ]);
 
     res.status(200).json({
       success: true,
       kpis: {
-        totalBookings: 1248 + dbTotalBookings,
-        activeVehicles: 312 + dbActiveVehicles,
-        revenueGenerated: 248760 + dbRevenue,
-        totalSlots: dbTotalSlots || 420,
-        bookingTrendPct: '+18.6%',
-        activeVehiclesTrendPct: '+14.2%',
-        revenueTrendPct: '+22.4%'
+        totalBookings: totals.rows[0].count,
+        activeVehicles: active.rows[0].count,
+        revenueGenerated: revenue.rows[0].sum,
+        totalSlots: slots.rows[0].count,
+        bookingTrendPct: formatTrend(bookingMonths.rows[0].current, bookingMonths.rows[0].previous),
+        revenueTrendPct: formatTrend(revenueMonths.rows[0].current, revenueMonths.rows[0].previous)
       }
     });
   } catch (err) {

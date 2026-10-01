@@ -124,8 +124,18 @@ const QRScannerPage = () => {
 
   useEffect(() => {
     fetchQueue();
-    const interval = setInterval(fetchQueue, 5000);
-    return () => clearInterval(interval);
+    // Poll only while the tab is visible; refresh immediately when it becomes visible again
+    const interval = setInterval(() => {
+      if (!document.hidden) fetchQueue();
+    }, 5000);
+    const onVisible = () => {
+      if (!document.hidden) fetchQueue();
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
   }, []);
 
   // Initialize and start continuous universal 360-degree camera scanner

@@ -7,7 +7,11 @@ export const getAllLots = async (req, res, next) => {
       SELECT 
         l.*,
         COUNT(CASE WHEN s.status = 'available' AND s.is_active = true THEN 1 END)::int AS available_slots,
-        COUNT(CASE WHEN s.is_active = true THEN 1 END)::int AS total_slots
+        COUNT(CASE WHEN s.status = 'reserved' AND s.is_active = true THEN 1 END)::int AS reserved_slots,
+        COUNT(CASE WHEN s.status = 'occupied' AND s.is_active = true THEN 1 END)::int AS occupied_slots,
+        COUNT(CASE WHEN s.status = 'maintenance' AND s.is_active = true THEN 1 END)::int AS maintenance_slots,
+        COUNT(CASE WHEN s.is_active = true THEN 1 END)::int AS total_slots,
+        COALESCE(ARRAY_AGG(DISTINCT s.floor) FILTER (WHERE s.is_active = true), '{}') AS floors
       FROM parking_lots l
       LEFT JOIN parking_slots s ON l.id = s.lot_id
       GROUP BY l.id

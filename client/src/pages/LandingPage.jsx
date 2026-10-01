@@ -392,10 +392,6 @@ const LandingPage = () => {
             <i className="fa-solid fa-user-plus"></i>
             <span>Register</span>
           </Link>
-          <a href="#how-it-works" className="btn-landing-secondary hero-btn-large" style={{ opacity: 0.85 }}>
-            <i className="fa-solid fa-circle-info"></i>
-            <span>System Overview</span>
-          </a>
           <a href="#live-slots" className="btn-landing-secondary hero-btn-large" style={{ opacity: 0.85 }}>
             <i className="fa-solid fa-map-location-dot"></i>
             <span>Live Lot Map</span>

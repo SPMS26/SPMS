@@ -1,17 +1,22 @@
 import React from 'react';
 
-const SlotGrid = ({ slots, selectedSlot, activeFloor, onFloorChange, onSlotClick }) => {
-  const floors = [
-    { key: 'B1', label: 'Basement 1', icon: 'fa-layer-group' },
-    { key: 'GF', label: 'Ground Floor', icon: 'fa-layer-group' },
-    { key: 'FF', label: 'First Floor', icon: 'fa-layer-group' }
-  ];
+// Display names and ordering for floor codes stored in the database
+const FLOOR_LABELS = { B1: 'Basement 1', GF: 'Ground Floor', FF: 'First Floor' };
+const FLOOR_ORDER = Object.keys(FLOOR_LABELS);
 
-  // Filter slots for active floor
-  const floorSlots = slots.filter(s => s.floor === activeFloor || (!s.floor && activeFloor === 'B1'));
+export const floorLabel = (key) => FLOOR_LABELS[key] || key;
 
-  // Group or layout 4x10 matrix (rows A, B, C, D)
-  const rows = ['A', 'B', 'C', 'D'];
+export const sortFloors = (floors = []) =>
+  [...floors].sort((a, b) => {
+    const ia = FLOOR_ORDER.indexOf(a);
+    const ib = FLOOR_ORDER.indexOf(b);
+    return (ia === -1 ? FLOOR_ORDER.length : ia) - (ib === -1 ? FLOOR_ORDER.length : ib) || a.localeCompare(b);
+  });
+
+const SlotGrid = ({ slots, floors = [], selectedSlot, activeFloor, onFloorChange, onSlotClick }) => {
+  const floorSlots = slots
+    .filter(s => s.floor === activeFloor)
+    .sort((a, b) => a.slot_number.localeCompare(b.slot_number, undefined, { numeric: true }));
 
   return (
     <div className="slot-picker-box">
@@ -26,37 +31,32 @@ const SlotGrid = ({ slots, selectedSlot, activeFloor, onFloorChange, onSlotClick
 
       <div className="slots-matrix-wrapper">
         <div className="floor-tabs-bar">
-          {floors.map(f => (
+          {sortFloors(floors).map(f => (
             <button
-              key={f.key}
-              className={`floor-btn ${activeFloor === f.key ? 'active' : ''}`}
-              onClick={() => onFloorChange(f.key)}
+              key={f}
+              className={`floor-btn ${activeFloor === f ? 'active' : ''}`}
+              onClick={() => onFloorChange(f)}
             >
-              <i className={`fa-solid ${f.icon}`}></i> {f.label}
+              <i className="fa-solid fa-layer-group"></i> {floorLabel(f)}
             </button>
           ))}
         </div>
 
         <div className="slots-grid-4x10">
-          {rows.map(row => {
-            const rowSlots = [];
-            for (let i = 1; i <= 10; i++) {
-              const code = `${row}${i}`;
-              const slot = floorSlots.find(s => s.slot_number === code) || { slot_number: code, status: 'available' };
-              const isSelected = selectedSlot && selectedSlot.slot_number === code;
-
-              rowSlots.push(
-                <div
-                  key={code}
-                  className={`slot-item status-${slot.status} ${isSelected ? 'selected-highlight' : ''}`}
-                  onClick={() => onSlotClick(slot)}
-                >
-                  {code}
-                </div>
-              );
-            }
-            return rowSlots;
-          })}
+          {floorSlots.map(slot => (
+            <div
+              key={slot.id}
+              className={`slot-item status-${slot.status} ${selectedSlot && selectedSlot.id === slot.id ? 'selected-highlight' : ''}`}
+              onClick={() => onSlotClick(slot)}
+            >
+              {slot.slot_number}
+            </div>
+          ))}
+          {floorSlots.length === 0 && (
+            <div style={{ gridColumn: '1 / -1', textAlign: 'center', color: 'var(--text-muted)', padding: '1.5rem' }}>
+              No slots found on this floor.
+            </div>
+          )}
         </div>
       </div>
     </div>

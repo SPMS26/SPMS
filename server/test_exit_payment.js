@@ -1,4 +1,5 @@
-const http = require('http');
+import http from 'http';
+import db from './config/database.js';
 
 async function request(options, postData = null) {
   return new Promise((resolve, reject) => {
@@ -29,8 +30,6 @@ async function runExitPaymentTests() {
     results.push({ name, pass, details });
     console.log(`[${pass ? 'PASS' : 'FAIL'}] ${name}: ${details}`);
   }
-
-  const db = require('./config/database');
 
   try {
     // 0. Setup demo users & tokens

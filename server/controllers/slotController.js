@@ -54,6 +54,112 @@ export const updateSlotStatus = async (req, res, next) => {
   }
 };
 
+// Admin: Add a slot to a lot (reactivates a previously deleted slot with the same code)
+export const createSlot = async (req, res, next) => {
+  try {
+    const { lot_id, floor } = req.body;
+    const slotNumber = String(req.body.slot_number || '').trim().toUpperCase();
+    const hourlyPrice = req.body.hourly_price === undefined || req.body.hourly_price === '' ? 30 : Number(req.body.hourly_price);
+
+    if (!lot_id || !floor || !slotNumber) {
+      return res.status(400).json({ success: false, message: 'Lot, floor and slot number are required.' });
+    }
+    if (!/^[A-Z0-9-]{1,10}$/.test(slotNumber)) {
+      return res.status(400).json({ success: false, message: 'Slot number must be 1-10 letters, digits or hyphens.' });
+    }
+    if (String(floor).trim().length > 20) {
+      return res.status(400).json({ success: false, message: 'Floor must be 20 characters or fewer.' });
+    }
+    if (!Number.isFinite(hourlyPrice) || hourlyPrice < 0) {
+      return res.status(400).json({ success: false, message: 'Hourly price must be a non-negative number.' });
+    }
+
+    const lotRes = await db.query('SELECT id FROM parking_lots WHERE id = $1', [lot_id]);
+    if (lotRes.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Parking lot not found.' });
+    }
+
+    const existing = await db.query('SELECT id, is_active FROM parking_slots WHERE lot_id = $1 AND slot_number = $2', [lot_id, slotNumber]);
+    let slot;
+    if (existing.rows.length > 0) {
+      if (existing.rows[0].is_active) {
+        return res.status(409).json({ success: false, message: `Slot ${slotNumber} already exists in this lot.` });
+      }
+      const revived = await db.query(
+        `UPDATE parking_slots
+         SET is_active = true, status = 'available', floor = $1, hourly_price = $2, updated_at = CURRENT_TIMESTAMP
+         WHERE id = $3 RETURNING *`,
+        [String(floor).trim(), hourlyPrice, existing.rows[0].id]
+      );
+      slot = revived.rows[0];
+    } else {
+      const inserted = await db.query(
+        `INSERT INTO parking_slots (lot_id, slot_number, floor, hourly_price)
+         VALUES ($1, $2, $3, $4) RETURNING *`,
+        [lot_id, slotNumber, String(floor).trim(), hourlyPrice]
+      );
+      slot = inserted.rows[0];
+    }
+
+    broadcastSlotUpdate(slot.lot_id, slot.id, slot.status, slot.slot_number);
+    res.status(201).json({ success: true, message: `Slot ${slot.slot_number} added.`, slot });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Admin: Delete a slot. Slots with booking history are deactivated so history is preserved.
+export const deleteSlot = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const slotRes = await db.query('SELECT * FROM parking_slots WHERE id = $1 AND is_active = true', [id]);
+    if (slotRes.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Parking slot not found' });
+    }
+    const slot = slotRes.rows[0];
+
+    const liveRes = await db.query(
+      "SELECT 1 FROM bookings WHERE slot_id = $1 AND booking_status IN ('pending_payment', 'reserved', 'active') LIMIT 1",
+      [id]
+    );
+    if (['occupied', 'reserved'].includes(slot.status) || liveRes.rows.length > 0) {
+      return res.status(409).json({
+        success: false,
+        message: `Slot ${slot.slot_number} has an active or upcoming booking and cannot be deleted.`
+      });
+    }
+
+    const historyRes = await db.query(
+      `SELECT (SELECT COUNT(*) FROM bookings WHERE slot_id = $1)
+            + (SELECT COUNT(*) FROM slot_reassignments WHERE old_slot_id = $1 OR new_slot_id = $1) AS refs`,
+      [id]
+    );
+    const hasHistory = Number(historyRes.rows[0].refs) > 0;
+
+    if (hasHistory) {
+      await db.query(
+        "UPDATE parking_slots SET is_active = false, status = 'maintenance', updated_at = CURRENT_TIMESTAMP WHERE id = $1",
+        [id]
+      );
+    } else {
+      await db.query('DELETE FROM parking_slots WHERE id = $1', [id]);
+    }
+
+    // Clients treat a deleted slot as unavailable and refresh their lot counts
+    broadcastSlotUpdate(slot.lot_id, slot.id, 'maintenance', slot.slot_number);
+    res.status(200).json({
+      success: true,
+      message: hasHistory
+        ? `Slot ${slot.slot_number} removed (deactivated; booking history kept).`
+        : `Slot ${slot.slot_number} deleted.`,
+      deactivated: hasHistory
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 // FR27. Slot Reassignment (Admin Feature Raw SQL + Transaction)
 export const reassignSlot = async (req, res, next) => {
   const client = await db.getClient();

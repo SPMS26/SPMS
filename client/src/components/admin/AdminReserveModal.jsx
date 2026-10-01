@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 
 const AdminReserveModal = ({ isOpen, onClose, slot, onConfirmReserve }) => {
-  const [driverName, setDriverName] = useState('Ramesh Kumar');
-  const [vehicleNo, setVehicleNo] = useState('TS08 EQ 9988');
+  const [driverName, setDriverName] = useState('');
+  const [vehicleNo, setVehicleNo] = useState('');
 
   if (!isOpen) return null;
 
@@ -18,7 +18,7 @@ const AdminReserveModal = ({ isOpen, onClose, slot, onConfirmReserve }) => {
       <div className="modal-box">
         <div className="modal-header">
           <h3>
-            Admin Reserve for Driver - <span style={{ color: 'var(--accent-gold)' }}>Slot {slot ? slot.slot_number : 'C5'}</span>
+            Admin Reserve for Driver - <span style={{ color: 'var(--accent-gold)' }}>Slot {slot ? slot.slot_number : ''}</span>
           </h3>
           <button className="modal-close" onClick={onClose}>&times;</button>
         </div>
@@ -32,7 +32,7 @@ const AdminReserveModal = ({ isOpen, onClose, slot, onConfirmReserve }) => {
               type="text"
               className="search-input"
               style={{ width: '100%' }}
-              placeholder="e.g. Ramesh Kumar"
+              placeholder="Driver full name"
               value={driverName}
               onChange={(e) => setDriverName(e.target.value)}
               required
@@ -47,7 +47,7 @@ const AdminReserveModal = ({ isOpen, onClose, slot, onConfirmReserve }) => {
               type="text"
               className="search-input"
               style={{ width: '100%' }}
-              placeholder="e.g. TS08 EQ 9988"
+              placeholder="Vehicle registration number"
               value={vehicleNo}
               onChange={(e) => setVehicleNo(e.target.value)}
               required

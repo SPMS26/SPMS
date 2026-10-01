@@ -27,7 +27,7 @@ const AdminUsersPage = () => {
       <div className="page-header-row">
         <div className="page-title-box">
           <h1>User Management</h1>
-          <p>View and manage all registered drivers and system administrators (Req-13)</p>
+          <p>View and manage all registered drivers and system administrators</p>
         </div>
       </div>
 
@@ -79,9 +79,13 @@ const AdminUsersPage = () => {
                       )}
                     </td>
                     <td>
-                      <span style={{ color: 'var(--accent-emerald)', fontWeight: 700, fontSize: '0.8rem' }}>
-                        <i className="fa-solid fa-check-circle"></i> Verified
-                      </span>
+                      {u.is_verified ? (
+                        <span style={{ color: 'var(--accent-emerald)', fontWeight: 700, fontSize: '0.8rem' }}>
+                          <i className="fa-solid fa-check-circle"></i> Verified
+                        </span>
+                      ) : (
+                        <span style={{ color: 'var(--text-muted)', fontWeight: 700, fontSize: '0.8rem' }}>Unverified</span>
+                      )}
                     </td>
                   </tr>
                 ))}

@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AppLayout from '../components/layout/AppLayout';
 import LotCard from '../components/parking/LotCard';
-import SlotGrid from '../components/parking/SlotGrid';
+import SlotGrid, { sortFloors } from '../components/parking/SlotGrid';
 import SlotDetailsPanel from '../components/parking/SlotDetailsPanel';
 import PaymentModal from '../components/booking/PaymentModal';
 import QRPassModal from '../components/booking/QRPassModal';
@@ -21,7 +21,7 @@ const UserDashboard = () => {
   const [lots, setLots] = useState([]);
   const [selectedLot, setSelectedLot] = useState(null);
   const [slots, setSlots] = useState([]);
-  const [activeFloor, setActiveFloor] = useState('B1');
+  const [activeFloor, setActiveFloor] = useState('');
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [userBookings, setUserBookings] = useState([]);
   const [preBookingFee, setPreBookingFee] = useState(10);
@@ -54,13 +54,22 @@ const UserDashboard = () => {
     }
   };
 
+  // Coalesce bursts of refresh requests (socket events + post-payment refresh) into one /lots call
+  const fetchLotsRef = useRef(fetchLots);
+  fetchLotsRef.current = fetchLots;
+  const lotsRefreshTimer = useRef(null);
+  const refreshLotsDebounced = () => {
+    clearTimeout(lotsRefreshTimer.current);
+    lotsRefreshTimer.current = setTimeout(() => fetchLotsRef.current(), 300);
+  };
+  useEffect(() => () => clearTimeout(lotsRefreshTimer.current), []);
+
   const fetchSlots = async (lotId, floor) => {
     try {
       const res = await lotService.getSlotsByLot(lotId, floor);
       setSlots(res.slots || []);
       if (res.slots && res.slots.length > 0) {
-        const defaultC5 = res.slots.find(s => s.slot_number === 'C5') || res.slots[0];
-        setSelectedSlot(defaultC5);
+        setSelectedSlot(res.slots[0]);
       }
     } catch (err) {
       console.error('Error fetching slots:', err);
@@ -82,20 +91,29 @@ const UserDashboard = () => {
     fetchBookingConfig();
   }, []);
 
+  // Default to the lot's first floor (floors come from the database)
   useEffect(() => {
-    if (selectedLot) {
+    const floors = selectedLot ? sortFloors(selectedLot.floors) : [];
+    if (floors.length > 0 && !floors.includes(activeFloor)) {
+      setActiveFloor(floors[0]);
+    }
+  }, [selectedLot]);
+
+  useEffect(() => {
+    if (selectedLot && activeFloor) {
       fetchSlots(selectedLot.id, activeFloor);
     }
   }, [selectedLot, activeFloor]);
 
   // Socket.io real-time slot status updates
   useEffect(() => {
-    if (socket) {
-      socket.on('slot:statusChanged', ({ lotId, slotId, status, slotNumber }) => {
-        setSlots(prev => prev.map(s => s.id === slotId ? { ...s, status } : s));
-        fetchLots(); // refresh available counts
-      });
-    }
+    if (!socket) return;
+    const onSlotStatusChanged = ({ slotId, status }) => {
+      setSlots(prev => prev.map(s => s.id === slotId ? { ...s, status } : s));
+      refreshLotsDebounced(); // refresh available counts
+    };
+    socket.on('slot:statusChanged', onSlotStatusChanged);
+    return () => socket.off('slot:statusChanged', onSlotStatusChanged);
   }, [socket]);
 
   const handleLotSelect = (lot) => {
@@ -159,7 +177,7 @@ const UserDashboard = () => {
       // Refresh state
       fetchSlots(selectedLot.id, activeFloor);
       fetchUserBookings();
-      fetchLots();
+      refreshLotsDebounced();
     } catch (err) {
       toast.error(err.response?.data?.message || err.message || 'Payment processing failed.');
     }
@@ -217,6 +235,7 @@ const UserDashboard = () => {
       <div className="slot-booking-layout">
         <SlotGrid
           slots={slots}
+          floors={selectedLot ? selectedLot.floors : []}
           selectedSlot={selectedSlot}
           activeFloor={activeFloor}
           onFloorChange={handleFloorChange}

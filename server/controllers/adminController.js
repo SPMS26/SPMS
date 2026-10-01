@@ -53,12 +53,12 @@ export const getScanHistory = async (req, res, next) => {
     const history = result.rows.map(b => ({
       id: b.id,
       bookingId: `BK-${b.id.substring(0, 6).toUpperCase()}`,
-      userName: b.userName || 'Guest User',
+      userName: b.userName || 'N/A',
       vehicleNo: b.vehicleNo || 'N/A',
       slotCode: b.slotCode || 'N/A',
-      lotName: b.lotName || 'Central Parking',
+      lotName: b.lotName || 'N/A',
       timestamp: b.entry_time ? new Date(b.entry_time).toLocaleString() : new Date(b.created_at).toLocaleString(),
-      amountPaid: `₹${b.total_amount || 30}`,
+      amountPaid: `₹${Number(b.total_amount || 0)}`,
       status: b.booking_status === 'completed' ? 'Completed' : 'Validated'
     }));
 

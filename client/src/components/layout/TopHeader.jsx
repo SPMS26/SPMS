@@ -31,12 +31,13 @@ const TopHeader = ({ onToggleSidebar }) => {
   }, [user]);
 
   useEffect(() => {
-    if (socket) {
-      socket.on('notification:new', (notif) => {
-        setNotifications(prev => [notif, ...prev]);
-        setUnreadCount(prev => prev + 1);
-      });
-    }
+    if (!socket) return;
+    const onNewNotification = (notif) => {
+      setNotifications(prev => [notif, ...prev]);
+      setUnreadCount(prev => prev + 1);
+    };
+    socket.on('notification:new', onNewNotification);
+    return () => socket.off('notification:new', onNewNotification);
   }, [socket]);
 
   const handleMarkAllRead = async () => {
@@ -102,18 +103,6 @@ const TopHeader = ({ onToggleSidebar }) => {
       )}
 
       <div className="header-right">
-        {isAdmin ? (
-          <Link to="/dashboard" className="view-switcher-link" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-bright)', padding: '0.45rem 0.9rem', borderRadius: '8px', color: 'var(--accent-gold)', fontSize: '0.82rem', fontWeight: '600', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            <i className="fa-solid fa-user"></i> Switch to Driver View
-          </Link>
-        ) : (
-          user && user.role === 'ADMIN' && (
-            <Link to="/admin" className="view-switcher-link" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-bright)', padding: '0.45rem 0.9rem', borderRadius: '8px', color: 'var(--accent-emerald)', fontSize: '0.82rem', fontWeight: '600', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <i className="fa-solid fa-shield-halved"></i> Switch to Admin View
-            </Link>
-          )
-        )}
-
         {isAdmin && (
           <div style={{ position: 'relative' }}>
             <button className="icon-btn" onClick={() => setShowNotifications(!showNotifications)}>
