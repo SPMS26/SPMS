@@ -6,8 +6,10 @@ import { protect } from '../middleware/auth.js';
 router.use(protect);
 
 router.put('/profile', userController.updateProfile);
+router.put('/password', userController.changePassword);
 router.get('/vehicles', userController.getVehicles);
 router.post('/vehicles', userController.addVehicle);
+router.put('/vehicles/:id/default', userController.setDefaultVehicle);
 router.delete('/vehicles/:id', userController.deleteVehicle);
 
 export default router;

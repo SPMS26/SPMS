@@ -11,6 +11,7 @@ import UserDashboard from './pages/UserDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import BookingsPage from './pages/BookingsPage';
 import ProfilePage from './pages/ProfilePage';
+import ReportIssuePage from './pages/ReportIssuePage';
 import QRScannerPage from './pages/QRScannerPage';
 import AdminLotsPage from './pages/AdminLotsPage';
 import AdminUsersPage from './pages/AdminUsersPage';
@@ -44,6 +45,8 @@ function App() {
             <Route path="/dashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
             <Route path="/bookings" element={<ProtectedRoute><BookingsPage /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+            <Route path="/report-issue" element={<ProtectedRoute><ReportIssuePage /></ProtectedRoute>} />
+            <Route path="/report" element={<ProtectedRoute><ReportIssuePage /></ProtectedRoute>} />
 
             {/* Admin Protected Routes */}
             <Route path="/admin" element={<ProtectedRoute requireAdmin={true}><AdminDashboard /></ProtectedRoute>} />

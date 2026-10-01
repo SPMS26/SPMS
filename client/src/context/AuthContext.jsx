@@ -65,6 +65,7 @@ export const AuthProvider = ({ children }) => {
     <AuthContext.Provider value={{
       user,
       vehicles,
+      setVehicles,
       selectedVehicle,
       setSelectedVehicle,
       loading,

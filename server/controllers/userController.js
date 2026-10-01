@@ -1,20 +1,63 @@
 import db from '../config/database.js';
+import bcrypt from 'bcryptjs';
+
+// Change User Password (Raw SQL)
+export const changePassword = async (req, res, next) => {
+  try {
+    const { password } = req.body;
+    const userId = req.user.id;
+
+    if (!password || password.trim().length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password must be at least 6 characters long.'
+      });
+    }
+
+    const salt = await bcrypt.genSalt(12);
+    const passwordHash = await bcrypt.hash(password, salt);
+
+    const result = await db.query(
+      `UPDATE users 
+       SET password_hash = $1,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = $2
+       RETURNING id`,
+      [passwordHash, userId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found.'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Password updated successfully'
+    });
+  } catch (err) {
+    next(err);
+  }
+};
 
 // Update User Profile (Raw SQL)
 export const updateProfile = async (req, res, next) => {
   try {
-    const { full_name, phone, profile_image } = req.body;
+    const { full_name, phone, email, profile_image } = req.body;
     const userId = req.user.id;
 
     const userRes = await db.query(
       `UPDATE users 
        SET full_name = COALESCE($1, full_name), 
            phone = COALESCE($2, phone), 
-           profile_image = COALESCE($3, profile_image),
+           email = COALESCE($3, email),
+           profile_image = COALESCE($4, profile_image),
            updated_at = CURRENT_TIMESTAMP
-       WHERE id = $4
+       WHERE id = $5
        RETURNING id, full_name, email, phone, role, profile_image`,
-      [full_name, phone, profile_image, userId]
+      [full_name, phone, email, profile_image, userId]
     );
 
     res.status(200).json({
@@ -31,7 +74,7 @@ export const updateProfile = async (req, res, next) => {
 export const getVehicles = async (req, res, next) => {
   try {
     const vehRes = await db.query(
-      'SELECT * FROM vehicles WHERE user_id = $1 ORDER BY is_default DESC, created_at DESC',
+      'SELECT * FROM vehicles WHERE user_id = $1 ORDER BY created_at ASC',
       [req.user.id]
     );
     res.status(200).json({ success: true, vehicles: vehRes.rows });
@@ -78,6 +121,26 @@ export const deleteVehicle = async (req, res, next) => {
     }
 
     res.status(200).json({ success: true, message: 'Vehicle removed successfully' });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Set Default Vehicle
+export const setDefaultVehicle = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    await db.query('UPDATE vehicles SET is_default = false WHERE user_id = $1', [req.user.id]);
+    const result = await db.query(
+      'UPDATE vehicles SET is_default = true, updated_at = CURRENT_TIMESTAMP WHERE id = $1 AND user_id = $2 RETURNING *',
+      [id, req.user.id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Vehicle not found' });
+    }
+
+    res.status(200).json({ success: true, message: 'Default vehicle updated', vehicle: result.rows[0] });
   } catch (err) {
     next(err);
   }

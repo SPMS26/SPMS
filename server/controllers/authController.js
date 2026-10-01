@@ -81,7 +81,7 @@ export const login = async (req, res, next) => {
 
     const token = generateToken(user.id);
 
-    const vehRes = await db.query('SELECT * FROM vehicles WHERE user_id = $1 ORDER BY is_default DESC', [user.id]);
+    const vehRes = await db.query('SELECT * FROM vehicles WHERE user_id = $1 ORDER BY created_at ASC', [user.id]);
 
     res.status(200).json({
       success: true,
@@ -107,7 +107,7 @@ export const getMe = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    const vehRes = await db.query('SELECT * FROM vehicles WHERE user_id = $1 ORDER BY is_default DESC', [req.user.id]);
+    const vehRes = await db.query('SELECT * FROM vehicles WHERE user_id = $1 ORDER BY created_at ASC', [req.user.id]);
 
     res.status(200).json({
       success: true,
