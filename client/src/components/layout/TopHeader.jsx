@@ -101,7 +101,7 @@ const TopHeader = () => {
 
         <div className="user-profile">
           <img
-            src={user && user.profile_image ? user.profile_image : 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80'}
+            src={user && user.profile_image ? user.profile_image : `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.full_name || 'User')}&background=d97706&color=fff&bold=true`}
             alt="Avatar"
             className="user-avatar"
           />

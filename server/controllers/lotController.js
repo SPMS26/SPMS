@@ -1,7 +1,7 @@
-const db = require('../config/database');
+import db from '../config/database.js';
 
 // Get all parking lots with available slot count (Raw SQL)
-exports.getAllLots = async (req, res, next) => {
+export const getAllLots = async (req, res, next) => {
   try {
     const queryStr = `
       SELECT 
@@ -22,7 +22,7 @@ exports.getAllLots = async (req, res, next) => {
 };
 
 // Get single lot detail with slots (Raw SQL)
-exports.getLotById = async (req, res, next) => {
+export const getLotById = async (req, res, next) => {
   try {
     const lotRes = await db.query('SELECT * FROM parking_lots WHERE id = $1', [req.params.id]);
     if (lotRes.rows.length === 0) {
@@ -41,7 +41,7 @@ exports.getLotById = async (req, res, next) => {
 };
 
 // Admin: Create Parking Lot (Raw SQL)
-exports.createLot = async (req, res, next) => {
+export const createLot = async (req, res, next) => {
   try {
     const { name, address, latitude, longitude, description } = req.body;
     const result = await db.query(
@@ -58,7 +58,7 @@ exports.createLot = async (req, res, next) => {
 };
 
 // Admin: Update Parking Lot (Raw SQL)
-exports.updateLot = async (req, res, next) => {
+export const updateLot = async (req, res, next) => {
   try {
     const { name, address, latitude, longitude, description } = req.body;
     const result = await db.query(

@@ -1,8 +1,8 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const analyticsController = require('../controllers/analyticsController');
-const { protect } = require('../middleware/auth');
-const { requireRole } = require('../middleware/rbac');
+import * as analyticsController from '../controllers/analyticsController.js';
+import { protect } from '../middleware/auth.js';
+import { requireRole } from '../middleware/rbac.js';
 
 router.use(protect, requireRole('ADMIN'));
 
@@ -12,4 +12,4 @@ router.get('/monthly', analyticsController.getMonthlyHistory);
 router.get('/peak-times', analyticsController.getPeakTimes);
 router.get('/daily-revenue', analyticsController.getDayWiseRevenue);
 
-module.exports = router;
+export default router;

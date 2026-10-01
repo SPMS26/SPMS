@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import QRCode from 'qrcode';
+import { useAuth } from '../../context/AuthContext';
 
 const QRPassModal = ({ isOpen, onClose, booking }) => {
+  const { user: authUser } = useAuth();
   const [qrDataUrl, setQrDataUrl] = useState('');
   const [timeLeft, setTimeLeft] = useState('');
   const [isExpired, setIsExpired] = useState(false);
@@ -70,12 +72,12 @@ const QRPassModal = ({ isOpen, onClose, booking }) => {
   if (!isOpen || !booking) return null;
 
   const isSessionComplete = booking.booking_status === 'completed' || booking.booking_status === 'cancelled';
-  const bookingCode = booking.bookingCode || `BK-${booking.id?.substring(0, 8).toUpperCase()}` || 'BK-948201';
-  const userName = booking.userName || (booking.user ? booking.user.full_name : 'Mehanna Reddy');
-  const vehicleNo = booking.vehicleNo || (booking.vehicle ? booking.vehicle.vehicle_number : 'TS09 AB 1234');
+  const bookingCode = booking.bookingCode || `BK-${booking.id?.substring(0, 8).toUpperCase()}` || 'BK-PASS';
+  const userName = booking.userName || booking.user_name || booking.user?.full_name || authUser?.full_name || 'Valued User';
+  const vehicleNo = booking.vehicleNo || booking.vehicle?.vehicle_number || booking.vehicle_number || 'N/A';
   const lotName = booking.lotName || (booking.slot && booking.slot.parking_lot ? booking.slot.parking_lot.name : 'Central Parking');
   const floor = booking.floor || (booking.slot ? booking.slot.floor : 'GF');
-  const slotCode = booking.slotCode || (booking.slot ? booking.slot.slot_number : 'C5');
+  const slotCode = booking.slotCode || (booking.slot ? booking.slot.slot_number : '--');
   const bookingType = booking.booking_type === 'pre_booking' ? 'Pre-Booking' : 'Live Booking';
   const amountPaid = booking.total_amount || 30;
 

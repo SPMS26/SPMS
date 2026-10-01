@@ -26,4 +26,4 @@ class SimulatedPaymentService {
   }
 }
 
-module.exports = new SimulatedPaymentService();
+export default new SimulatedPaymentService();

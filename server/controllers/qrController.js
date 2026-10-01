@@ -1,8 +1,6 @@
-const db = require('../config/database');
-const { generateQRPayload, generateExitPaymentQRPayload, verifyQRPayload, verifyExitPaymentQRPayload, renderQRDataURL } = require('../services/qrGenerator');
-const { broadcastSlotUpdate, broadcastGateEvent } = require('../socket/socketManager');
-const settingService = require('../services/settingService');
-const { getPaymentProvider } = require('../services/paymentProvider');
+import db from '../config/database.js';
+import { generateQRPayload, verifyQRPayload, renderQRDataURL } from '../services/qrGenerator.js';
+import { broadcastSlotUpdate, broadcastGateEvent } from '../socket/socketManager.js';
 
 /**
  * Robust Helper to resolve target booking from QR payload, pass code, vehicle plate, or UUID
@@ -118,7 +116,7 @@ async function findBookingForValidation(input, isExit = false) {
 /**
  * Gate Keeper / Admin Validate Entry (Req-7, Req-8)
  */
-exports.validateEntry = async (req, res, next) => {
+export const validateEntry = async (req, res, next) => {
   try {
     const { qr_data, booking_id, pass_code, vehicle_number } = req.body;
     const inputIdentifier = qr_data || booking_id || pass_code || vehicle_number;
@@ -287,7 +285,7 @@ exports.validateEntry = async (req, res, next) => {
  * creates/updates PENDING exit payment, generates separate cryptographic Exit Payment QR.
  * Gate remains CLOSED until payment is confirmed.
  */
-exports.validateExit = async (req, res, next) => {
+export const validateExit = async (req, res, next) => {
   try {
     const { qr_data, booking_id, pass_code, vehicle_number } = req.body;
     const inputIdentifier = qr_data || booking_id || pass_code || vehicle_number;
@@ -735,7 +733,7 @@ exports.confirmExitPayment = async (req, res, next) => {
 /**
  * Get live QR pass data and rendered PNG Base64 image by Booking ID
  */
-exports.getLiveQR = async (req, res, next) => {
+export const getLiveQR = async (req, res, next) => {
   try {
     const { bookingId } = req.params;
 
@@ -839,7 +837,7 @@ exports.getLiveQR = async (req, res, next) => {
 /**
  * Gate Keeper Live Queue (all pending arrivals / active departures)
  */
-exports.getGateQueue = async (req, res, next) => {
+export const getGateQueue = async (req, res, next) => {
   try {
     const arrivalsRes = await db.query(
       `SELECT b.id, b.booking_status, b.created_at, b.booking_type, b.total_amount,
@@ -897,7 +895,7 @@ exports.getGateQueue = async (req, res, next) => {
 /**
  * Autonomous Unattended Gate Verification (Auto-Detect Entry vs Exit)
  */
-exports.autoValidate = async (req, res, next) => {
+export const autoValidate = async (req, res, next) => {
   try {
     const { qr_data, booking_id, pass_code, vehicle_number, preferred_mode } = req.body;
     const inputIdentifier = qr_data || booking_id || pass_code || vehicle_number;
@@ -951,10 +949,10 @@ exports.autoValidate = async (req, res, next) => {
 
     if (isArrival) {
       // Run Entry validation flow
-      return exports.validateEntry(req, res, next);
+      return validateEntry(req, res, next);
     } else {
       // Run Exit validation flow
-      return exports.validateExit(req, res, next);
+      return validateExit(req, res, next);
     }
   } catch (err) {
     next(err);

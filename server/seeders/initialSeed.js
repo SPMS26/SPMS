@@ -1,7 +1,10 @@
-const fs = require('fs');
-const path = require('path');
-const db = require('../config/database');
-require('dotenv').config();
+import 'dotenv/config';
+import fs from 'fs';
+import path from 'path';
+import db from '../config/database.js';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 async function runSeed() {
   try {

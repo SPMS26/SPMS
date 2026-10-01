@@ -1,5 +1,5 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+import { DataTypes } from 'sequelize';
+import sequelize from '../config/database.js';
 
 const ParkingSlot = sequelize.define('ParkingSlot', {
   id: {
@@ -52,4 +52,4 @@ const ParkingSlot = sequelize.define('ParkingSlot', {
   ]
 });
 
-module.exports = ParkingSlot;
+export default ParkingSlot;

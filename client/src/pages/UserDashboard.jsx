@@ -148,7 +148,12 @@ const UserDashboard = () => {
         booking_status: 'reserved'
       };
 
-      setActiveQRBooking(activeBookingData);
+      setActiveQRBooking({
+        ...res.booking,
+        user: res.booking?.user || user,
+        vehicle: res.booking?.vehicle || selectedVehicle,
+        slot: res.booking?.slot || { ...selectedSlot, parking_lot: selectedLot }
+      });
       setShowQRModal(true);
 
       // Refresh state
@@ -278,7 +283,11 @@ const UserDashboard = () => {
             style={{ marginTop: '1rem', width: '100%', padding: '0.5rem' }}
             onClick={() => {
               if (activeBooking) {
-                setActiveQRBooking(activeBooking);
+                setActiveQRBooking({
+                  ...activeBooking,
+                  user: activeBooking.user || user,
+                  vehicle: activeBooking.vehicle || selectedVehicle
+                });
                 setShowQRModal(true);
               } else {
                 toast.error('No active QR passes found. Select a slot to book.');
@@ -316,7 +325,11 @@ const UserDashboard = () => {
           <div className="quick-actions-2x2">
             <div className="action-tile" onClick={() => {
               if (activeBooking) {
-                setActiveQRBooking(activeBooking);
+                setActiveQRBooking({
+                  ...activeBooking,
+                  user: activeBooking.user || user,
+                  vehicle: activeBooking.vehicle || selectedVehicle
+                });
                 setShowQRModal(true);
               } else {
                 toast.error('No booking pass available.');

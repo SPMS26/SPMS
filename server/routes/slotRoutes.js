@@ -1,8 +1,8 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const slotController = require('../controllers/slotController');
-const { protect } = require('../middleware/auth');
-const { requireRole } = require('../middleware/rbac');
+import * as slotController from '../controllers/slotController.js';
+import { protect } from '../middleware/auth.js';
+import { requireRole } from '../middleware/rbac.js';
 
 router.get('/lot/:lotId', slotController.getSlotsByLot);
 
@@ -10,4 +10,4 @@ router.get('/lot/:lotId', slotController.getSlotsByLot);
 router.put('/:id/status', protect, requireRole('ADMIN'), slotController.updateSlotStatus);
 router.post('/reassign', protect, requireRole('ADMIN'), slotController.reassignSlot);
 
-module.exports = router;
+export default router;

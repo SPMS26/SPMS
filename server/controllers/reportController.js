@@ -1,7 +1,7 @@
-const db = require('../config/database');
+import db from '../config/database.js';
 
 // Submit Incident Report (FR26 Raw SQL)
-exports.createReport = async (req, res, next) => {
+export const createReport = async (req, res, next) => {
   try {
     const { category, incident_type, description, booking_id, slot_id } = req.body;
     const type = category || incident_type || 'Other Issue';
@@ -29,7 +29,7 @@ exports.createReport = async (req, res, next) => {
 };
 
 // Get Incident Reports (Raw SQL)
-exports.getReports = async (req, res, next) => {
+export const getReports = async (req, res, next) => {
   try {
     let queryStr = `
       SELECT 
@@ -59,7 +59,7 @@ exports.getReports = async (req, res, next) => {
 };
 
 // Admin: Respond and resolve incident report (FR26 Raw SQL)
-exports.updateReportStatus = async (req, res, next) => {
+export const updateReportStatus = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { status, admin_response } = req.body;

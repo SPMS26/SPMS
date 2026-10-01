@@ -11,17 +11,25 @@ const Sidebar = () => {
   return (
     <aside className={`sidebar ${isAdmin ? 'admin-nav' : ''}`}>
       <div>
-        <div className="sidebar-brand">
-          <div
-            className="brand-logo-icon"
-            style={isAdmin ? { background: 'linear-gradient(135deg, var(--accent-emerald), #059669)' } : {}}
-          >
-            <i className={`fa-solid ${isAdmin ? 'fa-shapes' : 'fa-square-parking'}`}></i>
+        <Link to="/" style={{ textDecoration: 'none', display: 'block' }}>
+          <div className="sidebar-brand">
+            <div
+              className="brand-logo-icon"
+              style={isAdmin ? { background: 'linear-gradient(135deg, var(--accent-emerald), #059669)' } : {}}
+            >
+              <i className={`fa-solid ${isAdmin ? 'fa-shapes' : 'fa-square-parking'}`}></i>
+            </div>
+            <h2>{isAdmin ? 'Admin Panel' : 'Smart Parking'}</h2>
           </div>
-          <h2>{isAdmin ? 'Admin Panel' : 'Smart Parking'}</h2>
-        </div>
+        </Link>
 
         <ul className="sidebar-menu">
+          <li className={`nav-item ${isActive('/') ? 'active' : ''}`}>
+            <Link to="/">
+              <i className="fa-solid fa-compass"></i>
+              <span>System Overview</span>
+            </Link>
+          </li>
           {!isAdmin ? (
             <>
               <li className={`nav-item ${isActive('/dashboard') ? 'active' : ''}`}>

@@ -1,7 +1,7 @@
-const db = require('../config/database');
+import db from '../config/database.js';
 
 // Get Dashboard KPIs (Raw SQL)
-exports.getKPIs = async (req, res, next) => {
+export const getKPIs = async (req, res, next) => {
   try {
     const bookingCountRes = await db.query('SELECT COUNT(*)::int AS count FROM bookings');
     const activeCountRes = await db.query('SELECT COUNT(*)::int AS count FROM bookings WHERE booking_status = \'active\'');
@@ -30,8 +30,8 @@ exports.getKPIs = async (req, res, next) => {
   }
 };
 
-// FR28: Month Wise History (Database-Derived)
-exports.getMonthlyHistory = async (req, res, next) => {
+// FR28: Month Wise History
+export const getMonthlyHistory = async (req, res, next) => {
   try {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     
@@ -97,8 +97,8 @@ exports.getMonthlyHistory = async (req, res, next) => {
   }
 };
 
-// FR28: Peak Times Heatmap Data (Database-Derived)
-exports.getPeakTimes = async (req, res, next) => {
+// FR28: Peak Times Heatmap Data
+export const getPeakTimes = async (req, res, next) => {
   try {
     const times = ['12 AM', '4 AM', '8 AM', '12 PM', '4 PM', '8 PM'];
     const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -135,8 +135,8 @@ exports.getPeakTimes = async (req, res, next) => {
   }
 };
 
-// FR28: Day Wise Revenue Data (Database-Derived)
-exports.getDayWiseRevenue = async (req, res, next) => {
+// FR28: Day Wise Revenue Data
+export const getDayWiseRevenue = async (req, res, next) => {
   try {
     const now = new Date();
     const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();

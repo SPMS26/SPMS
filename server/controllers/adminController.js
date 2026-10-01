@@ -1,7 +1,7 @@
-const db = require('../config/database');
+import db from '../config/database.js';
 
 // Admin: Get all registered users (Raw SQL)
-exports.getUsers = async (req, res, next) => {
+export const getUsers = async (req, res, next) => {
   try {
     const queryStr = `
       SELECT 
@@ -25,7 +25,7 @@ exports.getUsers = async (req, res, next) => {
 };
 
 // Admin: Get scanned entry history table (Raw SQL)
-exports.getScanHistory = async (req, res, next) => {
+export const getScanHistory = async (req, res, next) => {
   try {
     const queryStr = `
       SELECT 
@@ -69,7 +69,7 @@ exports.getScanHistory = async (req, res, next) => {
 };
 
 // Admin: Get Audit Logs (Raw SQL)
-exports.getAdminLogs = async (req, res, next) => {
+export const getAdminLogs = async (req, res, next) => {
   try {
     const queryStr = `
       SELECT 

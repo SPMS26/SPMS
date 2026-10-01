@@ -1,4 +1,4 @@
-const db = require('./database');
+import db from './database.js';
 
 const createTablesSQL = `
 -- Enable UUID extensions
@@ -193,4 +193,4 @@ async function initDb() {
   }
 }
 
-module.exports = { initDb };
+export { initDb };

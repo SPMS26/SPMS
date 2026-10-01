@@ -1,7 +1,7 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const paymentController = require('../controllers/paymentController');
-const { protect } = require('../middleware/auth');
+import * as paymentController from '../controllers/paymentController.js';
+import { protect } from '../middleware/auth.js';
 
 router.use(protect);
 
@@ -10,4 +10,4 @@ router.post('/verify', paymentController.verifyPayment);
 router.post('/pay', paymentController.verifyPayment);
 router.get('/history', paymentController.getPaymentHistory);
 
-module.exports = router;
+export default router;

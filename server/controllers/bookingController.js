@@ -1,23 +1,9 @@
-const db = require('../config/database');
-const { generateQRPayload, renderQRDataURL } = require('../services/qrGenerator');
-const { broadcastSlotUpdate } = require('../socket/socketManager');
-const settingService = require('../services/settingService');
-
-// Get dynamic booking configuration (e.g. pre-booking fee from DB)
-exports.getBookingConfig = async (req, res, next) => {
-  try {
-    const preBookingFee = await settingService.getNumericSetting('PRE_BOOKING_FEE', 10.00);
-    res.status(200).json({
-      success: true,
-      pre_booking_fee: preBookingFee
-    });
-  } catch (err) {
-    next(err);
-  }
-};
+import db from '../config/database.js';
+import { generateQRPayload, renderQRDataURL } from '../services/qrGenerator.js';
+import { broadcastSlotUpdate } from '../socket/socketManager.js';
 
 // Create Live Booking (Raw SQL + Transaction)
-exports.createLiveBooking = async (req, res, next) => {
+export const createLiveBooking = async (req, res, next) => {
   const client = await db.getClient();
   try {
     await client.query('BEGIN');
@@ -88,6 +74,11 @@ exports.createLiveBooking = async (req, res, next) => {
 
     broadcastSlotUpdate(slot.lot_id, slot.id, 'reserved', slot.slot_number);
 
+    // Enrich booking object with user, slot, and vehicle details
+    booking.user = { id: req.user.id, full_name: req.user.full_name, email: req.user.email, phone: req.user.phone };
+    booking.slot = { ...slot, parking_lot: lot };
+    booking.vehicle = vehicle;
+
     res.status(201).json({
       success: true,
       message: 'Live Booking Confirmed! Live QR Pass Generated.',
@@ -105,8 +96,7 @@ exports.createLiveBooking = async (req, res, next) => {
 };
 
 // Create Pre-Booking (Raw SQL + Transaction)
-// Stage 1: Reserves slot, reads dynamic pre-booking fee from DB, records pending payment, DOES NOT generate QR
-exports.createPreBooking = async (req, res, next) => {
+export const createPreBooking = async (req, res, next) => {
   const client = await db.getClient();
   try {
     await client.query('BEGIN');
@@ -309,7 +299,12 @@ exports.confirmPreBookingPayment = async (req, res, next) => {
 
     broadcastSlotUpdate(booking.lot_id, booking.slot_id, 'reserved', booking.slot_number);
 
-    res.status(200).json({
+    // Enrich booking object with user, slot, and vehicle details
+    booking.user = { id: req.user.id, full_name: req.user.full_name, email: req.user.email, phone: req.user.phone };
+    booking.slot = { ...slot, parking_lot: lot };
+    booking.vehicle = vehicle;
+
+    res.status(201).json({
       success: true,
       message: 'Reservation payment confirmed! Digital QR Pass generated.',
       booking: updatedBooking,
@@ -326,11 +321,12 @@ exports.confirmPreBookingPayment = async (req, res, next) => {
 };
 
 // Get user bookings with live QR details (Raw SQL Join)
-exports.getUserBookings = async (req, res, next) => {
+export const getUserBookings = async (req, res, next) => {
   try {
     const queryStr = `
       SELECT 
         b.*,
+        json_build_object('id', u.id, 'full_name', u.full_name, 'email', u.email, 'phone', u.phone) AS user,
         json_build_object(
           'id', s.id,
           'slot_number', s.slot_number,
@@ -351,6 +347,7 @@ exports.getUserBookings = async (req, res, next) => {
           ELSE NULL
         END AS qr_meta
       FROM bookings b
+      LEFT JOIN users u ON b.user_id = u.id
       LEFT JOIN parking_slots s ON b.slot_id = s.id
       LEFT JOIN parking_lots l ON s.lot_id = l.id
       LEFT JOIN vehicles v ON b.vehicle_id = v.id
@@ -372,12 +369,13 @@ exports.getUserBookings = async (req, res, next) => {
 };
 
 // Get single booking detail with live dynamic QR render (Raw SQL)
-exports.getBookingById = async (req, res, next) => {
+export const getBookingById = async (req, res, next) => {
   try {
     const queryStr = `
       SELECT 
         b.*,
         u.full_name as user_name,
+        json_build_object('id', u.id, 'full_name', u.full_name, 'email', u.email, 'phone', u.phone) AS user,
         json_build_object(
           'id', s.id,
           'slot_number', s.slot_number,

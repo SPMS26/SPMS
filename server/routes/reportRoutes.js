@@ -1,9 +1,9 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const reportController = require('../controllers/reportController');
-const { protect } = require('../middleware/auth');
-const { requireRole } = require('../middleware/rbac');
-const upload = require('../middleware/upload');
+import * as reportController from '../controllers/reportController.js';
+import { protect } from '../middleware/auth.js';
+import { requireRole } from '../middleware/rbac.js';
+import upload from '../middleware/upload.js';
 
 router.use(protect);
 
@@ -12,4 +12,4 @@ router.get('/', reportController.getReports);
 router.get('/all', reportController.getReports);
 router.put('/:id/status', requireRole('ADMIN'), reportController.updateReportStatus);
 
-module.exports = router;
+export default router;

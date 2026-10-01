@@ -1,4 +1,4 @@
-const { Server } = require('socket.io');
+import { Server } from 'socket.io';
 
 let io = null;
 
@@ -72,7 +72,7 @@ function broadcastGateEvent(eventData) {
   }
 }
 
-module.exports = {
+export {
   initSocket,
   getIO,
   broadcastSlotUpdate,

@@ -1,7 +1,7 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const bookingController = require('../controllers/bookingController');
-const { protect } = require('../middleware/auth');
+import * as bookingController from '../controllers/bookingController.js';
+import { protect } from '../middleware/auth.js';
 
 const qrController = require('../controllers/qrController');
 
@@ -18,5 +18,4 @@ router.post('/:id/confirm-exit-payment', qrController.confirmExitPayment);
 router.get('/', bookingController.getUserBookings);
 router.get('/:id', bookingController.getBookingById);
 
-module.exports = router;
-
+export default router;

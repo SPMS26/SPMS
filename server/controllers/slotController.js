@@ -1,9 +1,9 @@
-const db = require('../config/database');
-const { broadcastSlotUpdate, sendUserNotification } = require('../socket/socketManager');
-const { generateQRPayload } = require('../services/qrGenerator');
+import db from '../config/database.js';
+import { broadcastSlotUpdate, sendUserNotification } from '../socket/socketManager.js';
+import { generateQRPayload } from '../services/qrGenerator.js';
 
 // Get slots for a parking lot (Raw SQL)
-exports.getSlotsByLot = async (req, res, next) => {
+export const getSlotsByLot = async (req, res, next) => {
   try {
     const { lotId } = req.params;
     const { floor } = req.query;
@@ -26,7 +26,7 @@ exports.getSlotsByLot = async (req, res, next) => {
 };
 
 // Admin: Update Slot Status (Raw SQL)
-exports.updateSlotStatus = async (req, res, next) => {
+export const updateSlotStatus = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
@@ -55,7 +55,7 @@ exports.updateSlotStatus = async (req, res, next) => {
 };
 
 // FR27. Slot Reassignment (Admin Feature Raw SQL + Transaction)
-exports.reassignSlot = async (req, res, next) => {
+export const reassignSlot = async (req, res, next) => {
   const client = await db.getClient();
   try {
     await client.query('BEGIN');

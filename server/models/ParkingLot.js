@@ -1,5 +1,5 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+import { DataTypes } from 'sequelize';
+import sequelize from '../config/database.js';
 
 const ParkingLot = sequelize.define('ParkingLot', {
   id: {
@@ -42,4 +42,4 @@ const ParkingLot = sequelize.define('ParkingLot', {
   tableName: 'parking_lots'
 });
 
-module.exports = ParkingLot;
+export default ParkingLot;

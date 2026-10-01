@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { SocketProvider } from './context/SocketContext';
 import { Toaster } from 'react-hot-toast';
@@ -16,6 +16,7 @@ import AdminLotsPage from './pages/AdminLotsPage';
 import AdminUsersPage from './pages/AdminUsersPage';
 import AdminReportsPage from './pages/AdminReportsPage';
 import NotFoundPage from './pages/NotFoundPage';
+import LandingPage from './pages/LandingPage';
 
 function App() {
   return (
@@ -33,7 +34,9 @@ function App() {
             }}
           />
           <Routes>
-            {/* Public Routes */}
+            {/* Landing & Public Routes */}
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/landing" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
 
@@ -49,8 +52,6 @@ function App() {
             <Route path="/admin/reports" element={<ProtectedRoute requireAdmin={true}><AdminReportsPage /></ProtectedRoute>} />
             <Route path="/admin/users" element={<ProtectedRoute requireAdmin={true}><AdminUsersPage /></ProtectedRoute>} />
 
-            {/* Redirect root to dashboard */}
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </SocketProvider>

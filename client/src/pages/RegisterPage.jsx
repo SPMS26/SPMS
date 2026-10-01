@@ -37,9 +37,19 @@ const RegisterPage = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-main)', padding: '1.5rem 1rem' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-main)', padding: '1.5rem 1rem' }}>
+      <div style={{ width: '100%', maxWidth: '520px', marginBottom: '1rem', display: 'flex', justifyContent: 'flex-start' }}>
+        <Link to="/" style={{ color: 'var(--text-muted)', textDecoration: 'none', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600 }}>
+          <i className="fa-solid fa-arrow-left"></i> Back to SPMS Landing Page
+        </Link>
+      </div>
       <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-bright)', borderRadius: '16px', width: '100%', maxWidth: '520px', padding: '2rem', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
         <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+          <Link to="/" style={{ textDecoration: 'none' }}>
+            <div className="brand-logo-icon" style={{ margin: '0 auto 0.75rem auto', width: '44px', height: '44px', fontSize: '1.4rem' }}>
+              <i className="fa-solid fa-square-parking"></i>
+            </div>
+          </Link>
           <h2 style={{ fontFamily: 'Outfit, sans-serif', fontSize: '1.5rem', fontWeight: 700, margin: '0 0 0.25rem 0' }}>Driver Registration</h2>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', margin: 0 }}>Register to search and book parking slots</p>
         </div>

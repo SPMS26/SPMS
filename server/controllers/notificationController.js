@@ -1,6 +1,6 @@
-const db = require('../config/database');
+import db from '../config/database.js';
 
-exports.getUserNotifications = async (req, res, next) => {
+export const getUserNotifications = async (req, res, next) => {
   try {
     const listRes = await db.query(
       'SELECT * FROM notifications WHERE user_id = $1 ORDER BY created_at DESC LIMIT 20',
@@ -22,7 +22,7 @@ exports.getUserNotifications = async (req, res, next) => {
   }
 };
 
-exports.markAsRead = async (req, res, next) => {
+export const markAsRead = async (req, res, next) => {
   try {
     const { id } = req.params;
     if (id === 'all') {
