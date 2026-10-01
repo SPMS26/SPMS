@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
-const Sidebar = () => {
+const Sidebar = ({ onClose }) => {
   const location = useLocation();
   const { user, isAdmin, logout } = useAuth();
 
@@ -11,21 +11,41 @@ const Sidebar = () => {
   return (
     <aside className={`sidebar ${isAdmin ? 'admin-nav' : ''}`}>
       <div>
-        <Link to="/" style={{ textDecoration: 'none', display: 'block' }}>
-          <div className="sidebar-brand">
-            <div
-              className="brand-logo-icon"
-              style={isAdmin ? { background: 'linear-gradient(135deg, var(--accent-emerald), #059669)' } : {}}
-            >
-              <i className={`fa-solid ${isAdmin ? 'fa-shapes' : 'fa-square-parking'}`}></i>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <Link to="/" style={{ textDecoration: 'none', display: 'block', flex: 1 }}>
+            <div className="sidebar-brand">
+              <div
+                className="brand-logo-icon"
+                style={isAdmin ? { background: 'linear-gradient(135deg, var(--accent-emerald), #059669)' } : {}}
+              >
+                <i className={`fa-solid ${isAdmin ? 'fa-shapes' : 'fa-square-parking'}`}></i>
+              </div>
+              <h2>{isAdmin ? 'Admin Panel' : 'Smart Parking'}</h2>
             </div>
-            <h2>{isAdmin ? 'Admin Panel' : 'Smart Parking'}</h2>
-          </div>
-        </Link>
+          </Link>
+          {!isAdmin && (
+            <button
+              onClick={onClose}
+              title="Close"
+              aria-label="Close"
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--text-muted)',
+                cursor: 'pointer',
+                fontSize: '1.1rem',
+                padding: '0.4rem 0.6rem',
+                marginRight: '0.5rem'
+              }}
+            >
+              <i className="fa-solid fa-xmark"></i>
+            </button>
+          )}
+        </div>
 
         <ul className="sidebar-menu">
           <li className={`nav-item ${isActive('/') ? 'active' : ''}`}>
-            <Link to="/">
+            <Link to="/" onClick={onClose}>
               <i className="fa-solid fa-compass"></i>
               <span>System Overview</span>
             </Link>
@@ -33,21 +53,21 @@ const Sidebar = () => {
           {!isAdmin ? (
             <>
               <li className={`nav-item ${isActive('/dashboard') ? 'active' : ''}`}>
-                <Link to="/dashboard">
+                <Link to="/dashboard" onClick={onClose}>
                   <i className="fa-solid fa-house"></i>
                   <span>Home</span>
                 </Link>
               </li>
               <li className={`nav-item ${isActive('/bookings') ? 'active' : ''}`}>
-                <Link to="/bookings">
+                <Link to="/bookings" onClick={onClose}>
                   <i className="fa-solid fa-calendar-check"></i>
-                  <span>My Bookings</span>
+                  <span>Booking History</span>
                 </Link>
               </li>
-              <li className={`nav-item ${isActive('/profile') ? 'active' : ''}`}>
-                <Link to="/profile">
-                  <i className="fa-regular fa-user"></i>
-                  <span>Profile & Vehicles</span>
+              <li className={`nav-item ${isActive('/report-issue') ? 'active' : ''}`}>
+                <Link to="/report-issue" onClick={onClose}>
+                  <i className="fa-solid fa-triangle-exclamation" style={{ color: 'var(--accent-gold)' }}></i>
+                  <span>Report Issue</span>
                 </Link>
               </li>
             </>

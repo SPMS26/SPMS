@@ -6,7 +6,6 @@ import SlotGrid from '../components/parking/SlotGrid';
 import SlotDetailsPanel from '../components/parking/SlotDetailsPanel';
 import PaymentModal from '../components/booking/PaymentModal';
 import QRPassModal from '../components/booking/QRPassModal';
-import ReportIssueModal from '../components/reports/ReportIssueModal';
 
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
@@ -29,7 +28,6 @@ const UserDashboard = () => {
   // Modals
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showQRModal, setShowQRModal] = useState(false);
-  const [showReportModal, setShowReportModal] = useState(false);
   const [activeQRBooking, setActiveQRBooking] = useState(null);
 
   const fetchLots = async () => {
@@ -195,134 +193,6 @@ const UserDashboard = () => {
         />
       </div>
 
-      {/* Section 3: Bottom Grid Row */}
-      <div className="user-bottom-grid">
-        {/* Card 1: Report Issue */}
-        <div className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-          <div>
-            <h3 style={{ fontSize: '1rem', color: 'var(--accent-gold)', marginBottom: '0.5rem' }}>
-              <i className="fa-solid fa-triangle-exclamation"></i> Report Issue
-            </h3>
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Facing any problem? Let us know and we'll resolve it quickly.</p>
-          </div>
-          <button
-            className="change-btn"
-            style={{ marginTop: '1rem', borderColor: 'var(--accent-gold)', color: 'var(--accent-gold)', width: '100%', padding: '0.5rem' }}
-            onClick={() => setShowReportModal(true)}
-          >
-            Report Issue
-          </button>
-        </div>
-
-        {/* Card 2: Current Status & QR Pass Quick Access */}
-        <div className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-          <div>
-            <h3 style={{ fontSize: '1rem', marginBottom: '0.5rem' }}>
-              <i className="fa-solid fa-car"></i> Current Status
-            </h3>
-            <div style={{ marginTop: '0.75rem' }}>
-              {activeBooking ? (
-                <div>
-                  <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--accent-gold)' }}>
-                    Active Pass: {activeBooking.bookingCode || `BK-${activeBooking.id.substring(0, 6).toUpperCase()}`}
-                  </div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                    Slot {activeBooking.slot ? activeBooking.slot.slot_number : 'C5'} | {activeBooking.vehicle ? activeBooking.vehicle.vehicle_number : ''}
-                  </div>
-                </div>
-              ) : (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                  <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--accent-gold-bg)', color: 'var(--accent-gold)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <i className="fa-solid fa-shield-halved"></i>
-                  </div>
-                  <div>
-                    <div style={{ fontSize: '0.85rem', fontWeight: 700 }}>No Active Booking</div>
-                    <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Select a slot to generate your QR pass.</div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-          <button
-            className="change-btn"
-            style={{ marginTop: '1rem', width: '100%', padding: '0.5rem' }}
-            onClick={() => {
-              if (activeBooking) {
-                setActiveQRBooking({
-                  ...activeBooking,
-                  user: activeBooking.user || user,
-                  vehicle: activeBooking.vehicle || selectedVehicle
-                });
-                setShowQRModal(true);
-              } else {
-                toast.error('No active QR passes found. Select a slot to book.');
-              }
-            }}
-          >
-            View My QR Passes
-          </button>
-        </div>
-
-        {/* Card 3: History */}
-        <div className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-          <div>
-            <h3 style={{ fontSize: '1rem', marginBottom: '0.5rem' }}>
-              <i className="fa-solid fa-clock-rotate-left"></i> History
-            </h3>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '0.75rem' }}>
-              <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'var(--accent-emerald-bg)', color: 'var(--accent-emerald)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <i className="fa-regular fa-clock"></i>
-              </div>
-              <div>
-                <div style={{ fontSize: '0.85rem', fontWeight: 700 }}>Booking History</div>
-                <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>View completed parking sessions.</div>
-              </div>
-            </div>
-          </div>
-          <button className="change-btn" style={{ marginTop: '1rem', width: '100%', padding: '0.5rem' }} onClick={() => navigate('/bookings')}>
-            View History
-          </button>
-        </div>
-
-        {/* Card 4: Quick Actions */}
-        <div className="card">
-          <h3 style={{ fontSize: '1rem', marginBottom: '0.75rem' }}>Quick Actions</h3>
-          <div className="quick-actions-2x2">
-            <div className="action-tile" onClick={() => {
-              if (activeBooking) {
-                setActiveQRBooking({
-                  ...activeBooking,
-                  user: activeBooking.user || user,
-                  vehicle: activeBooking.vehicle || selectedVehicle
-                });
-                setShowQRModal(true);
-              } else {
-                toast.error('No booking pass available.');
-              }
-            }}>
-              <i className="fa-solid fa-qrcode"></i>
-              <h5>View QR Pass</h5>
-              <p>Entry / Exit</p>
-            </div>
-            <div className="action-tile" onClick={() => navigate('/bookings')}>
-              <i className="fa-solid fa-calendar-check"></i>
-              <h5>My Bookings</h5>
-              <p>View all</p>
-            </div>
-            <div className="action-tile" onClick={() => toast.success('Notifications up to date.')}>
-              <i className="fa-regular fa-bell"></i>
-              <h5>Notifications</h5>
-              <p>Alerts</p>
-            </div>
-            <div className="action-tile" onClick={() => toast.info('Support team available at support@spms.com')}>
-              <i className="fa-regular fa-circle-question"></i>
-              <h5>Help Center</h5>
-              <p>Get support</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Modals */}
       <PaymentModal
         isOpen={showPaymentModal}
@@ -336,11 +206,6 @@ const UserDashboard = () => {
         isOpen={showQRModal}
         onClose={() => setShowQRModal(false)}
         booking={activeQRBooking}
-      />
-
-      <ReportIssueModal
-        isOpen={showReportModal}
-        onClose={() => setShowReportModal(false)}
       />
     </AppLayout>
   );

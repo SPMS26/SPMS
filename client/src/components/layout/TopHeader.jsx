@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { notificationService } from '../../services/notificationService';
 import { useSocket } from '../../context/SocketContext';
 
-const TopHeader = () => {
+const TopHeader = ({ onToggleSidebar }) => {
   const { user, isAdmin } = useAuth();
   const { socket } = useSocket();
+  const location = useLocation();
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [showNotifications, setShowNotifications] = useState(false);
+
+  const isProfilePage = location.pathname === '/profile';
 
   const fetchNotifications = async () => {
     try {
@@ -47,12 +50,56 @@ const TopHeader = () => {
   };
 
   return (
-    <header className="top-header">
-      <div className="search-box">
-        <i className="fa-solid fa-magnifying-glass"></i>
-        <input type="text" className="search-input" placeholder="Search parking lots, locations, bookings..." />
-        {isAdmin && <span className="kbd-shortcut" style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'var(--bg-card)', border: '1px solid var(--border-bright)', padding: '0.15rem 0.4rem', borderRadius: '4px', fontSize: '0.7rem', color: 'var(--text-muted)' }}>⌘K</span>}
+    <header className="top-header" style={{ position: 'sticky', top: 0, zIndex: 30 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
+        {!isAdmin && (
+          isProfilePage ? (
+            <Link
+              to="/dashboard"
+              className="nav-arrow-btn"
+              title="Exit to Main Page"
+              aria-label="Exit to Main Page"
+            >
+              <i className="fa-solid fa-chevron-left"></i>
+            </Link>
+          ) : (
+            <button
+              className="nav-icon-btn"
+              onClick={onToggleSidebar}
+              title="Menu"
+              aria-label="Menu"
+            >
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor">
+                <rect x="1" y="1" width="4" height="4" rx="1" />
+                <rect x="7" y="1" width="4" height="4" rx="1" />
+                <rect x="13" y="1" width="4" height="4" rx="1" />
+                <rect x="1" y="7" width="4" height="4" rx="1" />
+                <rect x="7" y="7" width="4" height="4" rx="1" />
+                <rect x="13" y="7" width="4" height="4" rx="1" />
+                <rect x="1" y="13" width="4" height="4" rx="1" />
+                <rect x="7" y="13" width="4" height="4" rx="1" />
+                <rect x="13" y="13" width="4" height="4" rx="1" />
+              </svg>
+            </button>
+          )
+        )}
+
+        {!isProfilePage && (
+          <div className="search-box">
+            <i className="fa-solid fa-magnifying-glass"></i>
+            <input type="text" className="search-input" placeholder="Search parking lots, locations, bookings..." />
+            {isAdmin && <span className="kbd-shortcut" style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'var(--bg-card)', border: '1px solid var(--border-bright)', padding: '0.15rem 0.4rem', borderRadius: '4px', fontSize: '0.7rem', color: 'var(--text-muted)' }}>⌘K</span>}
+          </div>
+        )}
       </div>
+
+      {isProfilePage && (
+        <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)' }}>
+          <h1 style={{ margin: 0, fontSize: '1.45rem', fontWeight: 700, color: 'var(--text-main)', letterSpacing: '-0.02em', fontFamily: "'Outfit', sans-serif" }}>
+            Profile
+          </h1>
+        </div>
+      )}
 
       <div className="header-right">
         {isAdmin ? (
@@ -67,50 +114,56 @@ const TopHeader = () => {
           )
         )}
 
-        <div style={{ position: 'relative' }}>
-          <button className="icon-btn" onClick={() => setShowNotifications(!showNotifications)}>
-            <i className="fa-regular fa-bell"></i>
-            {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
-          </button>
+        {isAdmin && (
+          <div style={{ position: 'relative' }}>
+            <button className="icon-btn" onClick={() => setShowNotifications(!showNotifications)}>
+              <i className="fa-regular fa-bell"></i>
+              {unreadCount > 0 && <span className="notification-badge">{unreadCount}</span>}
+            </button>
 
-          {showNotifications && (
-            <div style={{ position: 'absolute', right: 0, top: '48px', width: '320px', background: 'var(--bg-card)', border: '1px solid var(--border-bright)', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)', padding: '1rem', zIndex: 100 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.5rem' }}>
-                <h4 style={{ margin: 0, fontSize: '0.9rem' }}>Notifications</h4>
-                {unreadCount > 0 && (
-                  <button onClick={handleMarkAllRead} style={{ background: 'none', border: 'none', color: 'var(--accent-gold)', fontSize: '0.75rem', cursor: 'pointer' }}>
-                    Mark all read
-                  </button>
-                )}
+            {showNotifications && (
+              <div style={{ position: 'absolute', right: 0, top: '48px', width: '320px', background: 'var(--bg-card)', border: '1px solid var(--border-bright)', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)', padding: '1rem', zIndex: 100 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.5rem' }}>
+                  <h4 style={{ margin: 0, fontSize: '0.9rem' }}>Notifications</h4>
+                  {unreadCount > 0 && (
+                    <button onClick={handleMarkAllRead} style={{ background: 'none', border: 'none', color: 'var(--accent-gold)', fontSize: '0.75rem', cursor: 'pointer' }}>
+                      Mark all read
+                    </button>
+                  )}
+                </div>
+                <div style={{ maxHeight: '240px', overflowY: 'auto' }}>
+                  {notifications.length === 0 ? (
+                    <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textAlign: 'center', margin: '1rem 0' }}>No notifications</p>
+                  ) : (
+                    notifications.map(n => (
+                      <div key={n.id || Math.random()} style={{ padding: '0.5rem 0', borderBottom: '1px solid var(--border-subtle)', opacity: n.is_read ? 0.7 : 1 }}>
+                        <div style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--accent-gold)' }}>{n.title}</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{n.message}</div>
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
-              <div style={{ maxHeight: '240px', overflowY: 'auto' }}>
-                {notifications.length === 0 ? (
-                  <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textAlign: 'center', margin: '1rem 0' }}>No notifications</p>
-                ) : (
-                  notifications.map(n => (
-                    <div key={n.id || Math.random()} style={{ padding: '0.5rem 0', borderBottom: '1px solid var(--border-subtle)', opacity: n.is_read ? 0.7 : 1 }}>
-                      <div style={{ fontSize: '0.8rem', fontWeight: '700', color: 'var(--accent-gold)' }}>{n.title}</div>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{n.message}</div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
 
-        <div className="user-profile">
+        <Link
+          to="/profile"
+          className="user-profile"
+          title="Visit Profile"
+          style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}
+        >
           <img
             src={user && user.profile_image ? user.profile_image : `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.full_name || 'User')}&background=d97706&color=fff&bold=true`}
             alt="Avatar"
             className="user-avatar"
           />
           <div className="user-info">
-            <h5 style={{ margin: 0, fontSize: '0.85rem' }}>{user ? user.full_name : 'Guest'}</h5>
-            <p style={{ margin: 0, fontSize: '0.72rem', color: 'var(--text-muted)' }}>{isAdmin ? 'Super Admin' : 'Driver / User'}</p>
+            <h5 style={{ margin: 0, fontSize: '0.85rem' }}>{user ? user.full_name : 'User'}</h5>
+            {isAdmin && <p style={{ margin: 0, fontSize: '0.72rem', color: 'var(--text-muted)' }}>Super Admin</p>}
           </div>
-          <i className="fa-solid fa-chevron-down" style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}></i>
-        </div>
+        </Link>
       </div>
     </header>
   );

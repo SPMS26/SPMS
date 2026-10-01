@@ -34,7 +34,7 @@ const BookingsPage = () => {
     <AppLayout>
       <div className="page-header-row">
         <div className="page-title-box">
-          <h1>My Bookings & QR Passes</h1>
+          <h1>Booking History & QR Passes</h1>
           <p>View your active reservations, live parking passes, and session history</p>
         </div>
       </div>
