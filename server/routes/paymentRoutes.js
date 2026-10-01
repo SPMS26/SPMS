@@ -7,6 +7,7 @@ router.use(protect);
 
 router.post('/create-order', paymentController.createPaymentOrder);
 router.post('/verify', paymentController.verifyPayment);
+router.post('/pay', paymentController.verifyPayment);
 router.get('/history', paymentController.getPaymentHistory);
 
 module.exports = router;

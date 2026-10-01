@@ -1,6 +1,6 @@
 /**
  * Simulated Payment Service
- * Provides mock payment creation and verification (replacing Razorpay requirement)
+ * Provides mock payment creation and verification for manual/simulated project workflow
  */
 class SimulatedPaymentService {
   async createOrder(amount, bookingId) {

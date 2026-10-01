@@ -11,6 +11,11 @@ export const qrService = {
     return res.data;
   },
 
+  async confirmExitPayment(payload) {
+    const res = await api.post('/qr/confirm-exit-payment', payload);
+    return res.data;
+  },
+
   async autoValidate(qr_data = null, extra = {}) {
     const res = await api.post('/qr/auto-validate', { qr_data, ...extra });
     return res.data;

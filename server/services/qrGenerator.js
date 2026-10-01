@@ -151,11 +151,79 @@ function isQRExpired(expiresAt) {
   return new Date(expiresAt) < new Date();
 }
 
+/**
+ * Generate separate cryptographic Exit Payment QR payload for settling final parking charges
+ */
+function generateExitPaymentQRPayload({ paymentId, bookingId, passCode, expiresAt }) {
+  const expStr = expiresAt instanceof Date ? expiresAt.toISOString() : expiresAt;
+  const signBase = `EXIT_PAY:${paymentId}:${bookingId}:${passCode}:${expStr}`;
+  const fullSignature = crypto
+    .createHmac('sha256', QR_SECRET)
+    .update(signBase)
+    .digest('hex');
+  const shortSig = fullSignature.substring(0, 16);
+
+  const payload = {
+    type: 'SPMS_EXIT_PAY',
+    pid: paymentId,
+    bid: bookingId,
+    code: passCode,
+    exp: expStr,
+    sig: shortSig
+  };
+
+  return {
+    payloadString: JSON.stringify(payload),
+    signatureHash: fullSignature,
+    expiresAt: expStr
+  };
+}
+
+/**
+ * Verify cryptographic Exit Payment QR payload
+ */
+function verifyExitPaymentQRPayload(payloadStr) {
+  try {
+    const payload = typeof payloadStr === 'string' ? JSON.parse(payloadStr) : payloadStr;
+    if (payload.type !== 'SPMS_EXIT_PAY') {
+      return { isValid: false, reason: 'Not an exit payment QR' };
+    }
+
+    const { pid: paymentId, bid: bookingId, code: passCode, exp: expiresAt, sig: providedSig } = payload;
+    if (!paymentId || !bookingId) {
+      return { isValid: false, reason: 'Missing paymentId or bookingId in exit payment QR' };
+    }
+
+    if (expiresAt && new Date(expiresAt) < new Date()) {
+      return { isValid: false, isExpired: true, reason: 'Exit payment session expired' };
+    }
+
+    if (providedSig) {
+      const signBase = `EXIT_PAY:${paymentId}:${bookingId}:${passCode}:${expiresAt}`;
+      const expectedFullSig = crypto
+        .createHmac('sha256', QR_SECRET)
+        .update(signBase)
+        .digest('hex');
+      const expectedShortSig = expectedFullSig.substring(0, 16);
+      if (providedSig !== expectedShortSig && providedSig !== expectedFullSig) {
+        return { isValid: false, reason: 'Invalid signature on exit payment QR' };
+      }
+    }
+
+    return { isValid: true, isExpired: false, paymentId, bookingId, passCode, expiresAt };
+  } catch (err) {
+    return { isValid: false, reason: 'Malformed exit payment QR payload' };
+  }
+}
+
 module.exports = {
   generateQRPayload,
+  generateExitPaymentQRPayload,
   extractSignature,
   renderQRDataURL,
   renderQRSVG,
   verifyQRPayload,
+  verifyExitPaymentQRPayload,
   isQRExpired
 };
+

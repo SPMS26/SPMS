@@ -37,6 +37,7 @@ const AdminDashboard = () => {
 
   const [monthlyData, setMonthlyData] = useState([]);
   const [dailyRevenueData, setDailyRevenueData] = useState([]);
+  const [peakTimesData, setPeakTimesData] = useState({ times: [], days: [], matrix: [] });
   const [showAdminReserveModal, setShowAdminReserveModal] = useState(false);
 
   const fetchKpis = async () => {
@@ -87,20 +88,31 @@ const AdminDashboard = () => {
   const fetchAnalyticsCharts = async () => {
     try {
       const monthRes = await analyticsService.getMonthlyHistory();
-      if (monthRes.months) {
+      if (monthRes.monthlyData) {
+        setMonthlyData(monthRes.monthlyData);
+      } else if (monthRes.months) {
         const formattedMonth = monthRes.months.map((m, idx) => ({
           month: m,
-          bookings: monthRes.bookingsData[idx],
-          revenue: monthRes.revenueData[idx] / 1000
+          bookings: monthRes.bookingsData ? monthRes.bookingsData[idx] : 0,
+          revenue: monthRes.revenueData ? monthRes.revenueData[idx] : 0
         }));
         setMonthlyData(formattedMonth);
+      }
+
+      const peakRes = await analyticsService.getPeakTimes();
+      if (peakRes && peakRes.matrix) {
+        setPeakTimesData({
+          times: peakRes.times || [],
+          days: peakRes.days || [],
+          matrix: peakRes.matrix || []
+        });
       }
 
       const dayRes = await analyticsService.getDayWiseRevenue();
       if (dayRes.dailyValues) {
         const formattedDay = dayRes.dailyValues.map((val, idx) => ({
           day: idx + 1,
-          revenue: val / 1000
+          revenue: val
         }));
         setDailyRevenueData(formattedDay);
       }
@@ -499,7 +511,7 @@ const AdminDashboard = () => {
         {/* Chart 2: Peak Times Heatmap */}
         <div className="card">
           <h3 style={{ margin: '0 0 0.75rem 0', fontSize: '0.95rem' }}><i className="fa-regular fa-clock"></i> Peak Times (This Month)</h3>
-          <HeatmapGrid />
+          <HeatmapGrid times={peakTimesData.times} days={peakTimesData.days} matrix={peakTimesData.matrix} />
         </div>
 
         {/* Chart 3: Day Wise Revenue */}

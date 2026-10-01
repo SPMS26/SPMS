@@ -1,28 +1,26 @@
 import React from 'react';
 
-const HeatmapGrid = () => {
-  const times = ['12 AM', '4 AM', '8 AM', '12 PM', '4 PM', '8 PM'];
-  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const HeatmapGrid = ({ times, days, matrix }) => {
+  const hasData = Array.isArray(times) && times.length > 0 &&
+                  Array.isArray(days) && days.length > 0 &&
+                  Array.isArray(matrix) && matrix.length > 0;
 
-  const matrix = [
-    [0, 0, 0, 0, 0, 1, 1],
-    [0, 0, 0, 0, 0, 0, 0],
-    [2, 3, 3, 3, 3, 2, 1],
-    [4, 4, 4, 4, 5, 5, 4],
-    [3, 3, 3, 4, 4, 3, 2],
-    [1, 1, 2, 2, 3, 2, 1]
-  ];
+  if (!hasData) {
+    return (
+      <div style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+        <i className="fa-regular fa-clock" style={{ display: 'block', fontSize: '1.5rem', marginBottom: '0.5rem', opacity: 0.5 }}></i>
+        No analytics data available
+      </div>
+    );
+  }
 
   const getHeatColor = (level) => {
-    switch (level) {
-      case 0: return '#182032';
-      case 1: return '#3b1c1c';
-      case 2: return '#78350f';
-      case 3: return '#b45309';
-      case 4: return '#f59e0b';
-      case 5: return '#10b981';
-      default: return '#182032';
-    }
+    if (!level || level === 0) return '#182032';
+    if (level === 1) return '#3b1c1c';
+    if (level === 2) return '#78350f';
+    if (level === 3) return '#b45309';
+    if (level === 4) return '#f59e0b';
+    return '#10b981';
   };
 
   return (
