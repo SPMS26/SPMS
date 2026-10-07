@@ -5,7 +5,7 @@ import { notificationService } from '../../services/notificationService';
 import { useSocket } from '../../context/SocketContext';
 
 const TopHeader = ({ onToggleSidebar }) => {
-  const { user, isAdmin } = useAuth();
+  const { user, isStaff: isAdmin } = useAuth();
   const { socket } = useSocket();
   const location = useLocation();
   const [notifications, setNotifications] = useState([]);
@@ -89,7 +89,7 @@ const TopHeader = ({ onToggleSidebar }) => {
           <div className="search-box">
             <i className="fa-solid fa-magnifying-glass"></i>
             <input type="text" className="search-input" placeholder="Search parking lots, locations, bookings..." />
-            {isAdmin && <span className="kbd-shortcut" style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'var(--bg-card)', border: '1px solid var(--border-bright)', padding: '0.15rem 0.4rem', borderRadius: '4px', fontSize: '0.7rem', color: 'var(--text-muted)' }}>⌘K</span>}
+            {isAdmin && <span className="kbd-shortcut" style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'var(--grad-card)', border: '1px solid var(--border-bright)', padding: '0.15rem 0.4rem', borderRadius: '4px', fontSize: '0.7rem', color: 'var(--text-muted)' }}>⌘K</span>}
           </div>
         )}
       </div>
@@ -111,7 +111,7 @@ const TopHeader = ({ onToggleSidebar }) => {
             </button>
 
             {showNotifications && (
-              <div style={{ position: 'absolute', right: 0, top: '48px', width: '320px', background: 'var(--bg-card)', border: '1px solid var(--border-bright)', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)', padding: '1rem', zIndex: 100 }}>
+              <div style={{ position: 'absolute', right: 0, top: '48px', width: '320px', background: 'var(--grad-card)', border: '1px solid var(--border-bright)', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)', padding: '1rem', zIndex: 100 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.5rem' }}>
                   <h4 style={{ margin: 0, fontSize: '0.9rem' }}>Notifications</h4>
                   {unreadCount > 0 && (
@@ -150,7 +150,7 @@ const TopHeader = ({ onToggleSidebar }) => {
           />
           <div className="user-info">
             <h5 style={{ margin: 0, fontSize: '0.85rem' }}>{user ? user.full_name : 'User'}</h5>
-            {isAdmin && <p style={{ margin: 0, fontSize: '0.72rem', color: 'var(--text-muted)' }}>Super Admin</p>}
+            {isAdmin && <p style={{ margin: 0, fontSize: '0.72rem', color: 'var(--text-muted)' }}>{user?.role === 'SECURITY' ? 'Gate Security' : (user?.organization_name || 'Lot Owner')}</p>}
           </div>
         </Link>
       </div>

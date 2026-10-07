@@ -2,8 +2,17 @@ import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
-const ProtectedRoute = ({ children, requireAdmin = false }) => {
-  const { user, loading, isAdmin } = useAuth();
+// Landing page for each role after login / when a route is not permitted
+export const homeForRole = (role) => {
+  if (role === 'ADMIN') return '/admin';
+  if (role === 'SECURITY') return '/admin/scanner';
+  return '/dashboard';
+};
+
+// `roles` limits access to the listed roles; omit it for any signed-in user.
+// `requireAdmin` is kept as shorthand for roles={['ADMIN']}.
+const ProtectedRoute = ({ children, requireAdmin = false, roles = null }) => {
+  const { user, loading } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -18,8 +27,9 @@ const ProtectedRoute = ({ children, requireAdmin = false }) => {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (requireAdmin && !isAdmin) {
-    return <Navigate to="/dashboard" replace />;
+  const allowed = requireAdmin ? ['ADMIN'] : roles;
+  if (allowed && !allowed.includes(user.role)) {
+    return <Navigate to={homeForRole(user.role)} replace />;
   }
 
   return children;

@@ -1,5 +1,10 @@
 import db from '../config/database.js';
 
+// Every metric is limited to the lots owned by the logged-in admin.
+// Payments with no booking (e.g. the admin registration fee) never match, so they never count as lot revenue.
+const BOOKING_SCOPE = 'slot_id IN (SELECT id FROM parking_slots WHERE lot_id IN (SELECT id FROM parking_lots WHERE admin_id = $1))';
+const PAYMENT_SCOPE = `booking_id IN (SELECT id FROM bookings WHERE ${BOOKING_SCOPE})`;
+
 // Format a month-over-month change; null when there is no previous-month baseline
 const formatTrend = (current, previous) => {
   if (!previous) return null;
@@ -10,22 +15,25 @@ const formatTrend = (current, previous) => {
 // Get Dashboard KPIs (Raw SQL)
 export const getKPIs = async (req, res, next) => {
   try {
+    const adminId = [req.user.id];
     const [totals, active, slots, revenue, bookingMonths, revenueMonths] = await Promise.all([
-      db.query('SELECT COUNT(*)::int AS count FROM bookings'),
-      db.query("SELECT COUNT(*)::int AS count FROM bookings WHERE booking_status = 'active'"),
-      db.query('SELECT COUNT(*)::int AS count FROM parking_slots WHERE is_active = true'),
-      db.query("SELECT COALESCE(SUM(amount), 0)::float AS sum FROM payments WHERE payment_status = 'paid'"),
+      db.query(`SELECT COUNT(*)::int AS count FROM bookings WHERE ${BOOKING_SCOPE}`, adminId),
+      db.query(`SELECT COUNT(*)::int AS count FROM bookings WHERE booking_status = 'active' AND ${BOOKING_SCOPE}`, adminId),
+      db.query('SELECT COUNT(*)::int AS count FROM parking_slots WHERE is_active = true AND lot_id IN (SELECT id FROM parking_lots WHERE admin_id = $1)', adminId),
+      db.query(`SELECT COALESCE(SUM(amount), 0)::float AS sum FROM payments WHERE payment_status = 'paid' AND ${PAYMENT_SCOPE}`, adminId),
       db.query(
         `SELECT
            COUNT(*) FILTER (WHERE date_trunc('month', created_at) = date_trunc('month', CURRENT_TIMESTAMP))::int AS current,
            COUNT(*) FILTER (WHERE date_trunc('month', created_at) = date_trunc('month', CURRENT_TIMESTAMP - INTERVAL '1 month'))::int AS previous
-         FROM bookings`
+         FROM bookings WHERE ${BOOKING_SCOPE}`,
+        adminId
       ),
       db.query(
         `SELECT
            COALESCE(SUM(amount) FILTER (WHERE date_trunc('month', paid_at) = date_trunc('month', CURRENT_TIMESTAMP)), 0)::float AS current,
            COALESCE(SUM(amount) FILTER (WHERE date_trunc('month', paid_at) = date_trunc('month', CURRENT_TIMESTAMP - INTERVAL '1 month')), 0)::float AS previous
-         FROM payments WHERE payment_status = 'paid'`
+         FROM payments WHERE payment_status = 'paid' AND ${PAYMENT_SCOPE}`,
+        adminId
       )
     ]);
 
@@ -49,24 +57,26 @@ export const getKPIs = async (req, res, next) => {
 export const getMonthlyHistory = async (req, res, next) => {
   try {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    
-    // Query actual monthly bookings from bookings table
+    const adminId = [req.user.id];
+
     const bookingRes = await db.query(
-      `SELECT 
+      `SELECT
          EXTRACT(MONTH FROM created_at)::int AS month_num,
          COUNT(*)::int AS bookings
        FROM bookings
-       GROUP BY month_num`
+       WHERE ${BOOKING_SCOPE}
+       GROUP BY month_num`,
+      adminId
     );
 
-    // Query actual monthly revenue from paid payments
     const revenueRes = await db.query(
-      `SELECT 
+      `SELECT
          EXTRACT(MONTH FROM COALESCE(paid_at, CURRENT_TIMESTAMP))::int AS month_num,
          COALESCE(SUM(amount), 0)::float AS revenue
        FROM payments
-       WHERE payment_status = 'paid'
-       GROUP BY month_num`
+       WHERE payment_status = 'paid' AND ${PAYMENT_SCOPE}
+       GROUP BY month_num`,
+      adminId
     );
 
     const bookingMap = {};
@@ -121,14 +131,15 @@ export const getPeakTimes = async (req, res, next) => {
     // 6 time buckets x 7 days matrix initialized to 0
     const matrix = Array.from({ length: 6 }, () => Array(7).fill(0));
 
-    // Calculate actual counts by day of week (1=Mon, 7=Sun) and hour (0-23)
     const peakRes = await db.query(
-      `SELECT 
+      `SELECT
          EXTRACT(ISODOW FROM COALESCE(entry_time, booking_start, created_at))::int AS day_of_week,
          EXTRACT(HOUR FROM COALESCE(entry_time, booking_start, created_at))::int AS hour_of_day,
          COUNT(*)::int AS count
        FROM bookings
-       GROUP BY day_of_week, hour_of_day`
+       WHERE ${BOOKING_SCOPE}
+       GROUP BY day_of_week, hour_of_day`,
+      [req.user.id]
     );
 
     peakRes.rows.forEach(r => {
@@ -158,14 +169,16 @@ export const getDayWiseRevenue = async (req, res, next) => {
     const dailyValues = Array(daysInMonth).fill(0);
 
     const dailyRes = await db.query(
-      `SELECT 
+      `SELECT
          EXTRACT(DAY FROM COALESCE(paid_at, CURRENT_TIMESTAMP))::int AS day_num,
          COALESCE(SUM(amount), 0)::float AS revenue
        FROM payments
        WHERE payment_status = 'paid'
+         AND ${PAYMENT_SCOPE}
          AND EXTRACT(MONTH FROM COALESCE(paid_at, CURRENT_TIMESTAMP)) = EXTRACT(MONTH FROM CURRENT_TIMESTAMP)
          AND EXTRACT(YEAR FROM COALESCE(paid_at, CURRENT_TIMESTAMP)) = EXTRACT(YEAR FROM CURRENT_TIMESTAMP)
-       GROUP BY day_num`
+       GROUP BY day_num`,
+      [req.user.id]
     );
 
     dailyRes.rows.forEach(r => {

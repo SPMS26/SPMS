@@ -9,6 +9,7 @@ import path from 'path';
 import db from './config/database.js';
 import { initDb } from './config/initDb.js';
 import { initSocket } from './socket/socketManager.js';
+import { startPendingBookingSweeper } from './services/bookingRules.js';
 import errorHandler from './middleware/errorHandler.js';
 
 // Route imports
@@ -110,8 +111,9 @@ async function startServer() {
     await db.query('SELECT 1');
     console.log('[Server] PostgreSQL connection verified via raw pg driver.');
 
-    // Initialize raw SQL DDL tables if not exists
     await initDb();
+
+    startPendingBookingSweeper();
 
     server.listen(PORT, () => {
       console.log(`=======================================================`);

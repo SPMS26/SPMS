@@ -1,8 +1,8 @@
 import api from './api';
 
 export const bookingService = {
-  async getBookingConfig() {
-    const res = await api.get('/bookings/config');
+  async getBookingConfig(lotId = null) {
+    const res = await api.get('/bookings/config', { params: lotId ? { lot_id: lotId } : {} });
     return res.data;
   },
 

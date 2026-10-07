@@ -15,12 +15,16 @@ const protect = async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'spms_jwt_secret_key_2026_dev');
     
     const userRes = await db.query(
-      'SELECT id, full_name, email, phone, role, profile_image, is_verified FROM users WHERE id = $1',
+      'SELECT id, full_name, email, phone, role, profile_image, is_verified, is_active, managed_by, assigned_lot_id, organization_name FROM users WHERE id = $1',
       [decoded.id]
     );
 
     if (userRes.rows.length === 0) {
       return res.status(401).json({ success: false, message: 'User belonging to this token no longer exists.' });
+    }
+
+    if (userRes.rows[0].is_active === false) {
+      return res.status(403).json({ success: false, message: 'This account has been deactivated.' });
     }
 
     req.user = userRes.rows[0];

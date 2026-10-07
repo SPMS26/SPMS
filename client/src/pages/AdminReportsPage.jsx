@@ -37,7 +37,6 @@ const AdminReportsPage = () => {
       <div className="page-header-row">
         <div className="page-title-box">
           <h1>Incident Reports Management</h1>
-          <p>Review user-reported issues, blocked slots, QR scanner failures, and photo evidence</p>
         </div>
       </div>
 
@@ -82,7 +81,7 @@ const AdminReportsPage = () => {
                     </td>
                     <td>
                       <span style={{
-                        background: rep.status === 'solved' ? 'rgba(237, 237, 239, 0.18)' : 'rgba(229, 229, 231, 0.18)',
+                        background: rep.status === 'solved' ? 'rgba(227, 204, 154, 0.18)' : 'rgba(217, 191, 140, 0.18)',
                         color: rep.status === 'solved' ? 'var(--accent-emerald)' : 'var(--accent-gold)',
                         padding: '0.15rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 700
                       }}>

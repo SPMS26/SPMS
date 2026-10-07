@@ -4,10 +4,16 @@ import * as adminController from '../controllers/adminController.js';
 import { protect } from '../middleware/auth.js';
 import { requireRole } from '../middleware/rbac.js';
 
-router.use(protect, requireRole('ADMIN'));
+router.use(protect);
 
-router.get('/users', adminController.getUsers);
-router.get('/scan-history', adminController.getScanHistory);
-router.get('/logs', adminController.getAdminLogs);
+// Owner-only
+router.get('/users', requireRole('ADMIN'), adminController.getUsers);
+router.get('/logs', requireRole('ADMIN'), adminController.getAdminLogs);
+router.get('/security', requireRole('ADMIN'), adminController.getSecurityStaff);
+router.post('/security', requireRole('ADMIN'), adminController.createSecurityStaff);
+router.put('/security/:id', requireRole('ADMIN'), adminController.updateSecurityStaff);
+
+// Owner and gate staff (scoped to their lot(s) inside the controller)
+router.get('/scan-history', requireRole('ADMIN', 'SECURITY'), adminController.getScanHistory);
 
 export default router;

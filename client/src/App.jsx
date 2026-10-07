@@ -18,6 +18,12 @@ import AdminUsersPage from './pages/AdminUsersPage';
 import AdminReportsPage from './pages/AdminReportsPage';
 import NotFoundPage from './pages/NotFoundPage';
 import LandingPage from './pages/LandingPage';
+import AdminRegisterPage from './pages/AdminRegisterPage';
+import AdminSecurityPage from './pages/AdminSecurityPage';
+import GateDeskPage from './pages/GateDeskPage';
+import GateParkedPage from './pages/GateParkedPage';
+import GatePrebookedPage from './pages/GatePrebookedPage';
+import GateLivePage from './pages/GateLivePage';
 
 function App() {
   return (
@@ -28,8 +34,8 @@ function App() {
             position="top-right"
             toastOptions={{
               style: {
-                background: '#0A0A0A',
-                color: '#F5F5F5',
+                background: '#111114',
+                color: '#F2EFE8',
                 border: '1px solid rgba(255, 255, 255, 0.16)'
               }
             }}
@@ -40,18 +46,24 @@ function App() {
             <Route path="/landing" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/register-owner" element={<AdminRegisterPage />} />
 
             {/* User Protected Routes */}
-            <Route path="/dashboard" element={<ProtectedRoute><UserDashboard /></ProtectedRoute>} />
-            <Route path="/bookings" element={<ProtectedRoute><BookingsPage /></ProtectedRoute>} />
+            <Route path="/dashboard" element={<ProtectedRoute roles={['USER']}><UserDashboard /></ProtectedRoute>} />
+            <Route path="/bookings" element={<ProtectedRoute roles={['USER']}><BookingsPage /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-            <Route path="/report-issue" element={<ProtectedRoute><ReportIssuePage /></ProtectedRoute>} />
-            <Route path="/report" element={<ProtectedRoute><ReportIssuePage /></ProtectedRoute>} />
+            <Route path="/report-issue" element={<ProtectedRoute roles={['USER']}><ReportIssuePage /></ProtectedRoute>} />
+            <Route path="/report" element={<ProtectedRoute roles={['USER']}><ReportIssuePage /></ProtectedRoute>} />
 
             {/* Admin Protected Routes */}
             <Route path="/admin" element={<ProtectedRoute requireAdmin={true}><AdminDashboard /></ProtectedRoute>} />
             <Route path="/admin/lots" element={<ProtectedRoute requireAdmin={true}><AdminLotsPage /></ProtectedRoute>} />
-            <Route path="/admin/scanner" element={<ProtectedRoute requireAdmin={true}><QRScannerPage /></ProtectedRoute>} />
+            <Route path="/admin/scanner" element={<ProtectedRoute roles={['SECURITY']}><QRScannerPage /></ProtectedRoute>} />
+            <Route path="/admin/desk" element={<ProtectedRoute roles={['SECURITY']}><GateDeskPage /></ProtectedRoute>} />
+            <Route path="/admin/parked" element={<ProtectedRoute roles={['SECURITY']}><GateParkedPage /></ProtectedRoute>} />
+            <Route path="/admin/prebooked" element={<ProtectedRoute roles={['SECURITY']}><GatePrebookedPage /></ProtectedRoute>} />
+            <Route path="/admin/live" element={<ProtectedRoute roles={['SECURITY']}><GateLivePage /></ProtectedRoute>} />
+            <Route path="/admin/security" element={<ProtectedRoute requireAdmin={true}><AdminSecurityPage /></ProtectedRoute>} />
             <Route path="/admin/reports" element={<ProtectedRoute requireAdmin={true}><AdminReportsPage /></ProtectedRoute>} />
             <Route path="/admin/users" element={<ProtectedRoute requireAdmin={true}><AdminUsersPage /></ProtectedRoute>} />
 

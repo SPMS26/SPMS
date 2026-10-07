@@ -7,19 +7,19 @@ export default {
   theme: {
     extend: {
       colors: {
-        bgMain: '#050505',
-        bgSidebar: '#0A0A0A',
-        bgCard: '#0A0A0A',
-        bgCardHover: '#151515',
-        bgInput: '#141414',
+        bgMain: '#050506',
+        bgSidebar: '#111114',
+        bgCard: '#111114',
+        bgCardHover: '#17171B',
+        bgInput: '#15151A',
         borderSubtle: 'rgba(255, 255, 255, 0.08)',
         borderBright: 'rgba(255, 255, 255, 0.16)',
-        accentGold: '#E4E4E7',
+        accentGold: '#D9BF8C',
         accentEmerald: '#4ADE80',
         statusAvailable: '#4ADE80',
-        statusReserved: '#E4E4E7',
+        statusReserved: '#D9BF8C',
         statusOccupied: '#F87171',
-        statusMaintenance: '#5C5C60'
+        statusMaintenance: '#4F4B43'
       },
       fontFamily: {
         sans: ['Plus Jakarta Sans', 'Outfit', 'sans-serif']

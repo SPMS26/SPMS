@@ -2,6 +2,7 @@ import 'dotenv/config';
 import fs from 'fs';
 import path from 'path';
 import db from '../config/database.js';
+import { multiOwnerSQL } from '../config/multiOwnerMigration.js';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -20,13 +21,14 @@ async function runSeed() {
 
     console.log('[Seed] Executing seed.sql against PostgreSQL database...');
     await db.query(sql);
+    await db.query(multiOwnerSQL);
 
     console.log('===========================================================');
     console.log('PostgreSQL Database Successfully Seeded from seed.sql!');
     console.log('-----------------------------------------------------------');
     console.log('Demo Credentials:');
-    console.log(' Super Admin:        admin@spms.com     / admin123');
-    console.log(' Security Operator:  operator@spms.com  / admin123');
+    console.log(' Lot Owner (Admin):  admin@spms.com     / admin123');
+    console.log(' Security (Central): operator@spms.com  / admin123');
     console.log(' User (Mehanna):     mehanna@spms.com   / user123');
     console.log(' User (Aditya):      aditya@spms.com    / user123');
     console.log(' User (Priya):       priya@spms.com     / user123');

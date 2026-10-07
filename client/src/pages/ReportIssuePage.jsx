@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import AppLayout from '../components/layout/AppLayout';
 import { reportService } from '../services/reportService';
+import { lotService } from '../services/lotService';
 import toast from 'react-hot-toast';
 
 const ReportIssuePage = () => {
   const [category, setCategory] = useState('Blocked Slot');
+  const [lots, setLots] = useState([]);
+  const [lotId, setLotId] = useState('');
   const [description, setDescription] = useState('');
   const [imageFile, setImageFile] = useState(null);
   const [submitting, setSubmitting] = useState(false);
@@ -25,6 +28,10 @@ const ReportIssuePage = () => {
 
   useEffect(() => {
     fetchReports();
+    lotService.getAllLots().then((res) => {
+      setLots(res.lots || []);
+      setLotId((res.lots || [])[0]?.id || '');
+    }).catch(() => {});
   }, []);
 
   const handleSubmit = async (e) => {
@@ -38,6 +45,7 @@ const ReportIssuePage = () => {
       setSubmitting(true);
       const formData = new FormData();
       formData.append('category', category);
+      if (lotId) formData.append('lot_id', lotId);
       formData.append('description', description.trim());
       if (imageFile) {
         formData.append('image', imageFile);
@@ -91,7 +99,7 @@ const ReportIssuePage = () => {
     }
     return (
       <span style={{
-        background: 'rgba(154, 154, 159, 0.15)',
+        background: 'rgba(138, 132, 120, 0.15)',
         color: 'var(--status-occupied)',
         border: '1px solid var(--status-occupied-border)',
         padding: '0.2rem 0.6rem',
@@ -112,7 +120,6 @@ const ReportIssuePage = () => {
         <div className="page-header-row" style={{ marginBottom: 0 }}>
           <div className="page-title-box">
             <h1>Report an Incident or Issue</h1>
-            <p>Encountered a blocked slot, hardware fault, or payment discrepancy? Submit a report below.</p>
           </div>
         </div>
 
@@ -143,6 +150,21 @@ const ReportIssuePage = () => {
           </div>
 
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+            <div>
+              <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: '0.4rem' }}>
+                Parking Lot
+              </label>
+              <select
+                className="search-input"
+                style={{ width: '100%', padding: '0.6rem 0.85rem', boxSizing: 'border-box' }}
+                value={lotId}
+                onChange={(e) => setLotId(e.target.value)}
+                required
+              >
+                {lots.map((l) => <option key={l.id} value={l.id}>{l.name}{l.owner_name ? ` - ${l.owner_name}` : ''}</option>)}
+              </select>
+            </div>
+
             <div>
               <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: '0.4rem' }}>
                 Incident Category

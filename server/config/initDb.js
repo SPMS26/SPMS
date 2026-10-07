@@ -1,4 +1,5 @@
 import db from './database.js';
+import { multiOwnerSQL } from './multiOwnerMigration.js';
 
 const createTablesSQL = `
 -- Enable UUID extensions
@@ -171,6 +172,7 @@ ALTER TABLE payments ADD COLUMN IF NOT EXISTS expires_at TIMESTAMP WITH TIME ZON
 async function initDb() {
   try {
     await db.query(createTablesSQL);
+    await db.query(multiOwnerSQL);
 
     // Seed default PRE_BOOKING_FEE setting if not exists
     await db.query(

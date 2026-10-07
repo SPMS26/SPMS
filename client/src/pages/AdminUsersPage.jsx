@@ -26,8 +26,7 @@ const AdminUsersPage = () => {
     <AppLayout>
       <div className="page-header-row">
         <div className="page-title-box">
-          <h1>User Management</h1>
-          <p>View and manage all registered drivers and system administrators</p>
+          <h1>My Customers</h1>
         </div>
       </div>
 
@@ -64,7 +63,7 @@ const AdminUsersPage = () => {
                     <td>{u.phone || 'N/A'}</td>
                     <td>
                       <span style={{
-                        background: u.role === 'ADMIN' ? 'rgba(237, 237, 239, 0.18)' : 'rgba(229, 229, 231, 0.18)',
+                        background: u.role === 'ADMIN' ? 'rgba(227, 204, 154, 0.18)' : 'rgba(217, 191, 140, 0.18)',
                         color: u.role === 'ADMIN' ? 'var(--accent-emerald)' : 'var(--accent-gold)',
                         padding: '0.15rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 700
                       }}>

@@ -23,12 +23,18 @@ const LotCard = ({ lot, selected, onSelect }) => {
         <div>
           <div className="lot-card-title">{lot.name}</div>
           <div className="lot-card-sub">
-            <i className="fa-solid fa-location-dot"></i> {lot.address || 'Campus Location'}
+            <i className="fa-solid fa-location-dot"></i> {lot.address || 'Location not set'}
           </div>
+          {lot.owner_name && (
+            <div className="lot-card-sub">
+              <i className="fa-solid fa-building"></i> {lot.owner_name}
+              {lot.opening_time && ` • ${String(lot.opening_time).slice(0, 5) === '00:00' && String(lot.closing_time || '').slice(0, 5) === '23:59' ? 'Open 24h' : `${String(lot.opening_time).slice(0, 5)}-${String(lot.closing_time || '').slice(0, 5)}`}`}
+            </div>
+          )}
         </div>
         <span
           style={{
-            background: isBusy ? 'rgba(229, 229, 231, 0.15)' : 'rgba(237, 237, 239, 0.15)',
+            background: isBusy ? 'rgba(217, 191, 140, 0.15)' : 'rgba(227, 204, 154, 0.15)',
             color: isBusy ? 'var(--status-reserved)' : 'var(--status-available)',
             fontSize: '0.68rem',
             padding: '0.15rem 0.45rem',
@@ -52,7 +58,7 @@ const LotCard = ({ lot, selected, onSelect }) => {
           <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Available</div>
         </div>
         <div style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--accent-gold)' }}>
-          ₹30 <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>/hr</span>
+          ₹{Number(lot.default_hourly_price ?? 30)} <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>/hr</span>
         </div>
       </div>
     </div>

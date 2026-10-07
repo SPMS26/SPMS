@@ -1,198 +1,144 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import toast from 'react-hot-toast';
+import { homeForRole } from '../components/layout/ProtectedRoute';
+import AuthShell from '../components/auth/AuthShell';
 
 const DEMO_ACCOUNTS = [
-  {
-    role: 'ADMIN',
-    name: 'Super Admin',
-    email: 'admin@spms.com',
-    password: 'admin123',
-    badgeColor: '#EDEDEF',
-    badgeBg: 'rgba(237, 237, 239, 0.15)',
-    icon: 'fa-shield-halved',
-    note: 'Admin Dashboard'
-  },
-  {
-    role: 'ADMIN',
-    name: 'Security Operator',
-    email: 'operator@spms.com',
-    password: 'admin123',
-    badgeColor: '#EDEDEF',
-    badgeBg: 'rgba(237, 237, 239, 0.15)',
-    icon: 'fa-user-shield',
-    note: 'Gate & Scanner'
-  },
-  {
-    role: 'USER',
-    name: 'Mehanna Reddy',
-    email: 'mehanna@spms.com',
-    password: 'user123',
-    badgeColor: '#E4E4E7',
-    badgeBg: 'rgba(229, 229, 231, 0.15)',
-    icon: 'fa-car-side',
-    note: 'Slot C5 Reserved (QR)'
-  },
-  {
-    role: 'USER',
-    name: 'Aditya Sharma',
-    email: 'aditya@spms.com',
-    password: 'user123',
-    badgeColor: '#E4E4E7',
-    badgeBg: 'rgba(229, 229, 231, 0.15)',
-    icon: 'fa-car',
-    note: 'Slot B8 Parked'
-  },
-  {
-    role: 'USER',
-    name: 'Priya Patel',
-    email: 'priya@spms.com',
-    password: 'user123',
-    badgeColor: '#C8C8CC',
-    badgeBg: 'rgba(200, 200, 204, 0.15)',
-    icon: 'fa-bolt',
-    note: 'EV Driver / Past'
-  }
+  { role: 'Driver', email: 'mehanna@spms.com', password: 'user123' },
+  { role: 'Lot Owner', email: 'admin@spms.com', password: 'admin123' },
+  { role: 'Gate Security', email: 'operator@spms.com', password: 'admin123' }
 ];
 
 const LoginPage = () => {
-  const [email, setEmail] = useState('mehanna@spms.com');
-  const [password, setPassword] = useState('user123');
-  const [activeDemo, setActiveDemo] = useState('mehanna@spms.com');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [demoOpen, setDemoOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const [error, setError] = useState('');
+  const { user, loading: authLoading, login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  // Where to go once signed in: the page the visitor was sent here from, else their own home.
+  // Pages that a role cannot open bounce to that role's home on their own (ProtectedRoute).
+  const from = location.state?.from?.pathname;
+
+  // Single place that redirects, so it also covers signed-in users who open /login directly
+  useEffect(() => {
+    if (!authLoading && user) {
+      navigate(from && from !== '/login' ? from : homeForRole(user.role), { replace: true });
+    }
+  }, [authLoading, user]);
+
+  const signIn = async (emailValue, passwordValue) => {
+    setError('');
+    setLoading(true);
     try {
-      setLoading(true);
-      const res = await login(email, password);
-      toast.success(`Welcome back, ${res.user.full_name}!`);
-      if (res.user.role === 'ADMIN') {
-        navigate('/admin');
-      } else {
-        navigate('/dashboard');
-      }
+      await login(emailValue, passwordValue);
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Login failed.');
-    } finally {
+      setError(err.response?.data?.message || 'Login failed. Please try again.');
       setLoading(false);
     }
   };
 
-  const handleSelectDemo = (account) => {
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    signIn(email.trim(), password);
+  };
+
+  const handleDemo = (account) => {
     setEmail(account.email);
     setPassword(account.password);
-    setActiveDemo(account.email);
+    signIn(account.email, account.password);
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'transparent', padding: '1.5rem 1rem' }}>
-      <div style={{ width: '100%', maxWidth: '460px', marginBottom: '1rem', display: 'flex', justifyContent: 'flex-start' }}>
-        <Link to="/" style={{ color: 'var(--text-muted)', textDecoration: 'none', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600 }}>
-          <i className="fa-solid fa-arrow-left"></i> Back to SPMS Landing Page
-        </Link>
-      </div>
-      <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-bright)', borderRadius: '16px', width: '100%', maxWidth: '460px', padding: '2rem', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.7)' }}>
-        <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-          <Link to="/" style={{ textDecoration: 'none' }}>
-            <div className="brand-logo-icon" style={{ margin: '0 auto 0.75rem auto', width: '48px', height: '48px', fontSize: '1.5rem' }}>
-              <i className="fa-solid fa-square-parking"></i>
-            </div>
-          </Link>
-          <h2 style={{ fontFamily: 'Outfit, sans-serif', fontSize: '1.5rem', fontWeight: 700, margin: '0 0 0.25rem 0', color: 'var(--text-main)' }}>Sign In to Smart Parking</h2>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', margin: 0 }}>Select a demo credential below or enter your login details</p>
+    <AuthShell
+      title="Sign in"
+      footer={
+        <>
+          <span>New driver? <Link to="/register">Create an account</Link></span>
+          <span>Own a parking lot? <Link to="/register-owner">Register your lot</Link></span>
+        </>
+      }
+    >
+      <form onSubmit={handleSubmit} noValidate={false}>
+        {error && (
+          <div className="auth-error" role="alert">
+            <i className="fa-solid fa-circle-exclamation"></i>
+            <span>{error}</span>
+          </div>
+        )}
+
+        <div className="auth-field">
+          <label className="auth-label" htmlFor="login-email">Email</label>
+          <input
+            id="login-email"
+            type="email"
+            className="auth-input"
+            value={email}
+            onChange={(e) => { setEmail(e.target.value); setError(''); }}
+            autoComplete="email"
+            autoFocus
+            required
+          />
         </div>
 
-        {/* Demo Credentials Quick-Select Section */}
-        <div style={{ marginBottom: '1.5rem', background: 'var(--bg-input)', border: '1px solid var(--border-subtle)', borderRadius: '12px', padding: '0.85rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.65rem' }}>
-            <span style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-              <i className="fa-solid fa-key" style={{ color: 'var(--accent-gold)' }}></i> Demo Accounts (1-Click Fill)
-            </span>
-            <span style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>Passwords: admin123 / user123</span>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.45rem' }}>
-            {DEMO_ACCOUNTS.map((acc) => {
-              const isSelected = activeDemo === acc.email && email === acc.email;
-              return (
-                <button
-                  key={acc.email}
-                  type="button"
-                  onClick={() => handleSelectDemo(acc)}
-                  style={{
-                    background: isSelected ? 'var(--bg-card-hover)' : 'rgba(255,255,255,0.03)',
-                    border: isSelected ? `1.5px solid ${acc.badgeColor}` : '1px solid var(--border-subtle)',
-                    borderRadius: '8px',
-                    padding: '0.45rem 0.55rem',
-                    textAlign: 'left',
-                    cursor: 'pointer',
-                    transition: 'all 0.15s ease',
-                    position: 'relative'
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.2rem' }}>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-main)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {acc.name.split(' ')[0]}
-                    </span>
-                    <span style={{ fontSize: '0.6rem', fontWeight: 700, padding: '0.1rem 0.35rem', borderRadius: '4px', background: acc.badgeBg, color: acc.badgeColor }}>
-                      {acc.role}
-                    </span>
-                  </div>
-                  <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {acc.note}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: '1rem' }}>
-            <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: '0.4rem' }}>Email Address:</label>
+        <div className="auth-field">
+          <label className="auth-label" htmlFor="login-password">Password</label>
+          <div className="auth-pw-wrap">
             <input
-              type="email"
-              className="search-input"
-              style={{ width: '100%' }}
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                setActiveDemo(e.target.value);
-              }}
-              required
-            />
-          </div>
-
-          <div style={{ marginBottom: '1.5rem' }}>
-            <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: '0.4rem' }}>Password:</label>
-            <input
-              type="password"
-              className="search-input"
-              style={{ width: '100%' }}
+              id="login-password"
+              type={showPassword ? 'text' : 'password'}
+              className="auth-input"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => { setPassword(e.target.value); setError(''); }}
+              autoComplete="current-password"
               required
             />
+            <button
+              type="button"
+              className="auth-pw-toggle"
+              onClick={() => setShowPassword((v) => !v)}
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+              tabIndex={-1}
+            >
+              <i className={`fa-solid ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+            </button>
           </div>
-
-          <button type="submit" className="btn-select-slot" style={{ marginTop: 0 }} disabled={loading}>
-            {loading ? (
-              <span><i className="fa-solid fa-circle-notch fa-spin"></i> Authenticating...</span>
-            ) : (
-              <span><i className="fa-solid fa-arrow-right-to-bracket" style={{ marginRight: '0.4rem' }}></i> Sign In</span>
-            )}
-          </button>
-        </form>
-
-        <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-          Don't have an account? <Link to="/register" style={{ color: 'var(--accent-gold)', textDecoration: 'none', fontWeight: 600 }}>Register now</Link>
         </div>
+
+        <button type="submit" className="btn-select-slot auth-submit" disabled={loading}>
+          {loading ? (
+            <span><i className="fa-solid fa-circle-notch fa-spin"></i> Signing in...</span>
+          ) : (
+            <span>Sign in</span>
+          )}
+        </button>
+      </form>
+
+      <div className="auth-demo">
+        <button type="button" className="auth-demo-toggle" onClick={() => setDemoOpen((v) => !v)} aria-expanded={demoOpen}>
+          <span><i className="fa-solid fa-key" style={{ color: 'var(--accent-gold)', marginRight: '0.4rem' }}></i> Try a demo account</span>
+          <i className={`fa-solid ${demoOpen ? 'fa-chevron-up' : 'fa-chevron-down'}`}></i>
+        </button>
+        {demoOpen && (
+          <div className="auth-demo-list">
+            {DEMO_ACCOUNTS.map((acc) => (
+              <button key={acc.email} type="button" className="auth-demo-item" disabled={loading} onClick={() => handleDemo(acc)}>
+                <span>
+                  <div className="role">{acc.role}</div>
+                  <div className="email">{acc.email}</div>
+                </span>
+                <span className="go">Sign in <i className="fa-solid fa-arrow-right"></i></span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
-    </div>
+    </AuthShell>
   );
 };
 

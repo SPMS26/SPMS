@@ -1,6 +1,6 @@
 import db from '../config/database.js';
 import { broadcastSlotUpdate, sendUserNotification } from '../socket/socketManager.js';
-import { generateQRPayload } from '../services/qrGenerator.js';
+import { canAccessLot, forbidLot, lotIdForSlot } from '../middleware/scope.js';
 
 // Get slots for a parking lot (Raw SQL)
 export const getSlotsByLot = async (req, res, next) => {
@@ -30,6 +30,30 @@ export const updateSlotStatus = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
+
+    if (!['available', 'reserved', 'occupied', 'maintenance'].includes(status)) {
+      return res.status(400).json({ success: false, message: 'Invalid slot status.' });
+    }
+    if (!(await canAccessLot(req.user, await lotIdForSlot(id)))) return forbidLot(res);
+
+    // Gate staff may only hold/release a slot (available <-> reserved)
+    if (req.user.role === 'SECURITY') {
+      const cur = await db.query('SELECT status FROM parking_slots WHERE id = $1', [id]);
+      const curStatus = cur.rows[0]?.status;
+      if (!['available', 'reserved'].includes(status) || !['available', 'reserved'].includes(curStatus)) {
+        return res.status(403).json({ success: false, message: 'Security staff can only hold or release free slots.' });
+      }
+      // A reserved slot backed by a real booking is released by scanning/cancelling it, not by hand
+      if (status === 'available') {
+        const open = await db.query(
+          "SELECT 1 FROM bookings WHERE slot_id = $1 AND booking_status IN ('pending_payment', 'reserved', 'active') LIMIT 1",
+          [id]
+        );
+        if (open.rows.length > 0) {
+          return res.status(409).json({ success: false, message: 'This slot has an active booking and cannot be released manually.' });
+        }
+      }
+    }
 
     const result = await db.query(
       `UPDATE parking_slots 
@@ -78,6 +102,7 @@ export const createSlot = async (req, res, next) => {
     if (lotRes.rows.length === 0) {
       return res.status(404).json({ success: false, message: 'Parking lot not found.' });
     }
+    if (!(await canAccessLot(req.user, lot_id))) return forbidLot(res);
 
     const existing = await db.query('SELECT id, is_active FROM parking_slots WHERE lot_id = $1 AND slot_number = $2', [lot_id, slotNumber]);
     let slot;
@@ -118,6 +143,7 @@ export const deleteSlot = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Parking slot not found' });
     }
     const slot = slotRes.rows[0];
+    if (!(await canAccessLot(req.user, slot.lot_id))) return forbidLot(res);
 
     const liveRes = await db.query(
       "SELECT 1 FROM bookings WHERE slot_id = $1 AND booking_status IN ('pending_payment', 'reserved', 'active') LIMIT 1",
@@ -160,20 +186,77 @@ export const deleteSlot = async (req, res, next) => {
   }
 };
 
-// FR27. Slot Reassignment (Admin Feature Raw SQL + Transaction)
+// Admin: Generate many slots at once, e.g. sections A-C with 10 slots each
+export const bulkCreateSlots = async (req, res, next) => {
+  const client = await db.getClient();
+  try {
+    const { lot_id, sections, count_per_section, floor, slot_type, hourly_price } = req.body;
+    const count = parseInt(count_per_section, 10);
+    const price = hourly_price === undefined || hourly_price === '' ? 30 : Number(hourly_price);
+    const sectionList = (Array.isArray(sections) ? sections : String(sections || '').split(','))
+      .map((x) => String(x).trim().toUpperCase())
+      .filter(Boolean);
+
+    if (!lot_id || sectionList.length === 0 || !floor) {
+      return res.status(400).json({ success: false, message: 'Lot, at least one section and a floor are required.' });
+    }
+    if (sectionList.some((x) => !/^[A-Z0-9]{1,4}$/.test(x))) {
+      return res.status(400).json({ success: false, message: 'Section names must be 1-4 letters or digits.' });
+    }
+    if (!Number.isInteger(count) || count < 1 || count > 100 || sectionList.length * count > 500) {
+      return res.status(400).json({ success: false, message: 'Slots per section must be 1-100 (max 500 slots per request).' });
+    }
+    if (!Number.isFinite(price) || price < 0) {
+      return res.status(400).json({ success: false, message: 'Hourly price must be a non-negative number.' });
+    }
+    if (!(await canAccessLot(req.user, lot_id))) return forbidLot(res);
+
+    await client.query('BEGIN');
+    const created = [];
+    for (const section of sectionList) {
+      for (let n = 1; n <= count; n++) {
+        const slotNumber = `${section}${n}`;
+        const r = await client.query(
+          `INSERT INTO parking_slots (lot_id, slot_number, slot_type, floor, section, hourly_price)
+           VALUES ($1, $2, $3, $4, $5, $6)
+           ON CONFLICT (lot_id, slot_number) DO UPDATE
+             SET is_active = true, status = 'available', floor = EXCLUDED.floor, hourly_price = EXCLUDED.hourly_price,
+                 slot_type = EXCLUDED.slot_type, section = EXCLUDED.section, updated_at = CURRENT_TIMESTAMP
+             WHERE parking_slots.is_active = false
+           RETURNING *`,
+          [lot_id, slotNumber, slot_type || 'car', String(floor).trim(), section, price]
+        );
+        if (r.rows[0]) created.push(r.rows[0]);
+      }
+    }
+    await client.query('COMMIT');
+
+    created.forEach((sl) => broadcastSlotUpdate(sl.lot_id, sl.id, sl.status, sl.slot_number));
+    res.status(201).json({
+      success: true,
+      message: `${created.length} slot(s) created.`,
+      created: created.length,
+      skipped: sectionList.length * count - created.length
+    });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    next(err);
+  } finally {
+    client.release();
+  }
+};
+
+// FR27. Slot Reassignment (admin/security of the owning lot; same-lot moves only)
 export const reassignSlot = async (req, res, next) => {
   const client = await db.getClient();
   try {
     await client.query('BEGIN');
     const { booking_id, new_slot_id, reason } = req.body;
 
-    // 1. Fetch booking with details
     const bookingRes = await client.query(
-      `SELECT b.*, u.full_name as user_name, v.vehicle_number
-       FROM bookings b
-       JOIN users u ON b.user_id = u.id
-       JOIN vehicles v ON b.vehicle_id = v.id
-       WHERE b.id = $1`,
+      `SELECT b.*, s.lot_id AS lot_id FROM bookings b
+       JOIN parking_slots s ON b.slot_id = s.id
+       WHERE b.id = $1 FOR UPDATE OF b`,
       [booking_id]
     );
 
@@ -184,9 +267,20 @@ export const reassignSlot = async (req, res, next) => {
 
     const booking = bookingRes.rows[0];
 
-    // 2. Fetch old slot & new slot
+    if (!(await canAccessLot(req.user, booking.lot_id))) {
+      await client.query('ROLLBACK');
+      return forbidLot(res);
+    }
+    if (!['reserved', 'active'].includes(booking.booking_status)) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ success: false, message: 'Only reserved or active bookings can be reassigned.' });
+    }
+
     const oldSlotRes = await client.query('SELECT * FROM parking_slots WHERE id = $1', [booking.slot_id]);
-    const newSlotRes = await client.query('SELECT * FROM parking_slots WHERE id = $1 AND status = \'available\' FOR UPDATE', [new_slot_id]);
+    const newSlotRes = await client.query(
+      "SELECT * FROM parking_slots WHERE id = $1 AND status = 'available' AND is_active = true FOR UPDATE",
+      [new_slot_id]
+    );
 
     if (newSlotRes.rows.length === 0) {
       await client.query('ROLLBACK');
@@ -196,69 +290,45 @@ export const reassignSlot = async (req, res, next) => {
     const oldSlot = oldSlotRes.rows[0];
     const newSlot = newSlotRes.rows[0];
 
-    // 3. Free old slot
-    await client.query('UPDATE parking_slots SET status = \'available\', updated_at = CURRENT_TIMESTAMP WHERE id = $1', [oldSlot.id]);
+    if (newSlot.lot_id !== oldSlot.lot_id) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ success: false, message: 'The new slot must be in the same parking lot.' });
+    }
 
-    // 4. Reserve new slot
+    await client.query("UPDATE parking_slots SET status = 'available', updated_at = CURRENT_TIMESTAMP WHERE id = $1", [oldSlot.id]);
+
     const newSlotStatus = booking.booking_status === 'active' ? 'occupied' : 'reserved';
     await client.query('UPDATE parking_slots SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2', [newSlotStatus, newSlot.id]);
 
-    // 5. Invalidate previous QR codes
-    await client.query('UPDATE qr_codes SET is_active = false WHERE booking_id = $1', [booking.id]);
+    // The QR pass encodes only the booking id + signature, so it stays valid after a slot move
+    await client.query('UPDATE bookings SET slot_id = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2', [newSlot.id, booking.id]);
 
-    // 6. Get latest QR version
-    const qrVerRes = await client.query('SELECT version FROM qr_codes WHERE booking_id = $1 ORDER BY version DESC LIMIT 1', [booking.id]);
-    const newVersion = (qrVerRes.rows.length > 0 ? qrVerRes.rows[0].version : 1) + 1;
-
-    const lotRes = await client.query('SELECT * FROM parking_lots WHERE id = $1', [newSlot.lot_id]);
-    const lot = lotRes.rows[0];
-
-    const userObj = { full_name: booking.user_name };
-    const vehObj = { vehicle_number: booking.vehicle_number };
-    const newQRPayload = generateQRPayload(booking, newSlot, lot, userObj, vehObj, newVersion);
-
-    const qrInsertRes = await client.query(
-      `INSERT INTO qr_codes (booking_id, qr_data, version, is_active, expires_at)
-       VALUES ($1, $2, $3, true, NOW() + INTERVAL '1 day')
-       RETURNING *`,
-      [booking.id, newQRPayload, newVersion]
-    );
-
-    // 7. Update booking
-    await client.query(
-      'UPDATE bookings SET slot_id = $1, qr_code = $2, updated_at = CURRENT_TIMESTAMP WHERE id = $3',
-      [newSlot.id, newQRPayload, booking.id]
-    );
-
-    // 8. Log in slot_reassignments
     await client.query(
       `INSERT INTO slot_reassignments (booking_id, old_slot_id, new_slot_id, changed_by, reason)
        VALUES ($1, $2, $3, $4, $5)`,
-      [booking.id, oldSlot.id, newSlot.id, req.user.id, reason || 'Admin slot optimization']
+      [booking.id, oldSlot.id, newSlot.id, req.user.id, reason || 'Slot optimization']
     );
 
-    // 9. Send notification
-    const notifRes = await client.query(
-      `INSERT INTO notifications (user_id, title, message, type)
-       VALUES ($1, $2, $3, 'warning')
-       RETURNING *`,
-      [
-        booking.user_id,
-        'Slot Reassigned',
-        `Your parking slot has been updated from ${oldSlot.slot_number} to ${newSlot.slot_number}. A new QR pass has been generated.`
-      ]
-    );
+    let notification = null;
+    if (booking.user_id) {
+      const notifRes = await client.query(
+        `INSERT INTO notifications (user_id, title, message, type)
+         VALUES ($1, 'Slot Reassigned', $2, 'warning')
+         RETURNING *`,
+        [booking.user_id, `Your parking slot has been updated from ${oldSlot.slot_number} to ${newSlot.slot_number}. Your existing QR pass is still valid.`]
+      );
+      notification = notifRes.rows[0];
+    }
 
     await client.query('COMMIT');
 
-    sendUserNotification(booking.user_id, notifRes.rows[0]);
+    if (notification) sendUserNotification(booking.user_id, notification);
     broadcastSlotUpdate(oldSlot.lot_id, oldSlot.id, 'available', oldSlot.slot_number);
     broadcastSlotUpdate(newSlot.lot_id, newSlot.id, newSlotStatus, newSlot.slot_number);
 
     res.status(200).json({
       success: true,
-      message: `Slot successfully reassigned to ${newSlot.slot_number}`,
-      newQRCode: qrInsertRes.rows[0]
+      message: `Slot successfully reassigned to ${newSlot.slot_number}`
     });
   } catch (err) {
     await client.query('ROLLBACK');

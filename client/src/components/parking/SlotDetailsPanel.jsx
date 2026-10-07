@@ -76,17 +76,10 @@ const SlotDetailsPanel = ({ selectedSlot, activeFloor, onConfirmSelect, isAdmin 
           </button>
           <button
             className="btn-select-slot"
-            style={{ background: 'linear-gradient(135deg, var(--accent-emerald), #A1A1A6)', boxShadow: 'none', marginTop: 0 }}
+            style={{ background: 'linear-gradient(135deg, var(--accent-emerald), #A98B55)', boxShadow: 'none', marginTop: 0 }}
             onClick={() => onAdminAction('available')}
           >
             <i className="fa-solid fa-circle-check"></i> Set Available
-          </button>
-          <button
-            className="btn-select-slot"
-            style={{ marginTop: 0 }}
-            onClick={() => onAdminAction('reserve_override')}
-          >
-            <i className="fa-solid fa-user-plus"></i> Reserve for Driver (Override)
           </button>
         </div>
       )}

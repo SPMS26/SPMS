@@ -1,9 +1,10 @@
 import db from '../config/database.js';
+import { getAccessibleLotIds, canAccessLot, forbidLot } from '../middleware/scope.js';
 
 // Submit Incident Report (FR26 Raw SQL)
 export const createReport = async (req, res, next) => {
   try {
-    const { category, incident_type, description, booking_id, slot_id } = req.body;
+    const { category, incident_type, description, booking_id, slot_id, lot_id } = req.body;
     const type = category || incident_type || 'Other Issue';
 
     let imageUrl = null;
@@ -11,11 +12,29 @@ export const createReport = async (req, res, next) => {
       imageUrl = `/uploads/${req.file.filename}`;
     }
 
+    // Route the report to the owning lot via the slot, falling back to the booking's slot
+    let lotId = null;
+    if (lot_id) {
+      const r = await db.query('SELECT id FROM parking_lots WHERE id = $1', [lot_id]);
+      lotId = r.rows[0]?.id || null;
+    }
+    if (!lotId && slot_id) {
+      const r = await db.query('SELECT lot_id FROM parking_slots WHERE id = $1', [slot_id]);
+      lotId = r.rows[0]?.lot_id || null;
+    }
+    if (!lotId && booking_id) {
+      const r = await db.query(
+        'SELECT s.lot_id FROM bookings b JOIN parking_slots s ON b.slot_id = s.id WHERE b.id = $1 AND b.user_id = $2',
+        [booking_id, req.user.id]
+      );
+      lotId = r.rows[0]?.lot_id || null;
+    }
+
     const result = await db.query(
-      `INSERT INTO incident_reports (user_id, booking_id, slot_id, incident_type, description, image_url, status)
-       VALUES ($1, $2, $3, $4, $5, $6, 'pending')
+      `INSERT INTO incident_reports (user_id, booking_id, slot_id, lot_id, incident_type, description, image_url, status)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, 'pending')
        RETURNING *`,
-      [req.user.id, booking_id || null, slot_id || null, type, description, imageUrl]
+      [req.user.id, booking_id || null, slot_id || null, lotId, type, description, imageUrl]
     );
 
     res.status(201).json({
@@ -44,7 +63,11 @@ export const getReports = async (req, res, next) => {
     `;
 
     const params = [];
-    if (req.user.role !== 'ADMIN') {
+    if (req.user.role === 'ADMIN' || req.user.role === 'SECURITY') {
+      // Staff see only reports raised against the lots they operate
+      queryStr += ' WHERE r.lot_id = ANY($1::uuid[])';
+      params.push(await getAccessibleLotIds(req.user));
+    } else {
       queryStr += ' WHERE r.user_id = $1';
       params.push(req.user.id);
     }
@@ -63,6 +86,12 @@ export const updateReportStatus = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { status, admin_response } = req.body;
+
+    const target = await db.query('SELECT lot_id FROM incident_reports WHERE id = $1', [id]);
+    if (target.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Incident report not found' });
+    }
+    if (!(await canAccessLot(req.user, target.rows[0].lot_id))) return forbidLot(res);
 
     const isSolved = status === 'solved';
     const result = await db.query(

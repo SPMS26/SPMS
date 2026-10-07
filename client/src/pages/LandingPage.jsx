@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { lotService } from '../services/lotService';
+import { authService } from '../services/authService';
+import { homeForRole } from '../components/layout/ProtectedRoute';
 import './LandingPage.css';
 
-// Realistic campus lots seeded in the SPMS system
+// Sample lots used by the interactive slot explorer
 const CAMPUS_LOTS = [
   {
     id: 'lot-1',
@@ -35,7 +38,7 @@ const CAMPUS_LOTS = [
   }
 ];
 
-// Lot-specific real slot layout (Strictly Two-Wheeler and Four-Wheeler per SRS)
+// Sample slot layout per lot (two-wheeler and four-wheeler bays)
 const LOT_SLOTS = {
   'lot-1': [
     { id: 'A1', type: 'four_wheeler', floor: 'B1', status: 'available', price: 30 },
@@ -132,84 +135,170 @@ const PLATFORM_FEATURES = [
   {
     icon: 'fa-magnifying-glass-location',
     title: 'Real-Time Availability',
-    desc: 'Instantly view available, reserved, and occupied parking slots across all campus lots and floors before arriving.',
+    desc: 'See available, reserved and occupied slots across every listed lot and floor before you set off.',
     tag: 'Live Occupancy'
   },
   {
     icon: 'fa-calendar-check',
     title: 'Advance Pre-Booking',
-    desc: 'Reserve a specific parking slot for your planned arrival time by paying an advance base fare to lock the space.',
+    desc: 'Reserve a specific slot for your planned arrival time by paying a small reservation fee set by the lot.',
     tag: 'Guaranteed Space'
   },
   {
-    icon: 'fa-car-side',
-    title: 'Live On-Arrival Booking',
-    desc: 'Arriving right now? Pick any free slot immediately upon campus entry and pay based on actual duration at exit.',
-    tag: 'Instant Access'
+    icon: 'fa-person-walking-luggage',
+    title: 'Walk-in Check-in',
+    desc: 'No booking? Gate security assigns a free slot on the spot. It shows as occupied to every driver immediately.',
+    tag: 'Gate Desk'
   },
   {
     icon: 'fa-qrcode',
     title: 'Contactless QR Gate Access',
-    desc: 'Every reservation generates a secure digital QR pass. Scan at entry and exit gates for barrier opening in under 2 seconds.',
+    desc: 'Every paid pre-booking generates a signed QR pass. Security scans it at the gate to check you in and out.',
     tag: 'Zero Queues'
   },
   {
     icon: 'fa-clock-rotate-left',
     title: 'Precise Duration Tracking',
-    desc: 'Automated timestamp logging tracks exact arrival and exit times down to the minute. No paper tickets or disputes.',
+    desc: 'Arrival and exit times are logged to the minute, so the parking charge is calculated without disputes.',
     tag: 'Automated Logs'
   },
   {
     icon: 'fa-receipt',
-    title: 'Seamless Payments & Invoices',
-    desc: 'Base fare paid in advance is deducted automatically at exit. Pay balance via secure online methods and download receipts.',
+    title: 'Clear Payments',
+    desc: 'The reservation fee is paid when you book. The parking charge, hours times the slot rate, is paid at exit.',
     tag: 'Digital Billing'
   },
   {
     icon: 'fa-motorcycle',
     title: 'Multi-Vehicle Management',
-    desc: 'Register both Two-Wheelers and Four-Wheelers in your account. Switch your active parking vehicle with one click.',
+    desc: 'Register two-wheelers and four-wheelers on one account and switch the active vehicle with one click.',
     tag: 'Fleet Support'
   },
   {
+    icon: 'fa-ban',
+    title: 'One Slot Per Vehicle',
+    desc: 'A vehicle cannot hold two slots at overlapping times, whether it was pre-booked or checked in at the gate.',
+    tag: 'No Double-Booking'
+  },
+  {
     icon: 'fa-triangle-exclamation',
-    title: 'Incident Reporting & Triage',
-    desc: 'Encountered a blocked slot, scanner glitch, or damaged bay? Lodge an incident report with quick resolution tracking.',
+    title: 'Incident Reporting',
+    desc: 'Report a blocked slot, scanner fault or damaged bay. The report goes straight to the owner of that lot.',
     tag: 'Driver Support'
   },
   {
+    icon: 'fa-building-shield',
+    title: 'Lot Owner Registration',
+    desc: 'Parking lot owners register for a one-time fee, then list their own lots and slots for drivers to book.',
+    tag: 'Multi-Owner'
+  },
+  {
+    icon: 'fa-user-shield',
+    title: 'Security Staff Per Lot',
+    desc: 'Owners create gate accounts tied to one lot. A guard can only scan and check in vehicles for that lot.',
+    tag: 'Scoped Access'
+  },
+  {
     icon: 'fa-chart-pie',
-    title: 'Admin Operations & Analytics',
-    desc: 'Administrators control facilities, slot pricing, user roles, gate scanning terminals, and monitor revenue analytics.',
+    title: 'Owner Dashboard & Analytics',
+    desc: 'Owners see revenue, month-wise history, peak times and incident reports for their own lots only.',
     tag: 'Control Deck'
   }
 ];
 
 const FAQS = [
   {
-    q: 'What is the difference between Pre-Booking and Live Booking?',
-    a: 'Pre-Booking allows you to reserve a parking slot in advance for an upcoming arrival time. You pay a standard base fare upfront to guarantee your spot. Live Booking is for immediate parking when you arrive at campus: you pick an available slot right away, get a gate pass, and pay the entire parking charge when you exit.'
+    q: 'What is the difference between pre-booking and a walk-in?',
+    a: 'Pre-booking reserves a specific slot for a planned arrival time. You pay the lot\'s reservation fee up front and receive a QR pass. A walk-in is for drivers who arrive without a booking: gate security picks a free slot, checks the vehicle in, and you pay the parking charge when you leave.'
   },
   {
-    q: 'How does the Base Fare deduction work when exiting?',
-    a: 'For Pre-Booked slots, the base fare you paid during reservation is credited against your final parking tariff. When your vehicle exits through the gate, the system calculates your exact parking duration, computes the total tariff, and automatically subtracts the base fare already paid. You only pay the remaining balance.'
+    q: 'What do I pay, and when?',
+    a: 'When you pre-book, you pay the reservation fee set by that lot. At exit you pay the parking charge, which is the number of hours parked (rounded up) times the slot\'s hourly rate. Walk-ins pay only the parking charge at exit.'
   },
   {
-    q: 'How does the QR Code gate entry and exit work?',
-    a: 'Once your booking is confirmed, a digital QR pass is generated in your portal. At the parking facility gate, the camera scans your QR pass to verify your booking and record your entry timestamp. When leaving, scanning the QR pass records your exit time, computes the duration fee, and marks the session complete.'
+    q: 'How does the QR code gate entry and exit work?',
+    a: 'Once your pre-booking is paid, a digital QR pass appears in your portal. Gate security scans it to check you in and record your entry time. When you leave, security starts checkout, the parking charge is calculated from your exact duration, and the slot is freed once payment is collected.'
   },
   {
-    q: 'What types of vehicles can I register in the system?',
-    a: 'The system supports both Two-Wheelers (motorcycles, scooters) and Four-Wheelers (cars). You can save multiple vehicles under your profile and select which one you are driving before making a reservation.'
+    q: 'Can one vehicle book more than one slot at the same time?',
+    a: 'No. A vehicle can only occupy one slot at a time. A new booking is refused if the same vehicle already has a booking or a parked session that overlaps the requested time. Back-to-back bookings are fine.'
   },
   {
-    q: 'What should I do if my assigned slot is physically blocked upon arrival?',
-    a: 'You can immediately submit an Incident Report from your active booking screen with details and a description. Campus administrators monitor reports in real-time and can reassign you to another available slot on the same floor while updating your digital QR pass.'
+    q: 'What happens if I do not pay my reservation fee?',
+    a: 'An unpaid pre-booking holds the slot for 15 minutes. After that it is cancelled automatically and the slot becomes available to other drivers.'
+  },
+  {
+    q: 'How do I list my own parking lot?',
+    a: 'Register as a lot owner and pay the one-time registration fee. You can then create your lots, generate slots, set hourly prices and the reservation fee, and add security accounts. Drivers see your lot alongside every other listed lot.'
+  },
+  {
+    q: 'How do security accounts work?',
+    a: 'A lot owner creates security accounts and assigns each one to a single lot. A guard can scan passes, check in walk-ins and check vehicles out for that lot only. Owners manage the business side and do not use the gate screens.'
+  },
+  {
+    q: 'What should I do if my slot is blocked when I arrive?',
+    a: 'Submit an incident report from the Report Issue page and select the lot. It goes to that lot\'s owner, who can resolve it. You can also tell the gate security on site.'
   }
 ];
 
+// Content for the three role tabs
+const ROLE_CONTENT = {
+  driver: {
+    label: 'Driver',
+    icon: 'fa-car-side',
+    title: 'Find and book parking in any listed lot',
+    badge: 'Driver',
+    items: [
+      { icon: 'fa-id-card', color: 'var(--accent-gold)', title: 'Vehicle Garage', desc: 'Register two-wheelers and four-wheelers with their plate numbers and switch the active vehicle with one tap.' },
+      { icon: 'fa-map-location-dot', color: 'var(--accent-emerald)', title: 'Live Slot Grid', desc: 'A multi-floor layout showing which slots are free, reserved or occupied right now.' },
+      { icon: 'fa-qrcode', color: '#C9B07A', title: 'Digital QR Passes', desc: 'Your paid pre-booking generates a QR pass in your portal, ready to scan at the gate.' },
+      { icon: 'fa-receipt', color: '#EBD9AE', title: 'History & Receipts', desc: 'Review past sessions with entry and exit times, durations and payments.' }
+    ]
+  },
+  owner: {
+    label: 'Lot Owner',
+    icon: 'fa-building-shield',
+    title: 'Run your own parking lot',
+    badge: 'Lot Owner',
+    items: [
+      { icon: 'fa-layer-group', color: 'var(--accent-gold)', title: 'Lots & Slots', desc: 'Create lots with opening hours and contact details, generate slots by section, and mark bays for maintenance.' },
+      { icon: 'fa-tags', color: '#C9B07A', title: 'Your Own Pricing', desc: 'Set the hourly price per slot and the reservation fee for each lot.' },
+      { icon: 'fa-user-shield', color: 'var(--accent-emerald)', title: 'Security Staff', desc: 'Create gate accounts, assign each to one lot, reset passwords and deactivate access at any time.' },
+      { icon: 'fa-chart-line', color: '#D9BF8C', title: 'Analytics & Reports', desc: 'Revenue, month-wise history, peak times and incident reports, limited to your own lots.' }
+    ]
+  },
+  security: {
+    label: 'Gate Security',
+    icon: 'fa-user-shield',
+    title: 'Run the gate for one lot',
+    badge: 'Gate Security',
+    items: [
+      { icon: 'fa-camera', color: 'var(--accent-emerald)', title: 'Gate Scanner', desc: 'Scan QR passes to check pre-booked drivers in and out of your assigned lot.' },
+      { icon: 'fa-person-walking-luggage', color: 'var(--accent-gold)', title: 'Walk-in Desk', desc: 'Pick a free slot on the live map, enter the plate number and check the vehicle in. Search any vehicle by number.' },
+      { icon: 'fa-square-parking', color: '#C9B07A', title: 'Parked & Pre-booked', desc: 'Separate lists of parked vehicles and expected pre-bookings, each searchable, with check-in and check-out.' },
+      { icon: 'fa-bolt', color: '#EBD9AE', title: 'Live Bookings', desc: 'Every walk-in session for the day, with running charges and completed sessions.' }
+    ]
+  }
+};
+
 const LandingPage = () => {
-  const { user, logout } = useAuth();
+    const { user, logout } = useAuth();
+
+  // Live platform stats and owner registration fee come from the API
+  const [stats, setStats] = useState(null);
+  const [ownerFee, setOwnerFee] = useState(999);
+  useEffect(() => {
+    lotService.getAllLots().then((res) => {
+      const lots = res.lots || [];
+      setStats({
+        lots: lots.length,
+        slots: lots.reduce((n, l) => n + (l.total_slots || 0), 0),
+        owners: new Set(lots.map((l) => l.owner_name).filter(Boolean)).size
+      });
+    }).catch(() => {});
+    authService.getAdminRegistrationConfig().then((r) => setOwnerFee(r.fee)).catch(() => {});
+  }, []);
+
 
   // Interactive Simulator States
   const [selectedLot, setSelectedLot] = useState(CAMPUS_LOTS[0]);
@@ -266,28 +355,28 @@ const LandingPage = () => {
 
   // Dynamic Calculator States (Strictly Two-Wheeler and Four-Wheeler)
   const [calcVehicle, setCalcVehicle] = useState('four_wheeler'); // 'four_wheeler' or 'two_wheeler'
-  const [calcMode, setCalcMode] = useState('pre'); // 'pre' or 'live'
+  const [calcMode, setCalcMode] = useState('pre'); // 'pre' (pre-booking) or 'walkin'
   const [calcHours, setCalcHours] = useState(2);
 
   // Role Perspective State
-  const [activeRole, setActiveRole] = useState('driver'); // 'driver' or 'admin'
+  const [activeRole, setActiveRole] = useState('driver'); // 'driver', 'owner' or 'security'
 
   // FAQ Accordion State
   const [openFaqIndex, setOpenFaqIndex] = useState(0);
 
-  // Demo Credentials Modal
-  const [showDemoModal, setShowDemoModal] = useState(false);
 
-  // Real-world pricing rates
+    // Sample pricing. Each lot owner sets their own hourly rate and reservation fee.
+  const RESERVATION_FEE = 10;
   const RATES = {
-    four_wheeler: { name: 'Four-Wheeler (Car)', hourly: 30, baseFare: 20, icon: 'fa-car' },
-    two_wheeler: { name: 'Two-Wheeler (Bike/Scooter)', hourly: 15, baseFare: 10, icon: 'fa-motorcycle' }
+    four_wheeler: { name: 'Four-Wheeler (Car)', hourly: 30, icon: 'fa-car' },
+    two_wheeler: { name: 'Two-Wheeler (Bike/Scooter)', hourly: 15, icon: 'fa-motorcycle' }
   };
 
   const currentRate = RATES[calcVehicle];
-  const totalTariff = currentRate.hourly * calcHours;
-  const baseFarePayable = calcMode === 'pre' ? currentRate.baseFare : 0;
-  const exitPayable = calcMode === 'pre' ? Math.max(0, totalTariff - baseFarePayable) : totalTariff;
+  const parkingCharge = currentRate.hourly * calcHours;
+  const reservationFee = calcMode === 'pre' ? RESERVATION_FEE : 0;
+  const grandTotal = parkingCharge + reservationFee;
+
 
   return (
     <div className="landing-wrapper">
@@ -317,41 +406,34 @@ const LandingPage = () => {
           <ul className="landing-nav-links">
             <li><a href="#how-it-works">How It Works</a></li>
             <li><a href="#features">Features</a></li>
-            <li><a href="#live-slots">Live Parking Map</a></li>
+                        <li><a href="#live-slots">Slot Explorer</a></li>
             <li><a href="#calculator">Tariff Calculator</a></li>
             <li><a href="#roles">Portals</a></li>
             <li><a href="#faqs">FAQs</a></li>
           </ul>
 
           <div className="landing-nav-actions">
-            <button
-              className="btn-landing-secondary"
-              onClick={() => setShowDemoModal(true)}
-              title="Quick test accounts"
-            >
-              <i className="fa-solid fa-key" style={{ color: 'var(--accent-gold)' }}></i>
-              <span>Demo Logins</span>
-            </button>
-
             {user ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-                  Signed in as <strong style={{ color: '#fff' }}>{user.full_name?.split(' ')[0]}</strong>
-                </span>
+              <>
                 <button
-                  onClick={logout}
+                  onClick={() => logout('/')}
                   className="btn-landing-secondary"
                   title="Sign out"
-                  style={{ padding: '0.45rem 0.75rem', fontSize: '0.8rem' }}
                 >
-                  <i className="fa-solid fa-arrow-right-from-bracket"></i>
                   <span>Sign Out</span>
                 </button>
-              </div>
+                <Link to={homeForRole(user.role)} className="btn-landing-primary">
+                  <span>Open Dashboard</span>
+                  <i className="fa-solid fa-arrow-right" style={{ fontSize: '0.8rem' }}></i>
+                </Link>
+              </>
             ) : (
               <>
                 <Link to="/login" className="btn-landing-secondary">
                   <span>Sign In</span>
+                </Link>
+                <Link to="/register-owner" className="btn-landing-secondary">
+                  <span>List Your Lot</span>
                 </Link>
                 <Link to="/register" className="btn-landing-primary">
                   <span>Register Driver</span>
@@ -369,69 +451,75 @@ const LandingPage = () => {
       <header className="landing-hero" id="overview">
         <div className="hero-badge-pill">
           <span className="pulse-dot"></span>
-          <span>CAMPUS SMART PARKING MANAGEMENT SYSTEM • OPERATIONAL</span>
+          <span>SMART PARKING FOR DRIVERS AND LOT OWNERS</span>
         </div>
 
         <h1 className="hero-main-title">
-          Intelligent Parking <br />
-          <span className="hero-highlight-gold">Made Effortless & Contactless</span> <br />
-          <span className="hero-highlight-emerald">For Campus Drivers & Visitors</span>
+                    Book Parking in Any Lot <br />
+          <span className="hero-highlight-gold">Or Run Your Own</span> <br />
+          <span className="hero-highlight-emerald">Contactless From Gate to Exit</span>
         </h1>
 
         <p className="hero-subtext">
-          Discover available parking spaces in real-time, reserve slots in advance with pre-booking, 
-          enjoy seamless entry and exit with digital QR codes, and pay securely online without ticket friction.
+                    Drivers find open slots in real time, pre-book with a QR pass, and pay at exit. Parking lot owners
+          register, list their lots, add gate security and track revenue from one dashboard.
         </p>
 
+          {user ? (
+            <div className="hero-cta-group">
+              <Link to={homeForRole(user.role)} className="btn-landing-primary hero-btn-large">
+                <i className="fa-solid fa-gauge-high"></i>
+                <span>Open Dashboard</span>
+              </Link>
+              <a href="#live-slots" className="btn-landing-secondary hero-btn-large" style={{ opacity: 0.85 }}>
+                <i className="fa-solid fa-map-location-dot"></i>
+                <span>Slot Explorer</span>
+              </a>
+            </div>
+          ) : (
         <div className="hero-cta-group">
-          <Link to="/login" className="btn-landing-primary hero-btn-large">
-            <i className="fa-solid fa-arrow-right-to-bracket"></i>
-            <span>Sign In</span>
-          </Link>
-          <Link to="/register" className="btn-landing-secondary hero-btn-large">
-            <i className="fa-solid fa-user-plus"></i>
-            <span>Register</span>
-          </Link>
-          <a href="#live-slots" className="btn-landing-secondary hero-btn-large" style={{ opacity: 0.85 }}>
-            <i className="fa-solid fa-map-location-dot"></i>
-            <span>Live Lot Map</span>
-          </a>
-        </div>
+            <Link to="/login" className="btn-landing-primary hero-btn-large">
+              <i className="fa-solid fa-arrow-right-to-bracket"></i>
+              <span>Sign In</span>
+            </Link>
+            <Link to="/register" className="btn-landing-secondary hero-btn-large">
+              <i className="fa-solid fa-user-plus"></i>
+              <span>Register as Driver</span>
+            </Link>
+                      <Link to="/register-owner" className="btn-landing-secondary hero-btn-large">
+              <i className="fa-solid fa-building-shield"></i>
+              <span>Register Your Lot</span>
+            </Link>
+            <a href="#live-slots" className="btn-landing-secondary hero-btn-large" style={{ opacity: 0.85 }}>
+              <i className="fa-solid fa-map-location-dot"></i>
+              <span>Slot Explorer</span>
+            </a>
+          </div>
+          )}
 
-        <div className="hero-demo-strip">
-          <span style={{ color: 'var(--accent-gold)', fontWeight: 700 }}>
-            <i className="fa-solid fa-circle-info"></i> Pre-Configured Test Logins:
-          </span>
-          <span>Driver: <strong style={{ color: '#fff' }}>mehanna@spms.com</strong> (user123)</span>
-          <span style={{ opacity: 0.4 }}>|</span>
-          <span>Admin: <strong style={{ color: '#fff' }}>admin@spms.com</strong> (admin123)</span>
-          <button onClick={() => setShowDemoModal(true)} className="hero-demo-pill">
-            View Accounts
-          </button>
-        </div>
 
         {/* Live System Operational Stats */}
         <div className="hero-telemetry-grid">
           <div className="telemetry-card">
-            <div className="telemetry-val" style={{ color: 'var(--accent-gold)' }}>4 Lots</div>
+                        <div className="telemetry-val" style={{ color: 'var(--accent-gold)' }}>{stats ? stats.lots : '-'} {stats && stats.lots === 1 ? 'Lot' : 'Lots'}</div>
             <div className="telemetry-label">
-              <i className="fa-solid fa-location-dot"></i> Campus Parking Hubs
+              <i className="fa-solid fa-location-dot"></i> Listed Parking Lots
             </div>
           </div>
           <div className="telemetry-card">
-            <div className="telemetry-val" style={{ color: 'var(--accent-emerald)' }}>160 Slots</div>
+                        <div className="telemetry-val" style={{ color: 'var(--accent-emerald)' }}>{stats ? stats.slots : '-'} {stats && stats.slots === 1 ? 'Slot' : 'Slots'}</div>
             <div className="telemetry-label">
-              <i className="fa-solid fa-layer-group"></i> Multi-Floor Bays
+              <i className="fa-solid fa-layer-group"></i> Bookable Slots
             </div>
           </div>
           <div className="telemetry-card">
-            <div className="telemetry-val" style={{ color: '#C8C8CC' }}>&lt; 2.0s</div>
+                        <div className="telemetry-val" style={{ color: '#C9B07A' }}>{stats ? stats.owners : '-'} {stats && stats.owners === 1 ? 'Owner' : 'Owners'}</div>
             <div className="telemetry-label">
-              <i className="fa-solid fa-qrcode"></i> QR Gate Validation
+              <i className="fa-solid fa-building"></i> Lot Owners
             </div>
           </div>
           <div className="telemetry-card">
-            <div className="telemetry-val" style={{ color: '#EDEDEF' }}>100%</div>
+            <div className="telemetry-val" style={{ color: '#E3CC9A' }}>100%</div>
             <div className="telemetry-label">
               <i className="fa-solid fa-ticket"></i> Digital & Paperless
             </div>
@@ -448,7 +536,7 @@ const LandingPage = () => {
               </strong>
             </div>
             <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-              Real-time slot availability synced with entrance gate sensors
+              Sample lot preview
             </div>
           </div>
 
@@ -464,8 +552,8 @@ const LandingPage = () => {
                     Basement 1 (B1) - Real-Time Feed
                   </h4>
                 </div>
-                <span style={{ fontSize: '0.75rem', background: 'rgba(237, 237, 239, 0.15)', color: 'var(--accent-emerald)', padding: '0.2rem 0.6rem', borderRadius: '6px', fontWeight: 700 }}>
-                  Active Sensor Feed
+                <span style={{ fontSize: '0.75rem', background: 'rgba(227, 204, 154, 0.15)', color: 'var(--accent-emerald)', padding: '0.2rem 0.6rem', borderRadius: '6px', fontWeight: 700 }}>
+                  Sample Data
                 </span>
               </div>
 
@@ -542,7 +630,7 @@ const LandingPage = () => {
                   </span>
                   <div style={{ fontSize: '0.95rem', fontWeight: 700 }}>Gate Entry & Exit Token</div>
                 </div>
-                <span style={{ background: 'rgba(237, 237, 239, 0.2)', color: 'var(--accent-emerald)', fontSize: '0.7rem', fontWeight: 700, padding: '0.2rem 0.5rem', borderRadius: '4px' }}>
+                <span style={{ background: 'rgba(227, 204, 154, 0.2)', color: 'var(--accent-emerald)', fontSize: '0.7rem', fontWeight: 700, padding: '0.2rem 0.5rem', borderRadius: '4px' }}>
                   Verified Active
                 </span>
               </div>
@@ -570,7 +658,7 @@ const LandingPage = () => {
                   <div className="qr-ticket-meta-row">
                     <div className="qr-ticket-meta-label">Booking Mode</div>
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-main)', fontWeight: 600 }}>
-                      Pre-Booking (Base Fare Paid)
+                      Pre-Booking (Reservation Fee Paid)
                     </div>
                   </div>
                 </div>
@@ -597,8 +685,7 @@ const LandingPage = () => {
             How Smart Parking Works
           </h2>
           <p className="section-description">
-            A frictionless, end-to-end digital experience designed to eliminate parking congestion 
-            and search time across campus facilities.
+                        From finding a slot to paying at exit, every step is digital.
           </p>
         </div>
 
@@ -610,8 +697,8 @@ const LandingPage = () => {
             </div>
             <h3 className="process-step-title">1. Search Parking Facilities</h3>
             <p className="process-step-desc">
-              Search across 4 campus parking hubs: Central Parking, Science Block, Library, and Hostel. 
-              Check live capacity and floor vacancy in real-time.
+                            Browse lots from every registered owner. Check live capacity and floor vacancy,
+              opening hours and hourly rates before you travel.
             </p>
             <div className="process-step-footer-pill">
               <i className="fa-solid fa-check-circle"></i>
@@ -624,10 +711,10 @@ const LandingPage = () => {
               <div className="step-num-pill">02</div>
               <div className="step-srs-tag">Reservation</div>
             </div>
-            <h3 className="process-step-title">2. Choose Your Booking Method</h3>
+                        <h3 className="process-step-title">2. Pre-Book Your Slot</h3>
             <p className="process-step-desc">
-              Choose <strong>Pre-Booking</strong> to reserve an advance spot with an upfront base fare deposit, 
-              or choose <strong>Live Booking</strong> for instant parking upon arrival.
+              Pick a slot and pay the lot's small <strong>reservation fee</strong> to lock it.
+              Arriving without a booking? Gate security can check you in as a <strong>walk-in</strong>.
             </p>
             <div className="process-step-footer-pill">
               <i className="fa-solid fa-lock"></i>
@@ -674,8 +761,8 @@ const LandingPage = () => {
             </div>
             <h3 className="process-step-title">5. Automated Duration Logging</h3>
             <p className="process-step-desc">
-              The system accurately logs your exact parking minutes. No paper tickets to lose and 
-              no manual billing calculation disputes.
+                            Your exact arrival and exit times are logged. No paper tickets to lose and
+              no billing disputes.
             </p>
             <div className="process-step-footer-pill">
               <i className="fa-solid fa-stopwatch"></i>
@@ -688,10 +775,10 @@ const LandingPage = () => {
               <div className="step-num-pill">06</div>
               <div className="step-srs-tag">Gate Exit</div>
             </div>
-            <h3 className="process-step-title">6. Auto-Deduction & Digital Receipt</h3>
+                        <h3 className="process-step-title">6. Pay at Exit</h3>
             <p className="process-step-desc">
-              At the exit gate, your base fare is credited against the total parking bill. 
-              Pay any balance online and instantly receive a digital invoice.
+              Security starts checkout and the parking charge is calculated from your duration
+              and the slot's hourly rate. Pay it and the slot is freed.
             </p>
             <div className="process-step-footer-pill">
               <i className="fa-solid fa-receipt"></i>
@@ -710,11 +797,10 @@ const LandingPage = () => {
             <i className="fa-solid fa-cubes"></i> Core Capabilities
           </div>
           <h2 className="section-main-heading">
-            Everything You Need for Campus Parking
+            Everything for Drivers, Owners and Gate Security
           </h2>
           <p className="section-description">
-            A comprehensive suite of tools built for campus drivers, security operators, 
-            and facility administrators.
+                        Tools for drivers who park, owners who run lots, and security staff who run the gate.
           </p>
         </div>
 
@@ -745,14 +831,15 @@ const LandingPage = () => {
       <section className="landing-section" id="live-slots">
         <div className="section-header-centered">
           <div className="section-pill-tag">
-            <i className="fa-solid fa-gamepad"></i> Live Interactive Preview
+            <i className="fa-solid fa-gamepad"></i> Interactive Preview
           </div>
           <h2 className="section-main-heading">
-            Live Parking Slot Explorer
+                        Parking Slot Explorer
+
           </h2>
           <p className="section-description">
-            Explore parking capacity across campus facilities. Select a lot and floor, 
-            filter by vehicle type, and inspect bay status.
+                        Explore a sample lot layout. Select a lot and floor, filter by vehicle type,
+            and inspect bay status.
           </p>
         </div>
 
@@ -888,11 +975,11 @@ const LandingPage = () => {
                       fontWeight: 700,
                       background:
                         selectedSlot.status === 'available'
-                          ? 'rgba(237, 237, 239, 0.15)'
+                          ? 'rgba(227, 204, 154, 0.15)'
                           : selectedSlot.status === 'reserved'
-                          ? 'rgba(229, 229, 231, 0.15)'
+                          ? 'rgba(217, 191, 140, 0.15)'
                           : selectedSlot.status === 'occupied'
-                          ? 'rgba(154, 154, 159, 0.15)'
+                          ? 'rgba(138, 132, 120, 0.15)'
                           : 'rgba(107, 114, 128, 0.15)',
                       color:
                         selectedSlot.status === 'available'
@@ -928,7 +1015,7 @@ const LandingPage = () => {
                     <span style={{ fontWeight: 700, color: 'var(--accent-gold)' }}>₹{selectedSlot.price}.00 / hr</span>
                   </div>
                   <div className="sim-inspector-body-row">
-                    <span style={{ color: 'var(--text-muted)' }}>Pre-Booking Base Fare</span>
+                    <span style={{ color: 'var(--text-muted)' }}>Reservation Fee</span>
                     <span style={{ fontWeight: 700 }}>
                       ₹{selectedSlot.type === 'two_wheeler' ? '10.00' : '20.00'} (Credited at exit)
                     </span>
@@ -942,7 +1029,7 @@ const LandingPage = () => {
                 {/* Purely Informational Bay Telemetry */}
                 <div style={{ marginTop: '1.25rem' }}>
                   {selectedSlot.status === 'available' ? (
-                    <div style={{ background: 'rgba(237, 237, 239, 0.08)', border: '1px solid rgba(237, 237, 239, 0.25)', borderRadius: '10px', padding: '1rem' }}>
+                    <div style={{ background: 'rgba(227, 204, 154, 0.08)', border: '1px solid rgba(227, 204, 154, 0.25)', borderRadius: '10px', padding: '1rem' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--status-available)', fontWeight: 700, fontSize: '0.88rem', marginBottom: '0.35rem' }}>
                         <i className="fa-solid fa-circle-check"></i>
                         <span>Bay Available for Reservation</span>
@@ -952,7 +1039,7 @@ const LandingPage = () => {
                       </p>
                     </div>
                   ) : selectedSlot.status === 'occupied' ? (
-                    <div style={{ background: 'rgba(154, 154, 159, 0.08)', border: '1px solid rgba(154, 154, 159, 0.25)', borderRadius: '10px', padding: '1rem' }}>
+                    <div style={{ background: 'rgba(138, 132, 120, 0.08)', border: '1px solid rgba(138, 132, 120, 0.25)', borderRadius: '10px', padding: '1rem' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--status-occupied)', fontWeight: 700, fontSize: '0.88rem', marginBottom: '0.35rem' }}>
                         <i className="fa-solid fa-ban"></i>
                         <span>Bay Currently Occupied</span>
@@ -962,7 +1049,7 @@ const LandingPage = () => {
                       </p>
                     </div>
                   ) : selectedSlot.status === 'reserved' ? (
-                    <div style={{ background: 'rgba(229, 229, 231, 0.08)', border: '1px solid rgba(229, 229, 231, 0.25)', borderRadius: '10px', padding: '1rem' }}>
+                    <div style={{ background: 'rgba(217, 191, 140, 0.08)', border: '1px solid rgba(217, 191, 140, 0.25)', borderRadius: '10px', padding: '1rem' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--status-reserved)', fontWeight: 700, fontSize: '0.88rem', marginBottom: '0.35rem' }}>
                         <i className="fa-solid fa-clock"></i>
                         <span>Bay Pre-Booked (Reserved)</span>
@@ -973,7 +1060,7 @@ const LandingPage = () => {
                     </div>
                   ) : (
                     <div style={{ background: 'rgba(107, 114, 128, 0.08)', border: '1px solid rgba(107, 114, 128, 0.25)', borderRadius: '10px', padding: '1rem' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#9A9A9E', fontWeight: 700, fontSize: '0.88rem', marginBottom: '0.35rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#A8A39A', fontWeight: 700, fontSize: '0.88rem', marginBottom: '0.35rem' }}>
                         <i className="fa-solid fa-wrench"></i>
                         <span>Under Scheduled Maintenance</span>
                       </div>
@@ -998,11 +1085,12 @@ const LandingPage = () => {
             <i className="fa-solid fa-calculator"></i> Transparent Pricing
           </div>
           <h2 className="section-main-heading">
-            Tariff & Base Fare Calculator
+                        Tariff Calculator
+
           </h2>
           <p className="section-description">
-            Calculate your parking cost accurately. Choose your vehicle type (Two-Wheeler or Four-Wheeler), 
-            booking mode, and estimated duration.
+                        Estimate your cost. Rates shown are samples: each lot owner sets their own hourly price
+            and reservation fee.
           </p>
         </div>
 
@@ -1022,7 +1110,7 @@ const LandingPage = () => {
                   >
                     <i className={`fa-solid ${data.icon}`} style={{ fontSize: '1.6rem', color: calcVehicle === key ? 'var(--accent-gold)' : 'var(--text-muted)', marginBottom: '0.5rem' }}></i>
                     <div style={{ fontSize: '0.9rem', fontWeight: 700 }}>{data.name}</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>₹{data.hourly}/hr (Base: ₹{data.baseFare})</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>₹{data.hourly}/hr</div>
                   </div>
                 ))}
               </div>
@@ -1039,31 +1127,31 @@ const LandingPage = () => {
                     padding: '0.75rem',
                     borderRadius: '8px',
                     border: calcMode === 'pre' ? '1.5px solid var(--accent-gold)' : '1px solid var(--border-subtle)',
-                    background: calcMode === 'pre' ? 'rgba(229, 229, 231, 0.1)' : 'var(--bg-input)',
+                    background: calcMode === 'pre' ? 'rgba(217, 191, 140, 0.1)' : 'var(--bg-input)',
                     color: calcMode === 'pre' ? 'var(--accent-gold)' : 'var(--text-muted)',
                     fontWeight: 700,
                     fontSize: '0.85rem',
                     cursor: 'pointer'
                   }}
                 >
-                  <i className="fa-solid fa-clock"></i> Pre-Booking (Advance Space)
+                  <i className="fa-solid fa-clock"></i> Pre-Booking
                 </button>
                 <button
                   type="button"
-                  onClick={() => setCalcMode('live')}
+                  onClick={() => setCalcMode('walkin')}
                   style={{
                     flex: 1,
                     padding: '0.75rem',
                     borderRadius: '8px',
-                    border: calcMode === 'live' ? '1.5px solid var(--accent-emerald)' : '1px solid var(--border-subtle)',
-                    background: calcMode === 'live' ? 'rgba(237, 237, 239, 0.1)' : 'var(--bg-input)',
-                    color: calcMode === 'live' ? 'var(--accent-emerald)' : 'var(--text-muted)',
+                    border: calcMode === 'walkin' ? '1.5px solid var(--accent-emerald)' : '1px solid var(--border-subtle)',
+                    background: calcMode === 'walkin' ? 'rgba(227, 204, 154, 0.1)' : 'var(--bg-input)',
+                    color: calcMode === 'walkin' ? 'var(--accent-emerald)' : 'var(--text-muted)',
                     fontWeight: 700,
                     fontSize: '0.85rem',
                     cursor: 'pointer'
                   }}
                 >
-                  <i className="fa-solid fa-car-on"></i> Live Booking (On-Arrival)
+                  <i className="fa-solid fa-car-on"></i> Walk-in (Pay at Exit)
                 </button>
               </div>
 
@@ -1119,18 +1207,18 @@ const LandingPage = () => {
               {calcMode === 'pre' ? (
                 <>
                   <div className="calc-breakdown-row" style={{ color: 'var(--accent-gold)' }}>
-                    <span>Advance Base Fare (Paid now)</span>
-                    <span style={{ fontWeight: 700 }}>₹{baseFarePayable}.00</span>
+                                        <span>Reservation Fee (Paid when booking)</span>
+                    <span style={{ fontWeight: 700 }}>₹{reservationFee}.00</span>
                   </div>
                   <div className="calc-breakdown-row" style={{ color: 'var(--accent-emerald)' }}>
-                    <span>Remaining Balance (Due at exit)</span>
-                    <span style={{ fontWeight: 700 }}>₹{exitPayable}.00</span>
+                    <span>Parking Charge (Due at exit)</span>
+                    <span style={{ fontWeight: 700 }}>₹{parkingCharge}.00</span>
                   </div>
                 </>
               ) : (
                 <div className="calc-breakdown-row" style={{ color: 'var(--accent-emerald)' }}>
-                  <span>Advance Payment Required</span>
-                  <span style={{ fontWeight: 700 }}>₹0.00 (Pay at exit)</span>
+                  <span>Parking Charge (Due at exit)</span>
+                  <span style={{ fontWeight: 700 }}>₹{parkingCharge}.00</span>
                 </div>
               )}
 
@@ -1140,21 +1228,22 @@ const LandingPage = () => {
                     Total Estimated Charge
                   </div>
                   <div style={{ fontSize: '0.72rem', color: 'var(--text-dim)' }}>
-                    Based on ₹{currentRate.hourly}/hr × {calcHours} hrs
+                    Parking ₹{currentRate.hourly}/hr × {calcHours} hrs{calcMode === 'pre' ? ` + ₹${RESERVATION_FEE} reservation fee` : ''}
                   </div>
                 </div>
                 <div style={{ fontFamily: 'Outfit, sans-serif', fontSize: '2rem', fontWeight: 800, color: 'var(--accent-gold)' }}>
-                  ₹{totalTariff}.00
+                                    ₹{grandTotal}.00
+
                 </div>
               </div>
 
               <div style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid var(--border-subtle)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: 'var(--accent-gold)', fontSize: '0.8rem', fontWeight: 700, marginBottom: '0.35rem' }}>
                   <i className="fa-solid fa-calculator"></i>
-                  <span>Automated Tariff Enforcement</span>
+                                    <span>How billing works</span>
                 </div>
                 <p style={{ margin: 0, fontSize: '0.76rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
-                  Tariffs are automatically computed at gate exit based on exact timestamps. For pre-booked slots, the base fare is credited directly toward your final parking balance.
+                  The parking charge is calculated at exit from your exact duration, rounded up to the next hour. The reservation fee is separate and paid when you pre-book.
                 </p>
               </div>
             </div>
@@ -1163,7 +1252,7 @@ const LandingPage = () => {
       </section>
 
       {/* ====================================================================
-          Dedicated Portals for Drivers & Administrators
+          Portals for Drivers, Lot Owners and Gate Security
           ==================================================================== */}
       <section className="landing-section" id="roles">
         <div className="section-header-centered">
@@ -1171,131 +1260,62 @@ const LandingPage = () => {
             <i className="fa-solid fa-users-gear"></i> Platform Portals
           </div>
           <h2 className="section-main-heading">
-            Built for Drivers and Operations
+            One Platform, Three Portals
           </h2>
           <p className="section-description">
-            Dedicated interfaces designed specifically for drivers looking for parking spaces 
-            and campus administrators managing facility operations.
+            Drivers book slots, lot owners run their lots, and gate security handles arrivals and departures.
           </p>
         </div>
 
         <div className="perspective-toggle-bar">
           <div className="perspective-toggle-container">
-            <button
-              className={`perspective-btn ${activeRole === 'driver' ? 'active' : ''}`}
-              onClick={() => setActiveRole('driver')}
-            >
-              <i className="fa-solid fa-car-side"></i>
-              <span>Driver & Commuter Portal</span>
-            </button>
-            <button
-              className={`perspective-btn ${activeRole === 'admin' ? 'active' : ''}`}
-              onClick={() => setActiveRole('admin')}
-            >
-              <i className="fa-solid fa-shield-halved"></i>
-              <span>Administrator Command Deck</span>
-            </button>
+            {Object.entries(ROLE_CONTENT).map(([key, role]) => (
+              <button
+                key={key}
+                className={`perspective-btn ${activeRole === key ? 'active' : ''}`}
+                onClick={() => setActiveRole(key)}
+              >
+                <i className={`fa-solid ${role.icon}`}></i>
+                <span>{role.label}</span>
+              </button>
+            ))}
           </div>
         </div>
 
         <div className="perspective-card">
-          {activeRole === 'driver' ? (
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem', flexWrap: 'wrap', gap: '1rem' }}>
-                <div>
-                  <h3 style={{ margin: 0, fontFamily: 'Outfit, sans-serif', fontSize: '1.5rem', color: 'var(--text-main)' }}>
-                    Frictionless Mobility for Campus Commuters
-                  </h3>
-                  <p style={{ margin: '0.25rem 0 0 0', color: 'var(--text-muted)', fontSize: '0.88rem' }}>
-                    Search parking, reserve slots in advance, access lots with mobile QR codes, and pay contactlessly.
-                  </p>
-                </div>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem', background: 'rgba(229, 229, 231, 0.12)', border: '1px solid rgba(229, 229, 231, 0.3)', color: 'var(--accent-gold)', padding: '0.35rem 0.85rem', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 700 }}>
-                  <i className="fa-solid fa-id-card"></i>
-                  <span>Driver & Commuter Access</span>
-                </div>
-              </div>
-
-              <div className="perspective-grid">
-                <div className="perspective-feature-item">
-                  <i className="fa-solid fa-id-card" style={{ color: 'var(--accent-gold)', fontSize: '1.3rem', marginBottom: '0.75rem' }}></i>
-                  <h4 style={{ margin: '0 0 0.35rem 0', fontSize: '1.05rem' }}>Vehicle Garage</h4>
-                  <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-                    Register both Two-Wheelers and Four-Wheelers with license plate numbers. Switch your active parking vehicle with one tap.
-                  </p>
-                </div>
-                <div className="perspective-feature-item">
-                  <i className="fa-solid fa-map-location-dot" style={{ color: 'var(--accent-emerald)', fontSize: '1.3rem', marginBottom: '0.75rem' }}></i>
-                  <h4 style={{ margin: '0 0 0.35rem 0', fontSize: '1.05rem' }}>Live Slot Grid</h4>
-                  <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-                    Interactive multi-floor layout showing real-time slot vacancy across Basement 1, Ground Floor, and First Floor.
-                  </p>
-                </div>
-                <div className="perspective-feature-item">
-                  <i className="fa-solid fa-qrcode" style={{ color: '#C8C8CC', fontSize: '1.3rem', marginBottom: '0.75rem' }}></i>
-                  <h4 style={{ margin: '0 0 0.35rem 0', fontSize: '1.05rem' }}>Digital QR Passes</h4>
-                  <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-                    Instant QR gate entry passes stored directly in your portal. Ready for immediate camera scan at entrance and exit.
-                  </p>
-                </div>
-                <div className="perspective-feature-item">
-                  <i className="fa-solid fa-receipt" style={{ color: '#F2F2F3', fontSize: '1.3rem', marginBottom: '0.75rem' }}></i>
-                  <h4 style={{ margin: '0 0 0.35rem 0', fontSize: '1.05rem' }}>History & Digital Receipts</h4>
-                  <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-                    View complete history of your past parking sessions, duration timestamps, payments, and downloadable invoices.
-                  </p>
-                </div>
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem', flexWrap: 'wrap', gap: '1rem' }}>
+              <h3 style={{ margin: 0, fontFamily: 'Outfit, sans-serif', fontSize: '1.5rem', color: 'var(--text-main)' }}>
+                {ROLE_CONTENT[activeRole].title}
+              </h3>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem', background: 'rgba(217, 191, 140, 0.12)', border: '1px solid rgba(217, 191, 140, 0.3)', color: 'var(--accent-gold)', padding: '0.35rem 0.85rem', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 700 }}>
+                <i className={`fa-solid ${ROLE_CONTENT[activeRole].icon}`}></i>
+                <span>{ROLE_CONTENT[activeRole].badge}</span>
               </div>
             </div>
-          ) : (
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.75rem', flexWrap: 'wrap', gap: '1rem' }}>
-                <div>
-                  <h3 style={{ margin: 0, fontFamily: 'Outfit, sans-serif', fontSize: '1.5rem', color: 'var(--text-main)' }}>
-                    Total Operational Control for Facility Administrators
-                  </h3>
-                  <p style={{ margin: '0.25rem 0 0 0', color: 'var(--text-muted)', fontSize: '0.88rem' }}>
-                    Live gate camera scanner, lot layout management, dynamic pricing controls, and issue triage.
-                  </p>
-                </div>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem', background: 'rgba(237, 237, 239, 0.12)', border: '1px solid rgba(237, 237, 239, 0.3)', color: 'var(--accent-emerald)', padding: '0.35rem 0.85rem', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 700 }}>
-                  <i className="fa-solid fa-shield-halved"></i>
-                  <span>Administrator Command Deck</span>
-                </div>
-              </div>
 
-              <div className="perspective-grid">
-                <div className="perspective-feature-item">
-                  <i className="fa-solid fa-camera" style={{ color: 'var(--accent-emerald)', fontSize: '1.3rem', marginBottom: '0.75rem' }}></i>
-                  <h4 style={{ margin: '0 0 0.35rem 0', fontSize: '1.05rem' }}>Gate Scanner Terminal</h4>
-                  <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-                    Dedicated entry and exit terminal with live camera QR scanner for instant vehicle check-in and check-out.
-                  </p>
+            <div className="perspective-grid">
+              {ROLE_CONTENT[activeRole].items.map((item) => (
+                <div key={item.title} className="perspective-feature-item">
+                  <i className={`fa-solid ${item.icon}`} style={{ color: item.color, fontSize: '1.3rem', marginBottom: '0.75rem' }}></i>
+                  <h4 style={{ margin: '0 0 0.35rem 0', fontSize: '1.05rem' }}>{item.title}</h4>
+                  <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-muted)' }}>{item.desc}</p>
                 </div>
-                <div className="perspective-feature-item">
-                  <i className="fa-solid fa-layer-group" style={{ color: 'var(--accent-gold)', fontSize: '1.3rem', marginBottom: '0.75rem' }}></i>
-                  <h4 style={{ margin: '0 0 0.35rem 0', fontSize: '1.05rem' }}>Lots & Slots Management</h4>
-                  <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-                    Add new parking lots, create slots, modify floor assignments, and set maintenance flags when bays need servicing.
-                  </p>
-                </div>
-                <div className="perspective-feature-item">
-                  <i className="fa-solid fa-tags" style={{ color: '#C8C8CC', fontSize: '1.3rem', marginBottom: '0.75rem' }}></i>
-                  <h4 style={{ margin: '0 0 0.35rem 0', fontSize: '1.05rem' }}>Pricing & Tariff Control</h4>
-                  <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-                    Configure base fares and hourly parking tariffs per lot or individual slot to match campus parking policies.
-                  </p>
-                </div>
-                <div className="perspective-feature-item">
-                  <i className="fa-solid fa-chart-line" style={{ color: '#E4E4E7', fontSize: '1.3rem', marginBottom: '0.75rem' }}></i>
-                  <h4 style={{ margin: '0 0 0.35rem 0', fontSize: '1.05rem' }}>Occupancy & Revenue Reports</h4>
-                  <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-muted)' }}>
-                    Monitor real-time occupancy percentages, daily revenue trends, peak parking hours, and gate scan logs.
-                  </p>
-                </div>
-              </div>
+              ))}
             </div>
-          )}
+
+            {activeRole === 'owner' && (
+              <div style={{ marginTop: '1.75rem', display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                <Link to="/register-owner" className="btn-landing-primary">
+                  <i className="fa-solid fa-building-shield"></i>
+                  <span>Register Your Lot</span>
+                </Link>
+                <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                  One-time registration fee: <strong style={{ color: 'var(--accent-gold)' }}>₹{Number(ownerFee).toFixed(2)}</strong>
+                </span>
+              </div>
+            )}
+          </div>
         </div>
       </section>
 
@@ -1311,8 +1331,7 @@ const LandingPage = () => {
             Performance, Reliability & Security
           </h2>
           <p className="section-description">
-            Engineered to handle high-traffic campus rush hours while safeguarding user data 
-            and ensuring data consistency.
+                        Built to stay fast at busy gates while keeping every owner's data separate and consistent.
           </p>
         </div>
 
@@ -1323,8 +1342,8 @@ const LandingPage = () => {
               Sub-2-Second Gate Scans
             </h4>
             <p style={{ margin: 0, fontSize: '0.84rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
-              QR entry and exit validation operates in under 2.0 seconds, preventing vehicle bottlenecks 
-              at campus parking gates.
+                            QR entry and exit validation is designed to complete in under 2.0 seconds,
+              preventing vehicle bottlenecks at the gate.
             </p>
             <div className="benchmark-target-pill">
               <i className="fa-solid fa-check"></i> Gate Validation &le; 2.0s
@@ -1334,25 +1353,25 @@ const LandingPage = () => {
           <div className="benchmark-card">
             <i className="fa-solid fa-server" style={{ color: 'var(--accent-emerald)', fontSize: '1.6rem', marginBottom: '1rem' }}></i>
             <h4 style={{ margin: '0 0 0.5rem 0', fontFamily: 'Outfit, sans-serif', fontSize: '1.2rem' }}>
-              10,000+ Concurrent Scale
+                            Isolated Owner Data
             </h4>
             <p style={{ margin: 0, fontSize: '0.84rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
-              High-throughput backend architecture with database connection pooling designed to support 
-              peak arrival periods across all campus zones.
+              Each owner sees only their own lots, bookings, revenue and reports. Security staff
+              are limited to the single lot they are assigned to.
             </p>
             <div className="benchmark-target-pill">
-              <i className="fa-solid fa-check"></i> Scalable Architecture
+              <i className="fa-solid fa-check"></i> Per-Owner Access Control
             </div>
           </div>
 
           <div className="benchmark-card">
-            <i className="fa-solid fa-lock" style={{ color: '#C8C8CC', fontSize: '1.6rem', marginBottom: '1rem' }}></i>
+            <i className="fa-solid fa-lock" style={{ color: '#C9B07A', fontSize: '1.6rem', marginBottom: '1rem' }}></i>
             <h4 style={{ margin: '0 0 0.5rem 0', fontFamily: 'Outfit, sans-serif', fontSize: '1.2rem' }}>
               Zero Double-Booking
             </h4>
             <p style={{ margin: 0, fontSize: '0.84rem', color: 'var(--text-muted)', lineHeight: 1.6 }}>
-              Strict database transaction locks ensure a parking bay cannot be reserved by more than one 
-              driver for the same timeframe.
+                            Database transaction locks ensure a bay cannot be reserved twice, and a vehicle
+              cannot hold two slots at overlapping times.
             </p>
             <div className="benchmark-target-pill">
               <i className="fa-solid fa-check"></i> Atomic Transaction Locks
@@ -1360,7 +1379,7 @@ const LandingPage = () => {
           </div>
 
           <div className="benchmark-card">
-            <i className="fa-solid fa-shield-check" style={{ color: '#F2F2F3', fontSize: '1.6rem', marginBottom: '1rem' }}></i>
+            <i className="fa-solid fa-shield-check" style={{ color: '#EBD9AE', fontSize: '1.6rem', marginBottom: '1rem' }}></i>
             <h4 style={{ margin: '0 0 0.5rem 0', fontFamily: 'Outfit, sans-serif', fontSize: '1.2rem' }}>
               Security & Confidentiality
             </h4>
@@ -1387,7 +1406,7 @@ const LandingPage = () => {
             Frequently Asked Questions
           </h2>
           <p className="section-description">
-            Answers to common questions about campus parking bookings, payments, and gate access.
+            Answers about bookings, payments, gate access and listing your lot.
           </p>
         </div>
 
@@ -1420,31 +1439,40 @@ const LandingPage = () => {
           ==================================================================== */}
       <section className="landing-section">
         <div className="landing-cta-banner">
-          <div className="section-pill-tag" style={{ background: 'rgba(229, 229, 231, 0.15)' }}>
+          <div className="section-pill-tag" style={{ background: 'rgba(217, 191, 140, 0.15)' }}>
             <i className="fa-solid fa-car-side"></i> Ready to Park?
           </div>
           <h2 style={{ fontFamily: 'Outfit, sans-serif', fontSize: '2.5rem', fontWeight: 800, margin: '1rem 0' }}>
-            Get Started with Smart Campus Parking
+                        Get Started with Smart Parking
+
           </h2>
           <p style={{ maxWidth: '650px', margin: '0 auto 2rem auto', color: 'var(--text-muted)', fontSize: '1rem' }}>
-            Sign in with demo credentials or create a driver account to search lots, 
-            reserve parking slots, and experience contactless QR entry.
+                        Create a driver account to book a slot, or register as a lot owner to list your own parking lot.
           </p>
 
+          {user ? (
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+              <Link to={homeForRole(user.role)} className="btn-landing-primary hero-btn-large">
+                <i className="fa-solid fa-gauge-high"></i>
+                <span>Open Dashboard</span>
+              </Link>
+            </div>
+          ) : (
           <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-            <Link to="/login" className="btn-landing-primary hero-btn-large">
-              <i className="fa-solid fa-arrow-right-to-bracket"></i>
-              <span>Sign In to System</span>
-            </Link>
-            <Link to="/register" className="btn-landing-secondary hero-btn-large">
-              <i className="fa-solid fa-user-plus"></i>
-              <span>Register New Driver</span>
-            </Link>
-            <button onClick={() => setShowDemoModal(true)} className="btn-landing-secondary hero-btn-large">
-              <i className="fa-solid fa-key"></i>
-              <span>View Test Credentials</span>
-            </button>
-          </div>
+              <Link to="/login" className="btn-landing-primary hero-btn-large">
+                <i className="fa-solid fa-arrow-right-to-bracket"></i>
+                <span>Sign In</span>
+              </Link>
+                          <Link to="/register" className="btn-landing-secondary hero-btn-large">
+                <i className="fa-solid fa-user-plus"></i>
+                <span>Register as Driver</span>
+              </Link>
+              <Link to="/register-owner" className="btn-landing-secondary hero-btn-large">
+                <i className="fa-solid fa-building-shield"></i>
+                <span>Register Your Lot</span>
+              </Link>
+            </div>
+          )}
         </div>
       </section>
 
@@ -1463,12 +1491,12 @@ const LandingPage = () => {
               </div>
             </div>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', lineHeight: 1.6, maxWidth: '340px' }}>
-              Smart Parking Management System providing centralized parking reservations, 
-              real-time slot availability, QR-based entry/exit, and automated digital payments.
+                            A parking platform where drivers book slots in any listed lot and owners manage their own
+              lots, security staff and revenue.
             </p>
             <div style={{ fontSize: '0.78rem', color: 'var(--accent-emerald)', marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
               <span className="pulse-dot" style={{ display: 'inline-block' }}></span>
-              <span>All 4 Campus Parking Hubs Online</span>
+              <span>{stats ? `${stats.lots} parking lots online` : 'Parking lots online'}</span>
             </div>
           </div>
 
@@ -1477,7 +1505,7 @@ const LandingPage = () => {
             <ul className="footer-links-list">
               <li><a href="#how-it-works">How It Works</a></li>
               <li><a href="#features">Core Features</a></li>
-              <li><a href="#live-slots">Live Parking Map</a></li>
+                            <li><a href="#live-slots">Slot Explorer</a></li>
               <li><a href="#calculator">Tariff Calculator</a></li>
               <li><a href="#roles">Portals</a></li>
               <li><a href="#faqs">FAQs</a></li>
@@ -1487,28 +1515,14 @@ const LandingPage = () => {
           <div className="footer-col">
             <h5>Access Portals</h5>
             <ul className="footer-links-list">
-              <li><Link to="/login">Sign In (Driver & Admin)</Link></li>
+              <li><Link to="/login">Sign In (Driver, Owner & Security)</Link></li>
               <li><Link to="/register">Driver Registration</Link></li>
-              <li><a href="#roles">Driver Portal Features</a></li>
-              <li><a href="#roles">Admin Control Deck</a></li>
-              <li><a href="#benchmarks">System Benchmarks</a></li>
+              <li><Link to="/register-owner">Register Your Parking Lot</Link></li>
+                            <li><a href="#roles">Portal Features</a></li>
+              <li><a href="#benchmarks">Reliability & Security</a></li>
             </ul>
           </div>
 
-          <div className="footer-col">
-            <h5>Quick Access</h5>
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: '0 0 0.75rem 0' }}>
-              Instantly test with pre-seeded demo accounts:
-            </p>
-            <button
-              onClick={() => setShowDemoModal(true)}
-              className="btn-landing-secondary"
-              style={{ fontSize: '0.8rem', padding: '0.45rem 0.85rem' }}
-            >
-              <i className="fa-solid fa-key" style={{ color: 'var(--accent-gold)' }}></i>
-              <span>View Test Credentials</span>
-            </button>
-          </div>
         </div>
 
         <div className="footer-sub-row">
@@ -1516,176 +1530,10 @@ const LandingPage = () => {
             &copy; 2026 SPMS Smart Parking Management System. All rights reserved.
           </div>
           <div>
-            Centralized Web Platform for Two-Wheelers & Four-Wheelers
+            Parking for Two-Wheelers & Four-Wheelers
           </div>
         </div>
       </footer>
-
-      {/* ====================================================================
-          Pre-Seeded Demo Accounts Modal
-          ==================================================================== */}
-      {showDemoModal && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0, 0, 0, 0.75)',
-            backdropFilter: 'blur(8px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000,
-            padding: '1rem'
-          }}
-          onClick={() => setShowDemoModal(false)}
-        >
-          <div
-            style={{
-              background: 'var(--bg-card)',
-              border: '1px solid var(--border-bright)',
-              borderRadius: '16px',
-              maxWidth: '500px',
-              width: '100%',
-              padding: '1.75rem',
-              boxShadow: '0 25px 50px rgba(0,0,0,0.8)'
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                <i className="fa-solid fa-key" style={{ color: 'var(--accent-gold)', fontSize: '1.2rem' }}></i>
-                <h3 style={{ margin: 0, fontFamily: 'Outfit, sans-serif', fontSize: '1.25rem' }}>
-                  Pre-Configured Demo Accounts
-                </h3>
-              </div>
-              <button
-                onClick={() => setShowDemoModal(false)}
-                style={{ background: 'transparent', border: 'none', color: 'var(--text-muted)', fontSize: '1.2rem', cursor: 'pointer' }}
-              >
-                <i className="fa-solid fa-xmark"></i>
-              </button>
-            </div>
-
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: '0 0 1.25rem 0' }}>
-              Choose a role below to sign in:
-            </p>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <div
-                style={{
-                  background: 'var(--bg-input)',
-                  border: '1px solid var(--border-subtle)',
-                  borderRadius: '10px',
-                  padding: '0.85rem 1rem',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center'
-                }}
-              >
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
-                    <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>Mehanna Reddy</span>
-                    <span style={{ fontSize: '0.65rem', background: 'rgba(229, 229, 231, 0.15)', color: 'var(--accent-gold)', padding: '0.1rem 0.4rem', borderRadius: '4px', fontWeight: 700 }}>
-                      DRIVER
-                    </span>
-                  </div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                    mehanna@spms.com • Pass: user123
-                  </div>
-                  <div style={{ fontSize: '0.7rem', color: 'var(--accent-emerald)', marginTop: '0.2rem' }}>
-                    Vehicle: TS09 AB 1234 (Four-Wheeler) • Slot C5 Reserved
-                  </div>
-                </div>
-                <Link
-                  to="/login"
-                  className="btn-landing-primary"
-                  style={{ fontSize: '0.75rem', padding: '0.45rem 0.85rem' }}
-                >
-                  Sign In
-                </Link>
-              </div>
-
-              <div
-                style={{
-                  background: 'var(--bg-input)',
-                  border: '1px solid var(--border-subtle)',
-                  borderRadius: '10px',
-                  padding: '0.85rem 1rem',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center'
-                }}
-              >
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
-                    <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>Super Admin</span>
-                    <span style={{ fontSize: '0.65rem', background: 'rgba(237, 237, 239, 0.15)', color: 'var(--accent-emerald)', padding: '0.1rem 0.4rem', borderRadius: '4px', fontWeight: 700 }}>
-                      ADMINISTRATOR
-                    </span>
-                  </div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                    admin@spms.com • Pass: admin123
-                  </div>
-                  <div style={{ fontSize: '0.7rem', color: '#C8C8CC', marginTop: '0.2rem' }}>
-                    Facility CRUD, Pricing, Gate Scanner & Analytics
-                  </div>
-                </div>
-                <Link
-                  to="/login"
-                  className="btn-landing-primary"
-                  style={{ fontSize: '0.75rem', padding: '0.45rem 0.85rem', background: 'linear-gradient(135deg, var(--accent-emerald), #A1A1A6)' }}
-                >
-                  Admin Login
-                </Link>
-              </div>
-
-              <div
-                style={{
-                  background: 'var(--bg-input)',
-                  border: '1px solid var(--border-subtle)',
-                  borderRadius: '10px',
-                  padding: '0.85rem 1rem',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center'
-                }}
-              >
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.2rem' }}>
-                    <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>Security Operator</span>
-                    <span style={{ fontSize: '0.65rem', background: 'rgba(237, 237, 239, 0.15)', color: 'var(--accent-emerald)', padding: '0.1rem 0.4rem', borderRadius: '4px', fontWeight: 700 }}>
-                      GATE ADMIN
-                    </span>
-                  </div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                    operator@spms.com • Pass: admin123
-                  </div>
-                  <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)', marginTop: '0.2rem' }}>
-                    Entry & Exit Gate Camera Scanner Tool
-                  </div>
-                </div>
-                <Link
-                  to="/login"
-                  className="btn-landing-secondary"
-                  style={{ fontSize: '0.75rem', padding: '0.45rem 0.85rem' }}
-                >
-                  Sign In
-                </Link>
-              </div>
-            </div>
-
-            <div style={{ marginTop: '1.5rem', textAlign: 'right' }}>
-              <button
-                onClick={() => setShowDemoModal(false)}
-                className="btn-landing-secondary"
-                style={{ fontSize: '0.82rem' }}
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
