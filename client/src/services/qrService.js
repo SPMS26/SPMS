@@ -21,6 +21,16 @@ export const qrService = {
     return res.data;
   },
 
+  async walkIn(slot_id, vehicle_number, phone = '') {
+    const res = await api.post('/qr/walk-in', { slot_id, vehicle_number, phone });
+    return res.data;
+  },
+
+  async getWalkInSessions() {
+    const res = await api.get('/qr/walk-ins');
+    return res.data;
+  },
+
   async getGateQueue() {
     const res = await api.get('/qr/gate-queue');
     return res.data;

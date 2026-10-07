@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 
 const Sidebar = ({ onClose }) => {
   const location = useLocation();
-  const { user, isAdmin, logout } = useAuth();
+  const { user, isStaff: isAdmin, isSecurity, logout } = useAuth();
 
   const isActive = (path) => location.pathname === path;
 
@@ -16,11 +16,10 @@ const Sidebar = ({ onClose }) => {
             <div className="sidebar-brand">
               <div
                 className="brand-logo-icon"
-                style={isAdmin ? { background: 'linear-gradient(135deg, var(--accent-emerald), #059669)' } : {}}
               >
                 <i className={`fa-solid ${isAdmin ? 'fa-shapes' : 'fa-square-parking'}`}></i>
               </div>
-              <h2>{isAdmin ? 'Admin Panel' : 'Smart Parking'}</h2>
+              <h2>{isSecurity ? 'Gate Security' : isAdmin ? 'Owner Panel' : 'Smart Parking'}</h2>
             </div>
           </Link>
           {!isAdmin && (
@@ -65,6 +64,39 @@ const Sidebar = ({ onClose }) => {
                 </Link>
               </li>
             </>
+          ) : isSecurity ? (
+            <>
+              <li className={`nav-item ${isActive('/admin/scanner') ? 'active' : ''}`}>
+                <Link to="/admin/scanner">
+                  <i className="fa-solid fa-qrcode"></i>
+                  <span>Gate Scanner</span>
+                </Link>
+              </li>
+              <li className={`nav-item ${isActive('/admin/desk') ? 'active' : ''}`}>
+                <Link to="/admin/desk">
+                  <i className="fa-solid fa-person-walking-luggage"></i>
+                  <span>Walk-in Desk</span>
+                </Link>
+              </li>
+              <li className={`nav-item ${isActive('/admin/parked') ? 'active' : ''}`}>
+                <Link to="/admin/parked">
+                  <i className="fa-solid fa-square-parking"></i>
+                  <span>Parked Vehicles</span>
+                </Link>
+              </li>
+              <li className={`nav-item ${isActive('/admin/prebooked') ? 'active' : ''}`}>
+                <Link to="/admin/prebooked">
+                  <i className="fa-solid fa-calendar-check"></i>
+                  <span>Pre-booked Vehicles</span>
+                </Link>
+              </li>
+              <li className={`nav-item ${isActive('/admin/live') ? 'active' : ''}`}>
+                <Link to="/admin/live">
+                  <i className="fa-solid fa-bolt"></i>
+                  <span>Live Bookings</span>
+                </Link>
+              </li>
+            </>
           ) : (
             <>
               <li className={`nav-item ${isActive('/admin') ? 'active' : ''}`}>
@@ -79,22 +111,22 @@ const Sidebar = ({ onClose }) => {
                   <span>Manage Lots & Slots</span>
                 </Link>
               </li>
-              <li className={`nav-item ${isActive('/admin/scanner') ? 'active' : ''}`}>
-                <Link to="/admin/scanner">
-                  <i className="fa-solid fa-qrcode"></i>
-                  <span>QR Scanner Tool</span>
-                </Link>
-              </li>
               <li className={`nav-item ${isActive('/admin/reports') ? 'active' : ''}`}>
                 <Link to="/admin/reports">
                   <i className="fa-solid fa-triangle-exclamation"></i>
                   <span>Incident Reports</span>
                 </Link>
               </li>
+              <li className={`nav-item ${isActive('/admin/security') ? 'active' : ''}`}>
+                <Link to="/admin/security">
+                  <i className="fa-solid fa-user-shield"></i>
+                  <span>Security Staff</span>
+                </Link>
+              </li>
               <li className={`nav-item ${isActive('/admin/users') ? 'active' : ''}`}>
                 <Link to="/admin/users">
                   <i className="fa-solid fa-users"></i>
-                  <span>User Management</span>
+                  <span>My Customers</span>
                 </Link>
               </li>
             </>

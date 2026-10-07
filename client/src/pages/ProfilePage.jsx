@@ -430,7 +430,7 @@ const ProfilePage = () => {
                     {v.is_default ? (
                       <span
                         style={{
-                          background: 'rgba(217, 119, 6, 0.15)',
+                          background: 'rgba(184, 149, 90, 0.15)',
                           color: 'var(--accent-gold)',
                           border: '1px solid var(--accent-gold)',
                           fontSize: '0.75rem',
@@ -444,7 +444,7 @@ const ProfilePage = () => {
                           boxSizing: 'border-box'
                         }}
                       >
-                        ✓ Default
+                        Default
                       </span>
                     ) : (
                       <button
@@ -457,7 +457,7 @@ const ProfilePage = () => {
                     )}
                     <button
                       className="change-btn"
-                      style={{ borderColor: 'rgba(239, 68, 68, 0.4)', color: 'var(--status-occupied)', minWidth: '80px' }}
+                      style={{ borderColor: 'rgba(138, 132, 120, 0.4)', color: 'var(--status-occupied)', minWidth: '80px' }}
                       onClick={() => handleDeleteVehicle(v.id)}
                     >
                       <i className="fa-solid fa-trash"></i> Remove
@@ -484,7 +484,7 @@ const ProfilePage = () => {
             <form
               onSubmit={handleAddVehicle}
               style={{
-                background: 'var(--bg-card)',
+                background: 'var(--grad-card)',
                 padding: '1.25rem',
                 borderRadius: '14px',
                 marginTop: '1rem',

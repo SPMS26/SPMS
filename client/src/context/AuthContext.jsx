@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/authService';
 
 const AuthContext = createContext();
@@ -7,7 +8,9 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [vehicles, setVehicles] = useState([]);
   const [selectedVehicle, setSelectedVehicle] = useState(null);
-  const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
 
   useEffect(() => {
     const initAuth = async () => {
@@ -52,14 +55,20 @@ export const AuthProvider = ({ children }) => {
     return res;
   };
 
-  const logout = () => {
+    const logout = (redirectTo = '/login') => {
+    authService.clearSession();
     setUser(null);
     setVehicles([]);
     setSelectedVehicle(null);
-    authService.logout();
+    navigate(redirectTo, { replace: true });
   };
 
-  const isAdmin = user && user.role === 'ADMIN';
+  const isAdmin = !!user && user.role === 'ADMIN';
+  const isSecurity = !!user && user.role === 'SECURITY';
+  const isStaff = isAdmin || isSecurity;
+
+  // Used by the payment flow, which logs the new owner in directly
+  const loginWithSession = (sessionUser) => setUser(sessionUser);
 
   return (
     <AuthContext.Provider value={{
@@ -72,7 +81,10 @@ export const AuthProvider = ({ children }) => {
       login,
       register,
       logout,
-      isAdmin
+      loginWithSession,
+      isAdmin,
+      isSecurity,
+      isStaff
     }}>
       {children}
     </AuthContext.Provider>

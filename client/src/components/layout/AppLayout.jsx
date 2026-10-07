@@ -4,7 +4,7 @@ import TopHeader from './TopHeader';
 import { useAuth } from '../../context/AuthContext';
 
 const AppLayout = ({ children }) => {
-  const { isAdmin } = useAuth();
+  const { isStaff: isAdmin } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (

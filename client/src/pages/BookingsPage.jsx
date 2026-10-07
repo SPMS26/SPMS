@@ -47,7 +47,6 @@ const BookingsPage = () => {
       <div className="page-header-row">
         <div className="page-title-box">
           <h1>Booking History & QR Passes</h1>
-          <p>View your active reservations, live parking passes, and session history</p>
         </div>
       </div>
 
@@ -72,7 +71,7 @@ const BookingsPage = () => {
             const isExpired = expiresAt && new Date(expiresAt) < new Date();
 
             return (
-              <div key={booking.id} className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', border: isPaymentPending ? '1px solid #f59e0b' : (isReserved ? '1px solid var(--accent-gold)' : '1px solid var(--border-subtle)') }}>
+              <div key={booking.id} className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', border: isPaymentPending ? '1px solid #D9BF8C' : (isReserved ? '1px solid var(--accent-gold)' : '1px solid var(--border-subtle)') }}>
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
                     <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--accent-gold)', background: 'var(--accent-gold-bg)', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>
@@ -83,8 +82,8 @@ const BookingsPage = () => {
                       fontWeight: 700,
                       padding: '0.2rem 0.5rem',
                       borderRadius: '4px',
-                      background: isPaymentPending ? 'rgba(245, 158, 11, 0.2)' : (isParked ? 'rgba(16, 185, 129, 0.15)' : (isReserved ? 'rgba(245, 158, 11, 0.15)' : 'rgba(107, 114, 128, 0.15)')),
-                      color: isPaymentPending ? '#f59e0b' : (isParked ? '#10b981' : (isReserved ? '#f59e0b' : '#9ca3af'))
+                      background: isPaymentPending ? 'rgba(217, 191, 140, 0.2)' : (isParked ? 'rgba(227, 204, 154, 0.15)' : (isReserved ? 'rgba(217, 191, 140, 0.15)' : 'rgba(107, 114, 128, 0.15)')),
+                      color: isPaymentPending ? '#D9BF8C' : (isParked ? '#E3CC9A' : (isReserved ? '#D9BF8C' : '#A8A39A'))
                     }}>
                       {isPaymentPending ? 'PAYMENT PENDING' : (isParked ? 'PARKED' : (isReserved ? 'RESERVED' : booking.booking_status.toUpperCase()))}
                     </span>
@@ -109,7 +108,7 @@ const BookingsPage = () => {
                   </div>
                   <div className="details-row">
                     <span className="key">Vehicle:</span>
-                    <span className="val" style={{ color: '#a5b4fc' }}>{booking.vehicle ? booking.vehicle.vehicle_number : 'TS09 AB 1234'}</span>
+                    <span className="val" style={{ color: '#EBD9AE' }}>{booking.vehicle ? booking.vehicle.vehicle_number : 'TS09 AB 1234'}</span>
                   </div>
                   <div className="details-row">
                     <span className="key">Reservation Fee:</span>
@@ -119,7 +118,7 @@ const BookingsPage = () => {
                   {expiresAt && !isPaymentPending && (
                     <div className="details-row">
                       <span className="key">Pass Validity:</span>
-                      <span className="val" style={{ color: isExpired ? '#ef4444' : 'var(--text-muted)', fontSize: '0.75rem' }}>
+                      <span className="val" style={{ color: isExpired ? '#8A8478' : 'var(--text-muted)', fontSize: '0.75rem' }}>
                         {isExpired ? 'Expired' : `Until ${new Date(expiresAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
                       </span>
                     </div>
@@ -129,7 +128,7 @@ const BookingsPage = () => {
                 {isPaymentPending ? (
                   <button
                     className="btn-select-slot"
-                    style={{ marginTop: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', background: 'linear-gradient(135deg, var(--accent-gold), #d97706)' }}
+                    style={{ marginTop: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', background: 'linear-gradient(135deg, var(--accent-gold), #B8955A)' }}
                     onClick={() => handlePayReservation(booking)}
                   >
                     <i className="fa-solid fa-lock"></i> Pay ₹{booking.pre_booking_fee || 10}.00 & Generate Pass

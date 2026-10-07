@@ -6,6 +6,21 @@ export const adminService = {
     return res.data;
   },
 
+  async getSecurityStaff() {
+    const res = await api.get('/admin/security');
+    return res.data;
+  },
+
+  async createSecurity(payload) {
+    const res = await api.post('/admin/security', payload);
+    return res.data;
+  },
+
+  async updateSecurity(id, payload) {
+    const res = await api.put(`/admin/security/${id}`, payload);
+    return res.data;
+  },
+
   async getScanHistory() {
     const res = await api.get('/admin/scan-history');
     return res.data;

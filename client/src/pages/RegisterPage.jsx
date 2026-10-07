@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import toast from 'react-hot-toast';
+import { homeForRole } from '../components/layout/ProtectedRoute';
+import AuthShell from '../components/auth/AuthShell';
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
@@ -14,106 +15,107 @@ const RegisterPage = () => {
     vehicle_model: '',
     vehicle_color: ''
   });
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { register } = useAuth();
+  const [error, setError] = useState('');
+  const { user, loading: authLoading, register } = useAuth();
   const navigate = useNavigate();
+
+  // Registering signs the driver in, and this also sends signed-in visitors to their own home
+  useEffect(() => {
+    if (!authLoading && user) navigate(homeForRole(user.role), { replace: true });
+  }, [authLoading, user]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    setError('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
+    setLoading(true);
     try {
-      setLoading(true);
       await register(formData);
-      toast.success('Registration successful!');
-      navigate('/dashboard');
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Registration failed.');
-    } finally {
+      setError(err.response?.data?.message || 'Registration failed. Please try again.');
       setLoading(false);
     }
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-main)', padding: '1.5rem 1rem' }}>
-      <div style={{ width: '100%', maxWidth: '520px', marginBottom: '1rem', display: 'flex', justifyContent: 'flex-start' }}>
-        <Link to="/" style={{ color: 'var(--text-muted)', textDecoration: 'none', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.4rem', fontWeight: 600 }}>
-          <i className="fa-solid fa-arrow-left"></i> Back to SPMS Landing Page
-        </Link>
-      </div>
-      <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-bright)', borderRadius: '16px', width: '100%', maxWidth: '520px', padding: '2rem', boxShadow: '0 20px 40px rgba(0,0,0,0.5)' }}>
-        <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-          <Link to="/" style={{ textDecoration: 'none' }}>
-            <div className="brand-logo-icon" style={{ margin: '0 auto 0.75rem auto', width: '44px', height: '44px', fontSize: '1.4rem' }}>
-              <i className="fa-solid fa-square-parking"></i>
+    <AuthShell
+      title="Create a driver account"
+      maxWidth={540}
+      footer={
+        <>
+          <span>Already have an account? <Link to="/login">Sign in</Link></span>
+          <span>Own a parking lot? <Link to="/register-owner">Register your lot</Link></span>
+        </>
+      }
+    >
+      <form onSubmit={handleSubmit}>
+        {error && (
+          <div className="auth-error" role="alert">
+            <i className="fa-solid fa-circle-exclamation"></i>
+            <span>{error}</span>
+          </div>
+        )}
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0 1rem' }}>
+          <div className="auth-field">
+            <label className="auth-label" htmlFor="reg-name">Full name</label>
+            <input id="reg-name" type="text" name="full_name" className="auth-input" value={formData.full_name} onChange={handleChange} autoComplete="name" autoFocus required />
+          </div>
+          <div className="auth-field">
+            <label className="auth-label" htmlFor="reg-phone">Phone</label>
+            <input id="reg-phone" type="tel" name="phone" className="auth-input" value={formData.phone} onChange={handleChange} autoComplete="tel" required />
+          </div>
+          <div className="auth-field">
+            <label className="auth-label" htmlFor="reg-email">Email</label>
+            <input id="reg-email" type="email" name="email" className="auth-input" value={formData.email} onChange={handleChange} autoComplete="email" required />
+          </div>
+          <div className="auth-field">
+            <label className="auth-label" htmlFor="reg-password">Password</label>
+            <div className="auth-pw-wrap">
+              <input id="reg-password" type={showPassword ? 'text' : 'password'} name="password" minLength={6} className="auth-input" value={formData.password} onChange={handleChange} autoComplete="new-password" required />
+              <button type="button" className="auth-pw-toggle" onClick={() => setShowPassword((v) => !v)} aria-label={showPassword ? 'Hide password' : 'Show password'} tabIndex={-1}>
+                <i className={`fa-solid ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
+              </button>
             </div>
-          </Link>
-          <h2 style={{ fontFamily: 'Outfit, sans-serif', fontSize: '1.5rem', fontWeight: 700, margin: '0 0 0.25rem 0' }}>Driver Registration</h2>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', margin: 0 }}>Register to search and book parking slots</p>
+          </div>
         </div>
 
-        <form onSubmit={handleSubmit}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
-            <div>
-              <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: '0.4rem' }}>Full Name:</label>
-              <input type="text" name="full_name" className="search-input" style={{ width: '100%' }} value={formData.full_name} onChange={handleChange} required />
+        <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '1rem', marginTop: '0.25rem' }}>
+          <div className="auth-label" style={{ color: 'var(--accent-gold)', fontSize: '0.88rem', marginBottom: '0.75rem' }}>Your vehicle</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0 1rem' }}>
+            <div className="auth-field">
+              <label className="auth-label" htmlFor="reg-plate">Registration number</label>
+              <input id="reg-plate" type="text" name="vehicle_number" className="auth-input" placeholder="TS09 AB 1234" value={formData.vehicle_number} onChange={handleChange} required />
             </div>
-            <div>
-              <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: '0.4rem' }}>Phone Number:</label>
-              <input type="text" name="phone" className="search-input" style={{ width: '100%' }} value={formData.phone} onChange={handleChange} required />
+            <div className="auth-field">
+              <label className="auth-label" htmlFor="reg-type">Type</label>
+              <select id="reg-type" name="vehicle_type" className="auth-input" value={formData.vehicle_type} onChange={handleChange}>
+                <option value="four_wheeler">Car / Four wheeler</option>
+                <option value="two_wheeler">Bike / Two wheeler</option>
+              </select>
             </div>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
-            <div>
-              <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: '0.4rem' }}>Email Address:</label>
-              <input type="email" name="email" className="search-input" style={{ width: '100%' }} value={formData.email} onChange={handleChange} required />
+            <div className="auth-field">
+              <label className="auth-label" htmlFor="reg-model">Model (optional)</label>
+              <input id="reg-model" type="text" name="vehicle_model" className="auth-input" placeholder="Hyundai i20" value={formData.vehicle_model} onChange={handleChange} />
             </div>
-            <div>
-              <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: '0.4rem' }}>Password:</label>
-              <input type="password" name="password" className="search-input" style={{ width: '100%' }} value={formData.password} onChange={handleChange} required />
-            </div>
-          </div>
-
-          <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '1rem', marginTop: '1rem', marginBottom: '1rem' }}>
-            <h4 style={{ fontSize: '0.9rem', margin: '0 0 0.75rem 0', color: 'var(--accent-gold)' }}>Vehicle Details</h4>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '0.75rem' }}>
-              <div>
-                <label style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: '0.3rem' }}>Vehicle Reg Number:</label>
-                <input type="text" name="vehicle_number" className="search-input" style={{ width: '100%' }} placeholder="e.g. TS09 AB 1234" value={formData.vehicle_number} onChange={handleChange} required />
-              </div>
-              <div>
-                <label style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: '0.3rem' }}>Vehicle Type:</label>
-                <select name="vehicle_type" className="search-input" style={{ width: '100%' }} value={formData.vehicle_type} onChange={handleChange}>
-                  <option value="four_wheeler">Car / Four Wheeler</option>
-                  <option value="two_wheeler">Bike / Two Wheeler</option>
-                </select>
-              </div>
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-              <div>
-                <label style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: '0.3rem' }}>Model:</label>
-                <input type="text" name="vehicle_model" className="search-input" style={{ width: '100%' }} placeholder="e.g. Hyundai i20" value={formData.vehicle_model} onChange={handleChange} />
-              </div>
-              <div>
-                <label style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: '0.3rem' }}>Color:</label>
-                <input type="text" name="vehicle_color" className="search-input" style={{ width: '100%' }} placeholder="e.g. White" value={formData.vehicle_color} onChange={handleChange} />
-              </div>
+            <div className="auth-field">
+              <label className="auth-label" htmlFor="reg-color">Color (optional)</label>
+              <input id="reg-color" type="text" name="vehicle_color" className="auth-input" placeholder="White" value={formData.vehicle_color} onChange={handleChange} />
             </div>
           </div>
-
-          <button type="submit" className="btn-select-slot" style={{ marginTop: '0.5rem' }} disabled={loading}>
-            {loading ? 'Creating Account...' : 'Register Account'}
-          </button>
-        </form>
-
-        <div style={{ textAlign: 'center', marginTop: '1.25rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-          Already have an account? <Link to="/login" style={{ color: 'var(--accent-gold)', textDecoration: 'none', fontWeight: 600 }}>Sign in</Link>
         </div>
-      </div>
-    </div>
+
+        <button type="submit" className="btn-select-slot auth-submit" disabled={loading}>
+          {loading ? <span><i className="fa-solid fa-circle-notch fa-spin"></i> Creating account...</span> : <span>Create account</span>}
+        </button>
+      </form>
+    </AuthShell>
   );
 };
 

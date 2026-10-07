@@ -187,11 +187,10 @@ const UserDashboard = () => {
 
   return (
     <AppLayout>
-      {/* Greeting Header & Vehicle Pill */}
+      {/* Page title & vehicle pill */}
       <div className="page-header-row">
         <div className="page-title-box">
-          <h1>Hello, {user ? user.full_name.split(' ')[0] : 'User'}! 👋</h1>
-          <p>Find and book your parking slot</p>
+          <h1>Book a Parking Slot</h1>
         </div>
 
         <div className="vehicle-selector-pill">
@@ -255,7 +254,7 @@ const UserDashboard = () => {
         onClose={() => setShowPaymentModal(false)}
         slot={selectedSlot}
         lot={selectedLot}
-        preBookingFee={preBookingFee}
+        preBookingFee={selectedLot?.effective_pre_booking_fee ?? preBookingFee}
         onSubmitPayment={handleProcessPayment}
       />
 

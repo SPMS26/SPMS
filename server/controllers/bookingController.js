@@ -2,108 +2,33 @@ import db from '../config/database.js';
 import settingService from '../services/settingService.js';
 import { generateQRPayload, renderQRDataURL } from '../services/qrGenerator.js';
 import { broadcastSlotUpdate } from '../socket/socketManager.js';
-
-// Create Live Booking (Raw SQL + Transaction)
-export const createLiveBooking = async (req, res, next) => {
-  const client = await db.getClient();
-  try {
-    await client.query('BEGIN');
-    const { slot_id, vehicle_id } = req.body;
-
-    // Lock & check slot availability
-    const slotRes = await client.query('SELECT * FROM parking_slots WHERE id = $1 AND status = \'available\' FOR UPDATE', [slot_id]);
-    if (slotRes.rows.length === 0) {
-      await client.query('ROLLBACK');
-      return res.status(400).json({ success: false, message: 'Selected parking slot is no longer available.' });
-    }
-
-    const slot = slotRes.rows[0];
-
-    const vehRes = await client.query('SELECT * FROM vehicles WHERE id = $1 AND user_id = $2', [vehicle_id, req.user.id]);
-    if (vehRes.rows.length === 0) {
-      await client.query('ROLLBACK');
-      return res.status(400).json({ success: false, message: 'Valid vehicle selection required.' });
-    }
-
-    const vehicle = vehRes.rows[0];
-
-    const lotRes = await client.query('SELECT * FROM parking_lots WHERE id = $1', [slot.lot_id]);
-    const lot = lotRes.rows[0];
-
-    // Mark slot reserved
-    await client.query('UPDATE parking_slots SET status = \'reserved\', updated_at = CURRENT_TIMESTAMP WHERE id = $1', [slot.id]);
-
-    const initialAmount = parseFloat(slot.hourly_price || 30.00);
-    const expiresAt = new Date(Date.now() + 24 * 3600 * 1000); // 24 Hours validity for live booking
-
-    // Insert normalized booking
-    const bookingRes = await client.query(
-      `INSERT INTO bookings (user_id, vehicle_id, slot_id, booking_type, booking_status, booking_start, duration_minutes, pre_booking_fee, parking_charge, total_amount, payment_status)
-       VALUES ($1, $2, $3, 'live_booking', 'reserved', CURRENT_TIMESTAMP, 120, 0.00, 0.00, $4, 'paid')
-       RETURNING *`,
-      [req.user.id, vehicle.id, slot.id, initialAmount]
-    );
-
-    const booking = bookingRes.rows[0];
-
-    // Generate signed Live QR Payload & Render PNG Data URL on-the-fly
-    const { payloadString, signatureHash } = generateQRPayload(booking, slot, lot, req.user, vehicle, { expiresAt });
-    const qrDataURL = await renderQRDataURL(payloadString);
-
-    // Create Payment record
-    await client.query(
-      `INSERT INTO payments (booking_id, amount, tax, payment_method, payment_status, payment_type, transaction_reference, paid_at)
-       VALUES ($1, $2, 0, 'simulated', 'paid', 'reservation', $3, CURRENT_TIMESTAMP)`,
-      [booking.id, initialAmount, `LIVE-TXN-${Date.now()}`]
-    );
-
-    // Store only compact signature hash & state tracker in qr_codes table (Zero redundancy)
-    await client.query(
-      `INSERT INTO qr_codes (booking_id, signature_hash, version, is_active, generated_at, expires_at)
-       VALUES ($1, $2, 1, true, CURRENT_TIMESTAMP, $3)`,
-      [booking.id, signatureHash, expiresAt]
-    );
-
-    // Create user notification
-    await client.query(
-      `INSERT INTO notifications (user_id, title, message, type)
-       VALUES ($1, 'Live Booking Confirmed', $2, 'success')`,
-      [req.user.id, `Your spot ${slot.slot_number} at ${lot.name} is reserved. Your Live QR Pass is active until ${expiresAt.toLocaleTimeString()}.`]
-    );
-
-    await client.query('COMMIT');
-
-    broadcastSlotUpdate(slot.lot_id, slot.id, 'reserved', slot.slot_number);
-
-    // Enrich booking object with user, slot, and vehicle details
-    booking.user = { id: req.user.id, full_name: req.user.full_name, email: req.user.email, phone: req.user.phone };
-    booking.slot = { ...slot, parking_lot: lot };
-    booking.vehicle = vehicle;
-
-    res.status(201).json({
-      success: true,
-      message: 'Live Booking Confirmed! Live QR Pass Generated.',
-      booking,
-      qr_code: payloadString,
-      qr_image: qrDataURL,
-      expires_at: expiresAt
-    });
-  } catch (err) {
-    await client.query('ROLLBACK');
-    next(err);
-  } finally {
-    client.release();
-  }
-};
+import { canAccessLot } from '../middleware/scope.js';
+import { findOverlappingBooking, describeConflict, lockVehicle, expireStalePendingBookings } from '../services/bookingRules.js';
 
 // Create Pre-Booking (Raw SQL + Transaction)
 export const createPreBooking = async (req, res, next) => {
+  // Release slots held by abandoned, unpaid pre-bookings before checking availability
+  await expireStalePendingBookings();
+
   const client = await db.getClient();
   try {
     await client.query('BEGIN');
     const { slot_id, vehicle_id, booking_start, duration_hours } = req.body;
 
-    const slotRes = await client.query('SELECT * FROM parking_slots WHERE id = $1 AND status = \'available\' FOR UPDATE', [slot_id]);
+    const hours = parseInt(duration_hours || 1, 10);
+    const startDate = new Date(booking_start || Date.now());
+    if (!Number.isInteger(hours) || hours < 1 || hours > 24 || Number.isNaN(startDate.getTime())) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ success: false, message: 'Enter a valid start time and a duration of 1-24 hours.' });
+    }
+    const endDate = new Date(startDate.getTime() + hours * 3600 * 1000);
+
+    const slotRes = await client.query(
+      `SELECT s.* FROM parking_slots s JOIN parking_lots pl ON s.lot_id = pl.id
+       WHERE s.id = $1 AND s.status = 'available' AND s.is_active = true AND pl.is_active = true
+       FOR UPDATE OF s`,
+      [slot_id]
+    );
     if (slotRes.rows.length === 0) {
       await client.query('ROLLBACK');
       return res.status(400).json({ success: false, message: 'Slot is no longer available for pre-booking.' });
@@ -122,12 +47,23 @@ export const createPreBooking = async (req, res, next) => {
     const lotRes = await client.query('SELECT * FROM parking_lots WHERE id = $1', [slot.lot_id]);
     const lot = lotRes.rows[0];
 
-    const hours = parseInt(duration_hours || 1, 10);
-    const startDate = new Date(booking_start || Date.now());
-    const endDate = new Date(startDate.getTime() + hours * 3600 * 1000);
+    // One vehicle cannot hold two slots at overlapping times (serialised per vehicle to avoid races)
+    await lockVehicle(client, vehicle.vehicle_number);
+    const conflict = await findOverlappingBooking(client, {
+      vehicleId: vehicle.id,
+      plate: vehicle.vehicle_number,
+      start: startDate,
+      end: endDate
+    });
+    if (conflict) {
+      await client.query('ROLLBACK');
+      return res.status(409).json({ success: false, message: describeConflict(vehicle.vehicle_number, conflict) });
+    }
 
     // Authoritative dynamic pre-booking fee retrieved strictly from database system_settings
-    const preBookingFee = await settingService.getNumericSetting('PRE_BOOKING_FEE', 10.00);
+    // Per-lot fee set by the lot owner, falling back to the global setting
+    const globalFee = await settingService.getNumericSetting('PRE_BOOKING_FEE', 10.00);
+    const preBookingFee = lot.pre_booking_fee !== null && lot.pre_booking_fee !== undefined ? Number(lot.pre_booking_fee) : globalFee;
 
     // Reserve slot during pending pre-booking
     await client.query('UPDATE parking_slots SET status = \'reserved\', updated_at = CURRENT_TIMESTAMP WHERE id = $1', [slot.id]);
@@ -214,8 +150,8 @@ export const confirmPreBookingPayment = async (req, res, next) => {
 
     const booking = bookingRes.rows[0];
 
-    // Authorization check
-    if (booking.user_id !== req.user.id && req.user.role !== 'ADMIN') {
+    // Authorization check: only the booking owner pays the reservation fee
+    if (booking.user_id !== req.user.id) {
       await client.query('ROLLBACK');
       return res.status(403).json({ success: false, message: 'Unauthorized to confirm payment for this booking.' });
     }
@@ -247,6 +183,11 @@ export const confirmPreBookingPayment = async (req, res, next) => {
           expires_at: qrRecord.expires_at
         });
       }
+    }
+
+    if (booking.booking_status !== 'pending_payment') {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ success: false, message: 'This booking has expired or was cancelled. Please make a new booking.' });
     }
 
     const transactionRef = req.body.transaction_reference || `PRE-TXN-${Date.now()}`;
@@ -390,7 +331,7 @@ export const getBookingById = async (req, res, next) => {
         q.expires_at,
         q.is_active as qr_is_active
       FROM bookings b
-      JOIN users u ON b.user_id = u.id
+      LEFT JOIN users u ON b.user_id = u.id
       LEFT JOIN parking_slots s ON b.slot_id = s.id
       LEFT JOIN parking_lots l ON s.lot_id = l.id
       LEFT JOIN vehicles v ON b.vehicle_id = v.id
@@ -416,8 +357,8 @@ export const getBookingById = async (req, res, next) => {
 
     const booking = result.rows[0];
 
-    // Authorization check
-    if (booking.user_id !== req.user.id && req.user.role !== 'ADMIN') {
+    // Authorization check: owner, or staff of the lot the booking belongs to
+    if (booking.user_id !== req.user.id && !(await canAccessLot(req.user, booking.slot?.parking_lot?.id))) {
       return res.status(403).json({ success: false, message: 'Unauthorized to view this booking.' });
     }
 
@@ -459,7 +400,11 @@ export const getBookingById = async (req, res, next) => {
 // Public booking configuration (dynamic fees from system_settings)
 export const getBookingConfig = async (req, res, next) => {
   try {
-    const preBookingFee = await settingService.getNumericSetting('PRE_BOOKING_FEE', 10.00);
+    let preBookingFee = await settingService.getNumericSetting('PRE_BOOKING_FEE', 10.00);
+    if (req.query.lot_id) {
+      const lotFee = await db.query('SELECT pre_booking_fee FROM parking_lots WHERE id = $1', [req.query.lot_id]);
+      if (lotFee.rows[0] && lotFee.rows[0].pre_booking_fee !== null) preBookingFee = Number(lotFee.rows[0].pre_booking_fee);
+    }
     const exitPaymentTimeoutSeconds = await settingService.getNumericSetting('EXIT_PAYMENT_TIMEOUT_SECONDS', 300);
     res.json({ success: true, pre_booking_fee: preBookingFee, exit_payment_timeout_seconds: exitPaymentTimeoutSeconds });
   } catch (err) {

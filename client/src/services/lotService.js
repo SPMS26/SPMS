@@ -6,6 +6,36 @@ export const lotService = {
     return res.data;
   },
 
+  async getLotById(lotId) {
+    const res = await api.get(`/lots/${lotId}`);
+    return res.data;
+  },
+
+  async getMyLots() {
+    const res = await api.get('/lots/mine');
+    return res.data;
+  },
+
+  async createLot(lot) {
+    const res = await api.post('/lots', lot);
+    return res.data;
+  },
+
+  async updateLot(lotId, lot) {
+    const res = await api.put(`/lots/${lotId}`, lot);
+    return res.data;
+  },
+
+  async deleteLot(lotId) {
+    const res = await api.delete(`/lots/${lotId}`);
+    return res.data;
+  },
+
+  async bulkAddSlots(payload) {
+    const res = await api.post('/slots/bulk', payload);
+    return res.data;
+  },
+
   async getSlotsByLot(lotId, floor = null) {
     const url = floor ? `/slots/lot/${lotId}?floor=${floor}` : `/slots/lot/${lotId}`;
     const res = await api.get(url);
