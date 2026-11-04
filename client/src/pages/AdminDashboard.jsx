@@ -157,7 +157,7 @@ const AdminDashboard = () => {
         const code = selectedAdminSlot.slot_number;
     const ok = await confirm(actionType === 'maintenance'
       ? { title: `Put slot ${code} under maintenance?`, message: 'Users will not be able to book it until you set it available again.', confirmLabel: 'Mark as Maintenance', danger: true }
-      : { title: `Make slot ${code} available?`, message: selectedAdminSlot.status === 'reserved' ? 'This slot is reserved. Making it available frees it for other users even if a booking is waiting for it.' : 'Users will be able to book it straight away.', confirmLabel: 'Set Available', danger: selectedAdminSlot.status === 'reserved' });
+      : { title: `Make slot ${code} available?`, message: 'Users will be able to book it straight away.', confirmLabel: 'Set Available' });
     if (!ok) return;
 
     try {

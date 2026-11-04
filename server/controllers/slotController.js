@@ -1,6 +1,7 @@
 import db from '../config/database.js';
 import { broadcastSlotUpdate, sendUserNotification } from '../socket/socketManager.js';
 import { canAccessLot, forbidLot, lotIdForSlot } from '../middleware/scope.js';
+import { findLiveBooking } from '../services/bookingRules.js';
 
 // Get slots for a parking lot (Raw SQL)
 export const getSlotsByLot = async (req, res, next) => {
@@ -43,15 +44,16 @@ export const updateSlotStatus = async (req, res, next) => {
       if (!['available', 'reserved'].includes(status) || !['available', 'reserved'].includes(curStatus)) {
         return res.status(403).json({ success: false, message: 'Security staff can only hold or release free slots.' });
       }
-      // A reserved slot backed by a real booking is released by scanning/cancelling it, not by hand
-      if (status === 'available') {
-        const open = await db.query(
-          "SELECT 1 FROM bookings WHERE slot_id = $1 AND booking_status IN ('pending_payment', 'reserved', 'active') LIMIT 1",
-          [id]
-        );
-        if (open.rows.length > 0) {
-          return res.status(409).json({ success: false, message: 'This slot has an active booking and cannot be released manually.' });
-        }
+    }
+
+    // A slot in use is freed by checking the vehicle out or by the booking lapsing, never by hand
+    if (status === 'available' || status === 'maintenance') {
+      const live = await findLiveBooking({ slotId: id });
+      if (live) {
+        const message = ['active', 'parked'].includes(live.booking_status)
+          ? 'A vehicle is parked in this slot. Check it out first.'
+          : 'This slot has a booking waiting for it and cannot be changed by hand.';
+        return res.status(409).json({ success: false, message });
       }
     }
 

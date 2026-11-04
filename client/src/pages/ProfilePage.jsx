@@ -101,13 +101,13 @@ const ProfilePage = () => {
 
     const handleDeleteVehicle = async (id) => {
     const plate = vehicles?.find((v) => v.id === id)?.vehicle_number;
-    if (!(await confirm({ title: `Remove ${plate || 'this vehicle'}?`, message: 'It will be removed from your account, along with any bookings made with it.', confirmLabel: 'Remove Vehicle', danger: true }))) return;
+    if (!(await confirm({ title: `Remove ${plate || 'this vehicle'}?`, message: 'It will be removed from your account. Your past bookings stay in your history.', confirmLabel: 'Remove Vehicle', danger: true }))) return;
     try {
       await userService.deleteVehicle(id);
       toast.success('Vehicle removed.');
       window.location.reload();
     } catch (err) {
-      toast.error('Failed to remove vehicle.');
+      toast.error(err.response?.data?.message || 'Failed to remove vehicle.');
     }
   };
 

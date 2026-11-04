@@ -1,5 +1,6 @@
 import db from '../config/database.js';
 import bcrypt from 'bcryptjs';
+import { findLiveBooking } from '../services/bookingRules.js';
 
 // Change User Password (Raw SQL)
 export const changePassword = async (req, res, next) => {
@@ -112,17 +113,36 @@ export const addVehicle = async (req, res, next) => {
 
 // Delete Vehicle (Raw SQL)
 export const deleteVehicle = async (req, res, next) => {
+  const client = await db.getClient();
   try {
     const { id } = req.params;
-    const result = await db.query('DELETE FROM vehicles WHERE id = $1 AND user_id = $2 RETURNING id', [id, req.user.id]);
+    await client.query('BEGIN');
 
-    if (result.rows.length === 0) {
+    const own = await client.query('SELECT id, vehicle_number FROM vehicles WHERE id = $1 AND user_id = $2 FOR UPDATE', [id, req.user.id]);
+    if (own.rows.length === 0) {
+      await client.query('ROLLBACK');
       return res.status(404).json({ success: false, message: 'Vehicle not found' });
     }
 
+    // Never remove a vehicle that is in use
+    const live = await findLiveBooking({ vehicleId: id });
+    if (live) {
+      await client.query('ROLLBACK');
+      const inUse = ['active', 'parked'].includes(live.booking_status) ? 'is parked' : 'has a booking';
+      return res.status(409).json({ success: false, message: `This vehicle ${inUse} at ${live.lot_name}, slot ${live.slot_number}, and cannot be removed yet.` });
+    }
+
+    // Past bookings and their payments stay; keep the plate on them so history still shows it
+    await client.query('UPDATE bookings SET guest_vehicle_number = $1 WHERE vehicle_id = $2', [own.rows[0].vehicle_number, id]);
+    await client.query('DELETE FROM vehicles WHERE id = $1', [id]);
+    await client.query('COMMIT');
+
     res.status(200).json({ success: true, message: 'Vehicle removed successfully' });
   } catch (err) {
+    await client.query('ROLLBACK');
     next(err);
+  } finally {
+    client.release();
   }
 };
 

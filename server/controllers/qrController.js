@@ -796,11 +796,11 @@ export const getLiveQR = async (req, res, next) => {
     const { bookingId } = req.params;
 
     const bookingRes = await db.query(
-      `SELECT b.*, u.full_name as user_name, v.vehicle_number, v.vehicle_type, s.slot_number, s.floor, s.section, s.hourly_price, l.name as lot_name, l.address as lot_address,
+      `SELECT b.*, u.full_name as user_name, COALESCE(v.vehicle_number, b.guest_vehicle_number) as vehicle_number, v.vehicle_type, s.slot_number, s.floor, s.section, s.hourly_price, l.name as lot_name, l.address as lot_address,
               q.is_active as qr_is_active, q.expires_at as qr_expires_at, q.generated_at as qr_generated_at, q.signature_hash
        FROM bookings b
        JOIN users u ON b.user_id = u.id
-       JOIN vehicles v ON b.vehicle_id = v.id
+       LEFT JOIN vehicles v ON b.vehicle_id = v.id
        JOIN parking_slots s ON b.slot_id = s.id
        JOIN parking_lots l ON s.lot_id = l.id
        LEFT JOIN LATERAL (
@@ -902,13 +902,13 @@ export const getGateQueue = async (req, res, next) => {
     const arrivalsRes = await db.query(
       `SELECT b.id, b.booking_status, b.created_at, b.booking_type, b.total_amount,
               u.full_name as "userName", u.phone,
-              v.vehicle_number as "vehicleNo", v.vehicle_model,
+              COALESCE(v.vehicle_number, b.guest_vehicle_number) as "vehicleNo", v.vehicle_model,
               s.slot_number as "slotCode", s.floor,
               l.name as "lotName",
               q.expires_at, q.is_active
        FROM bookings b
        JOIN users u ON b.user_id = u.id
-       JOIN vehicles v ON b.vehicle_id = v.id
+       LEFT JOIN vehicles v ON b.vehicle_id = v.id
        JOIN parking_slots s ON b.slot_id = s.id
        JOIN parking_lots l ON s.lot_id = l.id
        LEFT JOIN LATERAL (

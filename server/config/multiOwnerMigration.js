@@ -34,6 +34,15 @@ ALTER TABLE bookings ADD COLUMN IF NOT EXISTS created_by UUID REFERENCES users(i
 ALTER TABLE bookings ADD COLUMN IF NOT EXISTS ticket_code VARCHAR(20);
 CREATE INDEX IF NOT EXISTS idx_bookings_ticket_code ON bookings(ticket_code);
 
+-- bookings outlive their vehicle: removing a vehicle must not erase booking and revenue history
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'bookings_vehicle_id_fkey' AND confdeltype = 'c') THEN
+    ALTER TABLE bookings DROP CONSTRAINT bookings_vehicle_id_fkey;
+    ALTER TABLE bookings ADD CONSTRAINT bookings_vehicle_id_fkey
+      FOREIGN KEY (vehicle_id) REFERENCES vehicles(id) ON DELETE SET NULL;
+  END IF;
+END $$;
+
 -- payments: platform-level (admin registration) payments have no booking
 ALTER TABLE payments ALTER COLUMN booking_id DROP NOT NULL;
 
