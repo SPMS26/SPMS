@@ -4,6 +4,7 @@ import { lotService } from '../services/lotService';
 import { sortFloors, floorLabel } from '../components/parking/SlotGrid';
 import toast from 'react-hot-toast';
 import { useConfirm } from '../components/common/ConfirmProvider';
+import WheelTimePicker from '../components/common/WheelTimePicker';
 
 const AdminLotsPage = () => {
   const confirm = useConfirm();
@@ -221,7 +222,7 @@ const AdminLotsPage = () => {
       {lotForm && (
         <form onSubmit={handleSaveLot} className="card" style={{ marginBottom: '1.5rem' }}>
           <h3 style={{ margin: '0 0 1rem 0', fontSize: '1.1rem' }}>{lotForm.id ? 'Edit Parking Lot' : 'Create Parking Lot'}</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem', marginBottom: '0.75rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.75rem', marginBottom: '0.75rem', alignItems: 'start' }}>
             <div><label style={fieldLabel}>Lot Name *</label>
               <input className="search-input" style={{ width: '100%' }} value={lotForm.name} onChange={(e) => setLotField('name', e.target.value)} required /></div>
             <div><label style={fieldLabel}>Address *</label>
@@ -229,17 +230,13 @@ const AdminLotsPage = () => {
             <div><label style={fieldLabel}>Contact Phone</label>
               <input className="search-input" style={{ width: '100%' }} value={lotForm.contact_phone} onChange={(e) => setLotField('contact_phone', e.target.value)} /></div>
             <div><label style={fieldLabel}>Opens</label>
-              <input type="time" className="search-input" style={{ width: '100%' }} value={lotForm.opening_time} onChange={(e) => setLotField('opening_time', e.target.value)} /></div>
+              <WheelTimePicker value={lotForm.opening_time} onChange={(val) => setLotField('opening_time', val)} /></div>
             <div><label style={fieldLabel}>Closes</label>
-              <input type="time" className="search-input" style={{ width: '100%' }} value={lotForm.closing_time} onChange={(e) => setLotField('closing_time', e.target.value)} /></div>
+              <WheelTimePicker value={lotForm.closing_time} onChange={(val) => setLotField('closing_time', val)} /></div>
             <div><label style={fieldLabel}>Default Price / hr (₹)</label>
-              <input type="number" min="0" step="0.01" className="search-input" style={{ width: '100%' }} value={lotForm.default_hourly_price} onChange={(e) => setLotField('default_hourly_price', e.target.value)} /></div>
-            <div><label style={fieldLabel}>Pre-booking Fee (₹, blank = platform default)</label>
-              <input type="number" min="0" step="0.01" className="search-input" style={{ width: '100%' }} value={lotForm.pre_booking_fee} onChange={(e) => setLotField('pre_booking_fee', e.target.value)} /></div>
-            <div><label style={fieldLabel}>Latitude</label>
-              <input type="number" step="any" className="search-input" style={{ width: '100%' }} value={lotForm.latitude} onChange={(e) => setLotField('latitude', e.target.value)} /></div>
-            <div><label style={fieldLabel}>Longitude</label>
-              <input type="number" step="any" className="search-input" style={{ width: '100%' }} value={lotForm.longitude} onChange={(e) => setLotField('longitude', e.target.value)} /></div>
+              <input type="number" min="0" step="1" className="search-input" style={{ width: '100%' }} value={lotForm.default_hourly_price} onChange={(e) => setLotField('default_hourly_price', e.target.value)} /></div>
+            <div><label style={{ ...fieldLabel, whiteSpace: 'nowrap' }} title="Pre-booking Fee (₹) [blank = default]">Pre-booking Fee (₹) (blank = default)</label>
+              <input type="number" min="0" step="1" className="search-input" style={{ width: '100%' }} value={lotForm.pre_booking_fee} onChange={(e) => setLotField('pre_booking_fee', e.target.value)} /></div>
           </div>
           <div style={{ marginBottom: '0.75rem' }}>
             <label style={fieldLabel}>Description</label>

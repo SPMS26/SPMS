@@ -1,3 +1,5 @@
+const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
 import React, { useState, useEffect } from 'react';
 import AppLayout from '../components/layout/AppLayout';
 import { adminService } from '../services/adminService';
@@ -40,6 +42,11 @@ const AdminSecurityPage = () => {
 
   const handleCreate = async (e) => {
     e.preventDefault();
+
+    if (!EMAIL_REGEX.test(form.email.trim())) {
+      toast.error('Invalid email address.');
+      return;
+    }
 
     const trimmedPhone = form.phone.trim();
     if (!trimmedPhone) {

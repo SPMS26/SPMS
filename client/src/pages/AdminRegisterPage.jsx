@@ -1,3 +1,5 @@
+const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -37,6 +39,10 @@ const AdminRegisterPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    if (!EMAIL_REGEX.test(formData.email.trim())) {
+      setError('Invalid email address.');
+      return;
+    }
     setLoading(true);
     try {
       const res = await authService.registerAdmin(formData);

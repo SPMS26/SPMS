@@ -37,6 +37,29 @@ export const updateSlotStatus = async (req, res, next) => {
     }
     if (!(await canAccessLot(req.user, await lotIdForSlot(id)))) return forbidLot(res);
 
+    // If attempting to make the slot available or maintenance, check if a vehicle is parked in database
+    if (status === 'available' || status === 'maintenance') {
+      const curSlot = await db.query('SELECT status FROM parking_slots WHERE id = $1', [id]);
+      const curStatus = curSlot.rows[0]?.status;
+
+      const parked = await db.query(
+        `SELECT 1 FROM bookings 
+         WHERE slot_id = $1 
+           AND (booking_status IN ('active', 'parked') OR (entry_time IS NOT NULL AND exit_time IS NULL))
+         LIMIT 1`,
+        [id]
+      );
+
+      if (curStatus === 'occupied' || parked.rows.length > 0) {
+        return res.status(400).json({
+          success: false,
+          message: status === 'maintenance'
+            ? 'A vehicle is parked and cannot set to maintenance'
+            : 'A vehicle is parked and cannot make it available'
+        });
+      }
+    }
+
     // Gate staff may only hold/release a slot (available <-> reserved)
     if (req.user.role === 'SECURITY') {
       const cur = await db.query('SELECT status FROM parking_slots WHERE id = $1', [id]);

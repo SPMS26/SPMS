@@ -1,6 +1,8 @@
+const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 import bcrypt from 'bcryptjs';
 import db from '../config/database.js';
 import { getAccessibleLotIds } from '../middleware/scope.js';
+import { formatDateTime } from '../utils/dateUtils.js';
 
 // Admin: users who have booked in this admin's lots (never other owners' customers)
 export const getUsers = async (req, res, next) => {
@@ -58,7 +60,7 @@ export const getScanHistory = async (req, res, next) => {
       vehicleNo: b.vehicleNo || 'N/A',
       slotCode: b.slotCode || 'N/A',
       lotName: b.lotName || 'N/A',
-      timestamp: b.entry_time ? new Date(b.entry_time).toLocaleString() : new Date(b.created_at).toLocaleString(),
+      timestamp: formatDateTime(b.entry_time) || formatDateTime(b.created_at),
       amountPaid: `₹${Number(b.total_amount || 0)}`,
       status: b.booking_status === 'completed' ? 'Completed' : 'Validated'
     }));
@@ -123,6 +125,13 @@ export const createSecurityStaff = async (req, res, next) => {
     if (!full_name || !email || !password || !assigned_lot_id) {
       return res.status(400).json({ success: false, message: 'Name, email, password and an assigned lot are required.' });
     }
+    if (!EMAIL_REGEX.test(String(email).trim())) {
+      return res.status(400).json({ success: false, message: 'Invalid email address.' });
+    }
+    const trimmedPhone = phone ? String(phone).trim() : '';
+    if (!trimmedPhone) {
+      return res.status(400).json({ success: false, message: 'Phone number is required.' });
+    }
     if (String(password).length < 6) {
       return res.status(400).json({ success: false, message: 'Password must be at least 6 characters long.' });
     }
@@ -136,12 +145,24 @@ export const createSecurityStaff = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'An account with this email already exists.' });
     }
 
+    // Check for duplicate phone number
+    const cleanPhone = trimmedPhone.replace(/[\s-]/g, '');
+    const phoneExists = await db.query(
+      `SELECT id FROM users 
+       WHERE phone IS NOT NULL 
+         AND (phone = $1 OR REPLACE(REPLACE(phone, ' ', ''), '-', '') = $2)`,
+      [trimmedPhone, cleanPhone]
+    );
+    if (phoneExists.rows.length > 0) {
+      return res.status(400).json({ success: false, message: 'An account with this phone number already exists. No duplicate phone numbers allowed.' });
+    }
+
     const passwordHash = await bcrypt.hash(password, await bcrypt.genSalt(12));
     const created = await db.query(
       `INSERT INTO users (full_name, email, password_hash, phone, role, is_verified, managed_by, assigned_lot_id)
        VALUES ($1, $2, $3, $4, 'SECURITY', true, $5, $6)
        RETURNING id`,
-      [String(full_name).trim(), normalizedEmail, passwordHash, phone || null, req.user.id, assigned_lot_id]
+      [String(full_name).trim(), normalizedEmail, passwordHash, trimmedPhone, req.user.id, assigned_lot_id]
     );
 
     await db.query(
@@ -178,6 +199,21 @@ export const updateSecurityStaff = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Password must be at least 6 characters long.' });
     }
 
+    if (phone) {
+      const trimmedPhone = String(phone).trim();
+      const cleanPhone = trimmedPhone.replace(/[\s-]/g, '');
+      const phoneExists = await db.query(
+        `SELECT id FROM users 
+         WHERE phone IS NOT NULL 
+           AND (phone = $1 OR REPLACE(REPLACE(phone, ' ', ''), '-', '') = $2)
+           AND id <> $3`,
+        [trimmedPhone, cleanPhone, id]
+      );
+      if (phoneExists.rows.length > 0) {
+        return res.status(400).json({ success: false, message: 'An account with this phone number already exists.' });
+      }
+    }
+
     const passwordHash = password ? await bcrypt.hash(password, await bcrypt.genSalt(12)) : null;
 
     await db.query(
@@ -189,7 +225,7 @@ export const updateSecurityStaff = async (req, res, next) => {
            password_hash = COALESCE($5, password_hash),
            updated_at = CURRENT_TIMESTAMP
        WHERE id = $6`,
-      [full_name?.trim() || null, phone ?? null, assigned_lot_id || null, typeof is_active === 'boolean' ? is_active : null, passwordHash, id]
+      [full_name?.trim() || null, phone ? String(phone).trim() : (phone === '' ? null : null), assigned_lot_id || null, typeof is_active === 'boolean' ? is_active : null, passwordHash, id]
     );
 
     const row = await db.query(

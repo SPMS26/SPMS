@@ -4,6 +4,8 @@ import { useAuth } from '../context/AuthContext';
 import { homeForRole } from '../components/layout/ProtectedRoute';
 import AuthShell from '../components/auth/AuthShell';
 
+const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
     full_name: '',
@@ -34,6 +36,10 @@ const RegisterPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    if (!EMAIL_REGEX.test(formData.email.trim())) {
+      setError('Invalid email address.');
+      return;
+    }
     setLoading(true);
     try {
       await register(formData);

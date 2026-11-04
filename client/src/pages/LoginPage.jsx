@@ -1,3 +1,4 @@
+const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
@@ -45,6 +46,10 @@ const LoginPage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!EMAIL_REGEX.test(email.trim())) {
+      setError('Invalid email address.');
+      return;
+    }
     signIn(email.trim(), password);
   };
 
