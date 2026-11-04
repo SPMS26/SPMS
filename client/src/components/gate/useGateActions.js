@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { qrService } from '../../services/qrService';
 import toast from 'react-hot-toast';
+import { useConfirm } from '../common/ConfirmProvider';
 
 // Check-in / check-out actions shared by every gate page
 export const useGateActions = (onDone) => {
   const [busyId, setBusyId] = useState(null);
   const [bill, setBill] = useState(null); // exit payment session awaiting confirmation
   const [confirming, setConfirming] = useState(false);
+  const confirm = useConfirm();
 
   const startCheckout = async (bookingId) => {
     setBusyId(bookingId);
@@ -34,7 +36,8 @@ export const useGateActions = (onDone) => {
     }
   };
 
-  const checkInPrebooked = async (bookingId) => {
+    const checkInPrebooked = async (bookingId, vehicleNo) => {
+    if (!(await confirm({ title: `Check in ${vehicleNo}?`, message: 'Records the vehicle as entered and starts its parking time. This cannot be undone.', confirmLabel: 'Check In' }))) return;
     setBusyId(bookingId);
     try {
       const res = await qrService.validateEntry(bookingId);

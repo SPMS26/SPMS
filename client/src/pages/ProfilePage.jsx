@@ -3,8 +3,10 @@ import AppLayout from '../components/layout/AppLayout';
 import { useAuth } from '../context/AuthContext';
 import { userService } from '../services/userService';
 import toast from 'react-hot-toast';
+import { useConfirm } from '../components/common/ConfirmProvider';
 
 const ProfilePage = () => {
+  const confirm = useConfirm();
   const { user, vehicles, setVehicles, setSelectedVehicle, isStaff } = useAuth();
   const [showAddVehicle, setShowAddVehicle] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -36,7 +38,11 @@ const ProfilePage = () => {
     }
   }, [user]);
 
-  const handleSaveProfile = async () => {
+    const handleSaveProfile = async () => {
+    if (editData.email !== user?.email) {
+      const ok = await confirm({ title: 'Change your login email?', message: `You will sign in with ${editData.email} from now on.`, confirmLabel: 'Change Email', danger: true });
+      if (!ok) return;
+    }
     try {
       await userService.updateProfile({
         phone: editData.phone,
@@ -65,6 +71,8 @@ const ProfilePage = () => {
       return;
     }
 
+    if (!(await confirm({ title: 'Change your password?', message: 'Your current password stops working immediately.', confirmLabel: 'Change Password', danger: true }))) return;
+
     setSavingPassword(true);
     try {
       await userService.changePassword(passwordData.newPassword);
@@ -91,7 +99,9 @@ const ProfilePage = () => {
     }
   };
 
-  const handleDeleteVehicle = async (id) => {
+    const handleDeleteVehicle = async (id) => {
+    const plate = vehicles?.find((v) => v.id === id)?.vehicle_number;
+    if (!(await confirm({ title: `Remove ${plate || 'this vehicle'}?`, message: 'It will be removed from your account, along with any bookings made with it.', confirmLabel: 'Remove Vehicle', danger: true }))) return;
     try {
       await userService.deleteVehicle(id);
       toast.success('Vehicle removed.');

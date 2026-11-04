@@ -5,6 +5,7 @@ import { lotService } from '../services/lotService';
 import { authService } from '../services/authService';
 import { homeForRole } from '../components/layout/ProtectedRoute';
 import './LandingPage.css';
+import { useConfirm } from '../components/common/ConfirmProvider';
 
 // Sample lots used by the interactive slot explorer
 const CAMPUS_LOTS = [
@@ -268,6 +269,7 @@ const ROLE_CONTENT = {
 
 const LandingPage = () => {
     const { user, logout } = useAuth();
+  const confirm = useConfirm();
 
   // Live platform stats and owner registration fee come from the API
   const [stats, setStats] = useState(null);
@@ -401,7 +403,7 @@ const LandingPage = () => {
             {user ? (
               <>
                 <button
-                  onClick={() => logout('/')}
+                  onClick={async () => { if (await confirm({ title: 'Sign out?', message: 'You will need to sign in again to use your account.', confirmLabel: 'Sign out' })) logout('/'); }}
                   className="btn-landing-secondary"
                   title="Sign out"
                 >

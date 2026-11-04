@@ -48,7 +48,7 @@ const GatePrebookedPage = () => {
                   <td style={{ fontFamily: 'monospace', fontSize: '0.78rem' }}>{item.bookingId}</td>
                   <td style={{ fontSize: '0.8rem' }}>{formatTime(item.expires_at)}</td>
                   <td>
-                    <button className="btn-select-slot" style={{ marginTop: 0, width: 'auto', padding: '0.4rem 0.9rem', fontSize: '0.8rem', whiteSpace: 'nowrap' }} disabled={actions.busyId === item.id} onClick={() => actions.checkInPrebooked(item.id)}>
+                    <button className="btn-select-slot" style={{ marginTop: 0, width: 'auto', padding: '0.4rem 0.9rem', fontSize: '0.8rem', whiteSpace: 'nowrap' }} disabled={actions.busyId === item.id} onClick={() => actions.checkInPrebooked(item.id, item.vehicleNo)}>
                       {actions.busyId === item.id ? 'Working...' : 'Check In'}
                     </button>
                   </td>

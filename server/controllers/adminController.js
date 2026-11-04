@@ -201,3 +201,49 @@ export const updateSecurityStaff = async (req, res, next) => {
     next(err);
   }
 };
+
+// Delete one of this admin's security accounts. The guard's audit trail must outlive the account:
+// admin_logs would cascade away and slot_reassignments would block the delete, so both move to the owner first.
+export const deleteSecurityStaff = async (req, res, next) => {
+  const { id } = req.params;
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+    return res.status(404).json({ success: false, message: 'Security account not found.' });
+  }
+
+  const client = await db.getClient();
+  try {
+    await client.query('BEGIN');
+
+    const own = await client.query(
+      "SELECT id, full_name, email FROM users WHERE id = $1 AND role = 'SECURITY' AND managed_by = $2 FOR UPDATE",
+      [id, req.user.id]
+    );
+    if (own.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ success: false, message: 'Security account not found.' });
+    }
+    const guard = own.rows[0];
+
+    await client.query(
+      `UPDATE admin_logs
+       SET admin_id = $1, description = CONCAT(description, ' [former security account: ', $3::text, ']')
+       WHERE admin_id = $2`,
+      [req.user.id, guard.id, guard.email]
+    );
+    await client.query('UPDATE slot_reassignments SET changed_by = $1 WHERE changed_by = $2', [req.user.id, guard.id]);
+    await client.query('DELETE FROM users WHERE id = $1', [guard.id]);
+    await client.query(
+      `INSERT INTO admin_logs (admin_id, action, target_table, target_id, description)
+       VALUES ($1, 'SECURITY_DELETED', 'users', $2, $3)`,
+      [req.user.id, guard.id, `Deleted security account ${guard.email} (${guard.full_name}).`]
+    );
+
+    await client.query('COMMIT');
+    res.status(200).json({ success: true, message: `Security account for ${guard.full_name} deleted.` });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    next(err);
+  } finally {
+    client.release();
+  }
+};

@@ -5,12 +5,14 @@ import { lotService } from '../../services/lotService';
 import { qrService } from '../../services/qrService';
 import SlotGrid, { sortFloors, floorLabel } from '../parking/SlotGrid';
 import toast from 'react-hot-toast';
+import { useConfirm } from '../../components/common/ConfirmProvider';
 
 const labelStyle = { display: 'block', fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '0.3rem' };
 
 // Gate slot map + walk-in desk. Guards see the same live slot map users see for their lot;
 // tapping a slot offers the right action: check in (free), release a hold (held), check out (occupied).
 const WalkInPanel = ({ onChanged, queue, onCheckout, plate: plateProp, onPlateChange }) => {
+  const confirm = useConfirm();
   const { user, isSecurity } = useAuth();
   const { socket } = useSocket();
   const [lots, setLots] = useState([]);
@@ -100,7 +102,9 @@ const WalkInPanel = ({ onChanged, queue, onCheckout, plate: plateProp, onPlateCh
   };
 
   const handleCheckIn = async (e) => {
-    e.preventDefault();
+        e.preventDefault();
+    const vehicle = plate.trim().toUpperCase();
+    if (!(await confirm({ title: `Check in ${vehicle}?`, message: `Assigns slot ${selectedSlot.slot_number} and starts billing at ₹${selectedSlot.hourly_price}/hr. Check the number carefully: a check-in cannot be undone.`, confirmLabel: 'Check In' }))) return;
     setSubmitting(true);
     try {
       const res = await qrService.walkIn(selectedSlot.id, plate, phone);
@@ -121,6 +125,10 @@ const WalkInPanel = ({ onChanged, queue, onCheckout, plate: plateProp, onPlateCh
       toast.error('A vehicle is parked and cannot make it available');
       return;
     }
+        const ok = await confirm(status === 'reserved'
+      ? { title: `Hold slot ${slot.slot_number}?`, message: 'It is marked reserved, so nobody can book it until it is released.', confirmLabel: 'Hold Slot' }
+      : { title: `Release slot ${slot.slot_number}?`, message: 'Users will be able to book it straight away.', confirmLabel: 'Release Slot' });
+    if (!ok) return;
     try {
       await lotService.updateSlotStatus(slot.id, status);
       toast.success(status === 'reserved' ? 'Slot held.' : 'Slot released.');

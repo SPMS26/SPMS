@@ -3,8 +3,10 @@ import AppLayout from '../components/layout/AppLayout';
 import QRPassModal from '../components/booking/QRPassModal';
 import { bookingService } from '../services/bookingService';
 import toast from 'react-hot-toast';
+import { useConfirm } from '../components/common/ConfirmProvider';
 
 const BookingsPage = () => {
+  const confirm = useConfirm();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedQRBooking, setSelectedQRBooking] = useState(null);
@@ -38,7 +40,9 @@ const BookingsPage = () => {
     setShowQRModal(true);
   };
 
-  const handlePayReservation = async (booking) => {
+    const handlePayReservation = async (booking) => {
+    const fee = Number(booking.pre_booking_fee || 10).toFixed(2);
+    if (!(await confirm({ title: `Pay the ₹${fee} reservation fee?`, message: 'Your QR pass is generated as soon as the payment goes through.', confirmLabel: `Pay ₹${fee}` }))) return;
     try {
       const res = await bookingService.confirmPayment(booking.id);
       toast.success('Reservation payment confirmed! Digital QR Pass generated.');

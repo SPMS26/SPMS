@@ -3,6 +3,7 @@ import AppLayout from '../components/layout/AppLayout';
 import { qrService } from '../services/qrService';
 import { Html5Qrcode } from 'html5-qrcode';
 import toast from 'react-hot-toast';
+import { useConfirm } from '../components/common/ConfirmProvider';
 
 // Web Audio API Synthesizer for Gate Chimes
 const playAudioFeedback = (type = 'success') => {
@@ -58,6 +59,7 @@ const playAudioFeedback = (type = 'success') => {
 };
 
 const QRScannerPage = () => {
+  const confirm = useConfirm();
   const [gateMode, setGateMode] = useState('auto'); // 'auto' | 'entry' | 'exit'
   const [cameraActive, setCameraActive] = useState(false);
   const [cameraError, setCameraError] = useState(null);
@@ -360,8 +362,17 @@ const QRScannerPage = () => {
     }
   };
 
+    // Clicking a queue row acts on that vehicle directly, so it asks first. Camera scans stay automatic.
+  const confirmQueueAction = async (item, mode) => {
+    const ok = await confirm(mode === 'entry'
+      ? { title: `Check in ${item.vehicleNo}?`, message: `${item.userName}, slot ${item.slotCode}. Records the vehicle as entered and opens the barrier.`, confirmLabel: 'Check In' }
+      : { title: `Start checkout for ${item.vehicleNo}?`, message: `${item.userName}, slot ${item.slotCode}. Calculates the parking charge for this vehicle.`, confirmLabel: 'Start Checkout' });
+    if (ok) executeSecurityValidation(item.id, mode);
+  };
+
   const handleConfirmExitPayment = async () => {
     if (!exitPaymentSession || isExitPaymentExpired) return;
+    if (!(await confirm({ title: 'Confirm payment received?', message: 'Completes the session, frees the slot and opens the barrier. This cannot be undone.', confirmLabel: 'Payment Received' }))) return;
     try {
       setIsConfirmingExitPayment(true);
       const bookingId = exitPaymentSession.booking?.id || exitPaymentSession.details?.booking_id;
@@ -760,7 +771,7 @@ const QRScannerPage = () => {
                       validPendingArrivals.map((item) => (
                         <div
                           key={item.id}
-                          onClick={() => executeSecurityValidation(item.id)}
+                          onClick={() => confirmQueueAction(item, 'entry')}
                           style={{
                             background: 'var(--bg-input)',
                             border: '1px solid var(--border-subtle)',
@@ -796,7 +807,7 @@ const QRScannerPage = () => {
                       gateQueue.active_parked.map((item) => (
                         <div
                           key={item.id}
-                          onClick={() => executeSecurityValidation(item.id)}
+                          onClick={() => confirmQueueAction(item, 'exit')}
                           style={{
                             background: 'var(--bg-input)',
                             border: '1px solid var(--border-subtle)',

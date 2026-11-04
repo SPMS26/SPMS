@@ -11,8 +11,10 @@ import { lotService } from '../services/lotService';
 import { useSocket } from '../context/SocketContext';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, CartesianGrid, ResponsiveContainer, Line, ComposedChart } from 'recharts';
 import toast from 'react-hot-toast';
+import { useConfirm } from '../components/common/ConfirmProvider';
 
 const AdminDashboard = () => {
+  const confirm = useConfirm();
   const { socket } = useSocket();
   const [kpis, setKpis] = useState({
     totalBookings: '—',
@@ -151,6 +153,12 @@ const AdminDashboard = () => {
         : 'A vehicle is parked and cannot make it available');
       return;
     }
+
+        const code = selectedAdminSlot.slot_number;
+    const ok = await confirm(actionType === 'maintenance'
+      ? { title: `Put slot ${code} under maintenance?`, message: 'Users will not be able to book it until you set it available again.', confirmLabel: 'Mark as Maintenance', danger: true }
+      : { title: `Make slot ${code} available?`, message: selectedAdminSlot.status === 'reserved' ? 'This slot is reserved. Making it available frees it for other users even if a booking is waiting for it.' : 'Users will be able to book it straight away.', confirmLabel: 'Set Available', danger: selectedAdminSlot.status === 'reserved' });
+    if (!ok) return;
 
     try {
       await lotService.updateSlotStatus(selectedAdminSlot.id, actionType);

@@ -18,6 +18,7 @@ import AdminUsersPage from './pages/AdminUsersPage';
 import AdminReportsPage from './pages/AdminReportsPage';
 import NotFoundPage from './pages/NotFoundPage';
 import LandingPage from './pages/LandingPage';
+import { ConfirmProvider } from './components/common/ConfirmProvider';
 import AdminRegisterPage from './pages/AdminRegisterPage';
 import AdminSecurityPage from './pages/AdminSecurityPage';
 import GateDeskPage from './pages/GateDeskPage';
@@ -40,6 +41,7 @@ function App() {
               }
             }}
           />
+          <ConfirmProvider>
           <Routes>
             {/* Landing & Public Routes */}
             <Route path="/" element={<LandingPage />} />
@@ -69,6 +71,7 @@ function App() {
 
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
+          </ConfirmProvider>
         </SocketProvider>
       </AuthProvider>
     </Router>
