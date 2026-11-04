@@ -1,26 +1,25 @@
-import React, { useState, useMemo } from 'react';
+import React from 'react';
 import AppLayout from '../components/layout/AppLayout';
-import GateSearchBar from '../components/gate/GateSearchBar';
 import CheckoutModal from '../components/gate/CheckoutModal';
 import { useGateQueue } from '../components/gate/useGateQueue';
 import { useGateActions } from '../components/gate/useGateActions';
-import { matchesQuery, formatDuration, estimateCharge, formatTime } from '../components/gate/gateUtils';
+import { formatDuration, estimateCharge, formatTime } from '../components/gate/gateUtils';
 
 const GateParkedPage = () => {
   const { queue, loading, refresh } = useGateQueue();
   const actions = useGateActions(refresh);
-  const [search, setSearch] = useState('');
-  const parked = useMemo(() => queue.active_parked.filter((i) => matchesQuery(i, search)), [queue, search]);
+  const parked = queue.active_parked || [];
 
   return (
     <AppLayout>
-      <div className="page-header-row">
+      <div className="page-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
         <div className="page-title-box">
           <h1>Parked Vehicles</h1>
         </div>
+        <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', background: 'var(--grad-card)', padding: '0.4rem 0.85rem', borderRadius: '8px', border: '1px solid var(--border-bright)' }}>
+          <strong style={{ color: 'var(--accent-gold)' }}>{parked.length}</strong> parked
+        </div>
       </div>
-
-      <GateSearchBar value={search} onChange={setSearch} autoFocus summary={`${queue.active_parked.length} parked`} />
 
       <div className="card">
         <div style={{ overflowX: 'auto' }}>
@@ -58,7 +57,7 @@ const GateParkedPage = () => {
                 </tr>
               ))}
               {!loading && parked.length === 0 && (
-                <tr><td colSpan={8} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>{search ? 'No parked vehicle matches your search.' : 'No vehicles are parked right now.'}</td></tr>
+                <tr><td colSpan={8} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>No vehicles are parked right now.</td></tr>
               )}
             </tbody>
           </table>

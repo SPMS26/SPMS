@@ -1,34 +1,16 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState } from 'react';
 import AppLayout from '../components/layout/AppLayout';
 import WalkInPanel from '../components/admin/WalkInPanel';
-import GateSearchBar from '../components/gate/GateSearchBar';
 import CheckoutModal from '../components/gate/CheckoutModal';
 import { useGateQueue } from '../components/gate/useGateQueue';
 import { useGateActions } from '../components/gate/useGateActions';
-import { normalize, matchesQuery, formatDuration } from '../components/gate/gateUtils';
-import toast from 'react-hot-toast';
 
-// Walk-in Desk: assign a slot to an arriving vehicle (top), with a quick find underneath.
+// Walk-in Desk: assign a slot to an arriving vehicle (top).
 // The full lists live on the Parked Vehicles, Pre-booked Vehicles and Live Bookings pages.
 const GateDeskPage = () => {
   const { queue, refresh } = useGateQueue();
   const actions = useGateActions(refresh);
-  const [search, setSearch] = useState('');
   const [newPlate, setNewPlate] = useState('');
-  const panelRef = useRef(null);
-
-  const q = normalize(search);
-  const parked = useMemo(() => (q ? queue.active_parked.filter((i) => matchesQuery(i, search)) : []), [queue, q]);
-  const arrivals = useMemo(() => (q ? queue.pending_arrivals.filter((i) => matchesQuery(i, search)) : []), [queue, q]);
-  const noMatch = q.length >= 4 && parked.length === 0 && arrivals.length === 0;
-
-  const startNewWalkIn = () => {
-    setNewPlate(search.trim().toUpperCase());
-    toast('Pick a free slot on the map to check this vehicle in.');
-    panelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  };
-
-  const btn = { marginTop: 0, width: 'auto', padding: '0.4rem 0.9rem', fontSize: '0.8rem' };
 
   return (
     <AppLayout>
@@ -39,7 +21,7 @@ const GateDeskPage = () => {
       </div>
 
       {/* Slot assignment (live booking) */}
-      <div ref={panelRef}>
+      <div>
         <WalkInPanel
           onChanged={refresh}
           queue={queue}

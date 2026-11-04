@@ -1,17 +1,15 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import AppLayout from '../components/layout/AppLayout';
-import GateSearchBar from '../components/gate/GateSearchBar';
 import CheckoutModal from '../components/gate/CheckoutModal';
 import { useGateActions } from '../components/gate/useGateActions';
 import { qrService } from '../services/qrService';
 import { useSocket } from '../context/SocketContext';
-import { matchesQuery, formatDuration, estimateCharge, formatTime } from '../components/gate/gateUtils';
+import { formatDuration, estimateCharge, formatTime } from '../components/gate/gateUtils';
 
 const GateLivePage = () => {
   const { socket } = useSocket();
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
   const [, setTick] = useState(0);
 
   const refresh = useCallback(async () => {
@@ -40,18 +38,19 @@ const GateLivePage = () => {
     return () => socket.off('slot:statusChanged', refresh);
   }, [socket, refresh]);
 
-  const rows = useMemo(() => sessions.filter((s) => matchesQuery({ ...s, ticket_code: s.ticket_code }, search)), [sessions, search]);
+  const rows = sessions;
   const activeCount = sessions.filter((s) => s.booking_status !== 'completed').length;
 
   return (
     <AppLayout>
-      <div className="page-header-row">
+      <div className="page-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
         <div className="page-title-box">
           <h1>Live Bookings</h1>
         </div>
+        <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', background: 'var(--grad-card)', padding: '0.4rem 0.85rem', borderRadius: '8px', border: '1px solid var(--border-bright)' }}>
+          <strong style={{ color: 'var(--accent-gold)' }}>{activeCount}</strong> active • {sessions.length - activeCount} completed (24h)
+        </div>
       </div>
-
-      <GateSearchBar value={search} onChange={setSearch} autoFocus summary={`${activeCount} active • ${sessions.length - activeCount} completed (24h)`} />
 
       <div className="card">
         <div style={{ overflowX: 'auto' }}>
@@ -98,7 +97,7 @@ const GateLivePage = () => {
                 );
               })}
               {!loading && rows.length === 0 && (
-                <tr><td colSpan={9} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>{search ? 'No walk-in matches your search.' : 'No walk-in sessions yet. Check vehicles in from the Walk-in Desk.'}</td></tr>
+                <tr><td colSpan={9} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>No walk-in sessions yet. Check vehicles in from the Walk-in Desk.</td></tr>
               )}
             </tbody>
           </table>

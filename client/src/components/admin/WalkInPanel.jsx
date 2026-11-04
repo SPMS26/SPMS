@@ -117,6 +117,10 @@ const WalkInPanel = ({ onChanged, queue, onCheckout, plate: plateProp, onPlateCh
   };
 
   const setHold = async (slot, status) => {
+    if (status === 'available' && slot.status === 'occupied') {
+      toast.error('A vehicle is parked and cannot make it available');
+      return;
+    }
     try {
       await lotService.updateSlotStatus(slot.id, status);
       toast.success(status === 'reserved' ? 'Slot held.' : 'Slot released.');

@@ -55,12 +55,18 @@ const AdminLotsPage = () => {
 
   const handleStatusToggle = async (slotId, currentStatus) => {
     const nextStatus = currentStatus === 'maintenance' ? 'available' : 'maintenance';
+    if (currentStatus === 'occupied') {
+      toast.error(nextStatus === 'maintenance'
+        ? 'A vehicle is parked and cannot set to maintenance'
+        : 'A vehicle is parked and cannot make it available');
+      return;
+    }
     try {
       await lotService.updateSlotStatus(slotId, nextStatus);
       toast.success(`Slot set to ${nextStatus.toUpperCase()}`);
       setSlots(prev => prev.map(s => s.id === slotId ? { ...s, status: nextStatus } : s));
     } catch (err) {
-      toast.error('Failed to update slot status.');
+      toast.error(err.response?.data?.message || 'Failed to update slot status.');
     }
   };
 
@@ -393,11 +399,15 @@ const AdminLotsPage = () => {
                       <div style={{ display: 'flex', gap: '0.4rem' }}>
                         <button
                           className="change-btn"
+                          disabled={slot.status === 'occupied'}
                           style={{
                             borderColor: slot.status === 'maintenance' ? 'var(--accent-emerald)' : 'var(--status-occupied)',
-                            color: slot.status === 'maintenance' ? 'var(--accent-emerald)' : 'var(--status-occupied)'
+                            color: slot.status === 'maintenance' ? 'var(--accent-emerald)' : 'var(--status-occupied)',
+                            opacity: slot.status === 'occupied' ? 0.45 : 1,
+                            cursor: slot.status === 'occupied' ? 'not-allowed' : 'pointer'
                           }}
                           onClick={() => handleStatusToggle(slot.id, slot.status)}
+                          title={slot.status === 'occupied' ? 'Vehicle is parked' : ''}
                         >
                           {slot.status === 'maintenance' ? 'Set Available' : 'Maintenance'}
                         </button>

@@ -11,7 +11,7 @@ const QRPassModal = ({ isOpen, onClose, booking }) => {
   useEffect(() => {
     if (!booking) return;
 
-    const isSessionComplete = booking.booking_status === 'completed' || booking.booking_status === 'cancelled';
+    const isSessionComplete = booking.booking_status === 'completed' || booking.booking_status === 'cancelled' || booking.booking_status === 'expired';
 
     // Use compact payload format
     const compactPayload = {
@@ -71,7 +71,7 @@ const QRPassModal = ({ isOpen, onClose, booking }) => {
 
   if (!isOpen || !booking) return null;
 
-  const isSessionComplete = booking.booking_status === 'completed' || booking.booking_status === 'cancelled';
+  const isSessionComplete = booking.booking_status === 'completed' || booking.booking_status === 'cancelled' || booking.booking_status === 'expired';
   const bookingCode = booking.bookingCode || `BK-${booking.id?.substring(0, 8).toUpperCase()}` || 'BK-PASS';
   const userName = booking.userName || booking.user_name || booking.user?.full_name || authUser?.full_name || 'Valued User';
   const vehicleNo = booking.vehicleNo || booking.vehicle?.vehicle_number || booking.vehicle_number || 'N/A';
