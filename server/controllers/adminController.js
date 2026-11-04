@@ -1,6 +1,7 @@
 import bcrypt from 'bcryptjs';
 import db from '../config/database.js';
 import { getAccessibleLotIds } from '../middleware/scope.js';
+import { formatDateTime } from '../utils/dateUtils.js';
 
 // Admin: drivers who have booked in this admin's lots (never other owners' customers)
 export const getUsers = async (req, res, next) => {
@@ -58,7 +59,7 @@ export const getScanHistory = async (req, res, next) => {
       vehicleNo: b.vehicleNo || 'N/A',
       slotCode: b.slotCode || 'N/A',
       lotName: b.lotName || 'N/A',
-      timestamp: b.entry_time ? new Date(b.entry_time).toLocaleString() : new Date(b.created_at).toLocaleString(),
+      timestamp: formatDateTime(b.entry_time) || formatDateTime(b.created_at),
       amountPaid: `₹${Number(b.total_amount || 0)}`,
       status: b.booking_status === 'completed' ? 'Completed' : 'Validated'
     }));
@@ -123,6 +124,10 @@ export const createSecurityStaff = async (req, res, next) => {
     if (!full_name || !email || !password || !assigned_lot_id) {
       return res.status(400).json({ success: false, message: 'Name, email, password and an assigned lot are required.' });
     }
+    const trimmedPhone = phone ? String(phone).trim() : '';
+    if (!trimmedPhone) {
+      return res.status(400).json({ success: false, message: 'Phone number is required.' });
+    }
     if (String(password).length < 6) {
       return res.status(400).json({ success: false, message: 'Password must be at least 6 characters long.' });
     }
@@ -136,12 +141,24 @@ export const createSecurityStaff = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'An account with this email already exists.' });
     }
 
+    // Check for duplicate phone number
+    const cleanPhone = trimmedPhone.replace(/[\s-]/g, '');
+    const phoneExists = await db.query(
+      `SELECT id FROM users 
+       WHERE phone IS NOT NULL 
+         AND (phone = $1 OR REPLACE(REPLACE(phone, ' ', ''), '-', '') = $2)`,
+      [trimmedPhone, cleanPhone]
+    );
+    if (phoneExists.rows.length > 0) {
+      return res.status(400).json({ success: false, message: 'An account with this phone number already exists. No duplicate phone numbers allowed.' });
+    }
+
     const passwordHash = await bcrypt.hash(password, await bcrypt.genSalt(12));
     const created = await db.query(
       `INSERT INTO users (full_name, email, password_hash, phone, role, is_verified, managed_by, assigned_lot_id)
        VALUES ($1, $2, $3, $4, 'SECURITY', true, $5, $6)
        RETURNING id`,
-      [String(full_name).trim(), normalizedEmail, passwordHash, phone || null, req.user.id, assigned_lot_id]
+      [String(full_name).trim(), normalizedEmail, passwordHash, trimmedPhone, req.user.id, assigned_lot_id]
     );
 
     await db.query(
@@ -178,6 +195,21 @@ export const updateSecurityStaff = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Password must be at least 6 characters long.' });
     }
 
+    if (phone) {
+      const trimmedPhone = String(phone).trim();
+      const cleanPhone = trimmedPhone.replace(/[\s-]/g, '');
+      const phoneExists = await db.query(
+        `SELECT id FROM users 
+         WHERE phone IS NOT NULL 
+           AND (phone = $1 OR REPLACE(REPLACE(phone, ' ', ''), '-', '') = $2)
+           AND id <> $3`,
+        [trimmedPhone, cleanPhone, id]
+      );
+      if (phoneExists.rows.length > 0) {
+        return res.status(400).json({ success: false, message: 'An account with this phone number already exists.' });
+      }
+    }
+
     const passwordHash = password ? await bcrypt.hash(password, await bcrypt.genSalt(12)) : null;
 
     await db.query(
@@ -189,7 +221,7 @@ export const updateSecurityStaff = async (req, res, next) => {
            password_hash = COALESCE($5, password_hash),
            updated_at = CURRENT_TIMESTAMP
        WHERE id = $6`,
-      [full_name?.trim() || null, phone ?? null, assigned_lot_id || null, typeof is_active === 'boolean' ? is_active : null, passwordHash, id]
+      [full_name?.trim() || null, phone ? String(phone).trim() : (phone === '' ? null : null), assigned_lot_id || null, typeof is_active === 'boolean' ? is_active : null, passwordHash, id]
     );
 
     const row = await db.query(
@@ -199,5 +231,62 @@ export const updateSecurityStaff = async (req, res, next) => {
     res.status(200).json({ success: true, message: 'Security account updated.', staff: row.rows[0] });
   } catch (err) {
     next(err);
+  }
+};
+
+// Permanently delete a security staff account
+export const deleteSecurityStaff = async (req, res, next) => {
+  const client = await db.getClient();
+  try {
+    const { id } = req.params;
+
+    // Verify staff account belongs to this lot owner
+    const own = await client.query(
+      "SELECT id, full_name, email FROM users WHERE id = $1 AND role = 'SECURITY' AND managed_by = $2",
+      [id, req.user.id]
+    );
+    if (own.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Security account not found or not managed by you.' });
+    }
+
+    const staffMember = own.rows[0];
+
+    await client.query('BEGIN');
+
+    // Reassign foreign references to avoid FK constraint blocks
+    await client.query(
+      'UPDATE slot_reassignments SET changed_by = $1 WHERE changed_by = $2',
+      [req.user.id, id]
+    );
+    await client.query(
+      'UPDATE bookings SET created_by = NULL WHERE created_by = $1',
+      [id]
+    );
+    await client.query(
+      'UPDATE incident_reports SET resolved_by = NULL WHERE resolved_by = $1',
+      [id]
+    );
+
+    // Delete user from database
+    await client.query('DELETE FROM users WHERE id = $1', [id]);
+
+    // Audit log
+    await client.query(
+      `INSERT INTO admin_logs (admin_id, action, target_table, target_id, description)
+       VALUES ($1, 'SECURITY_DELETED', 'users', $2, $3)`,
+      [req.user.id, id, `Deleted security staff account ${staffMember.email} (${staffMember.full_name}).`]
+    );
+
+    await client.query('COMMIT');
+
+    res.status(200).json({
+      success: true,
+      message: `Security account ${staffMember.full_name} (${staffMember.email}) has been permanently deleted.`
+    });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    next(err);
+  } finally {
+    client.release();
   }
 };

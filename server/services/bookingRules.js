@@ -1,5 +1,6 @@
 import db from '../config/database.js';
 import { broadcastSlotUpdate } from '../socket/socketManager.js';
+import { formatDateTime } from '../utils/dateUtils.js';
 
 // Unpaid pre-bookings hold a slot only for this long
 export const PENDING_PAYMENT_MINUTES = Number(process.env.PENDING_PAYMENT_MINUTES || 15);
@@ -42,7 +43,7 @@ export const findOverlappingBooking = async (client, { vehicleId = null, plate, 
 export const describeConflict = (plate, c) => {
   const when = c.booking_status === 'active' || c.booking_status === 'parked'
     ? 'currently parked'
-    : `${c.booking_status === 'pending_payment' ? 'awaiting payment' : 'booked'} ${new Date(c.booking_start).toLocaleString()} - ${c.booking_end ? new Date(c.booking_end).toLocaleString() : 'open'}`;
+    : `${c.booking_status === 'pending_payment' ? 'awaiting payment' : 'booked'} ${formatDateTime(c.booking_start)} - ${c.booking_end ? formatDateTime(c.booking_end) : 'open'}`;
   return `Vehicle ${plate} already has a booking that overlaps this time (${c.lot_name}, slot ${c.slot_number}, ${when}). A vehicle can only occupy one slot at a time.`;
 };
 
@@ -87,8 +88,91 @@ export const expireStalePendingBookings = async () => {
   }
 };
 
+/**
+ * Automatically expire pre-bookings whose QR pass validity has expired and free their slots.
+ * Runs on a recurring sweeper and lazily before gate queue and user booking lookups.
+ */
+export const expireStaleReservedBookings = async () => {
+  try {
+    const toExpireRes = await db.query(
+      `SELECT b.id, b.slot_id, b.user_id, s.slot_number, s.lot_id
+       FROM bookings b
+       JOIN parking_slots s ON b.slot_id = s.id
+       LEFT JOIN LATERAL (
+         SELECT expires_at, is_active
+         FROM qr_codes
+         WHERE booking_id = b.id
+         ORDER BY generated_at DESC LIMIT 1
+       ) q ON true
+       WHERE b.booking_status = 'reserved'
+         AND (
+           (q.expires_at IS NOT NULL AND q.expires_at <= CURRENT_TIMESTAMP)
+           OR (q.expires_at IS NULL AND (COALESCE(b.booking_end, b.created_at + INTERVAL '2 hours') + INTERVAL '2 hours') <= CURRENT_TIMESTAMP)
+           OR q.is_active = false
+         )`
+    );
+
+    if (toExpireRes.rows.length === 0) return 0;
+
+    const bookingIds = toExpireRes.rows.map((r) => r.id);
+    const slotIds = toExpireRes.rows.map((r) => r.slot_id);
+
+    // Update bookings to 'expired'
+    await db.query(
+      `UPDATE bookings 
+       SET booking_status = 'expired', updated_at = CURRENT_TIMESTAMP 
+       WHERE id = ANY($1::uuid[])`,
+      [bookingIds]
+    );
+
+    // Deactivate QR codes
+    await db.query(
+      `UPDATE qr_codes 
+       SET is_active = false 
+       WHERE booking_id = ANY($1::uuid[]) AND is_active = true`,
+      [bookingIds]
+    );
+
+    // Free the parking slots if not occupied by another active booking
+    const freed = await db.query(
+      `UPDATE parking_slots SET status = 'available', updated_at = CURRENT_TIMESTAMP
+       WHERE id = ANY($1::uuid[]) AND status = 'reserved'
+         AND NOT EXISTS (
+           SELECT 1 FROM bookings ob
+           WHERE ob.slot_id = parking_slots.id AND ob.booking_status IN ('pending_payment', 'reserved', 'active', 'parked')
+         )
+       RETURNING id, lot_id, slot_number`,
+      [slotIds]
+    );
+
+    freed.rows.forEach((s) => broadcastSlotUpdate(s.lot_id, s.id, 'available', s.slot_number));
+
+    try {
+      await db.query(
+        `INSERT INTO notifications (user_id, title, message, type)
+         SELECT b.user_id, 'Parking Pass Expired', 'Your parking pass validity has expired and your reservation has been closed.', 'warning'
+         FROM bookings b
+         WHERE b.id = ANY($1::uuid[])`,
+        [bookingIds]
+      );
+    } catch (notifErr) {
+      // Non-critical notification logging
+    }
+
+    return bookingIds.length;
+  } catch (err) {
+    console.error('[BookingRules] Failed to expire stale reserved bookings:', err.message);
+    return 0;
+  }
+};
+
 export const startPendingBookingSweeper = () => {
-  const timer = setInterval(expireStalePendingBookings, 60 * 1000);
+  const sweep = async () => {
+    await expireStalePendingBookings();
+    await expireStaleReservedBookings();
+  };
+  sweep();
+  const timer = setInterval(sweep, 30 * 1000);
   timer.unref?.();
   return timer;
 };

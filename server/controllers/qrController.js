@@ -4,7 +4,8 @@ import { getPaymentProvider } from '../services/paymentProvider.js';
 import { generateQRPayload, generateExitPaymentQRPayload, verifyQRPayload, verifyExitPaymentQRPayload, renderQRDataURL } from '../services/qrGenerator.js';
 import { broadcastSlotUpdate, broadcastGateEvent } from '../socket/socketManager.js';
 import { getAccessibleLotIds, canAccessLot } from '../middleware/scope.js';
-import { findOverlappingBooking, describeConflict, lockVehicle, WALK_IN_ASSUMED_HOURS } from '../services/bookingRules.js';
+import { findOverlappingBooking, describeConflict, lockVehicle, WALK_IN_ASSUMED_HOURS, expireStaleReservedBookings, expireStalePendingBookings } from '../services/bookingRules.js';
+import { formatDateTime } from '../utils/dateUtils.js';
 
 /**
  * Robust Helper to resolve target booking from QR payload, pass code, vehicle plate, or UUID
@@ -198,12 +199,12 @@ export const validateEntry = async (req, res, next) => {
       });
     }
 
-    // Check if session is already completed or cancelled
-    if (booking.booking_status === 'completed' || booking.booking_status === 'cancelled') {
+    // Check if session is already completed, cancelled or expired
+    if (booking.booking_status === 'completed' || booking.booking_status === 'cancelled' || booking.booking_status === 'expired') {
       return res.status(400).json({
         success: false,
         isExpired: true,
-        message: 'QR Pass Expired! This parking session is already completed and cannot be reused.'
+        message: 'QR Pass Expired! This parking session is no longer active and cannot be reused.'
       });
     }
 
@@ -242,10 +243,22 @@ export const validateEntry = async (req, res, next) => {
       }
       if (qrRecord.expires_at && new Date(qrRecord.expires_at) < new Date()) {
         await db.query('UPDATE qr_codes SET is_active = false WHERE id = $1', [qrRecord.id]);
+        await db.query("UPDATE bookings SET booking_status = 'expired', updated_at = CURRENT_TIMESTAMP WHERE id = $1", [booking.id]);
+        const freed = await db.query(
+          `UPDATE parking_slots SET status = 'available', updated_at = CURRENT_TIMESTAMP
+           WHERE id = $1 AND status = 'reserved'
+             AND NOT EXISTS (
+               SELECT 1 FROM bookings ob
+               WHERE ob.slot_id = parking_slots.id AND ob.booking_status IN ('pending_payment', 'reserved', 'active', 'parked')
+             )
+           RETURNING id, lot_id, slot_number`,
+          [booking.slot_id]
+        );
+        freed.rows.forEach((s) => broadcastSlotUpdate(s.lot_id, s.id, 'available', s.slot_number));
         return res.status(400).json({
           success: false,
           isExpired: true,
-          message: `QR Pass Expired! Validity ended on ${new Date(qrRecord.expires_at).toLocaleString()}. Entry denied.`
+          message: `QR Pass Expired! Validity ended on ${formatDateTime(qrRecord.expires_at)}. Entry denied.`
         });
       }
     }
@@ -897,6 +910,9 @@ export const getLiveQR = async (req, res, next) => {
  */
 export const getGateQueue = async (req, res, next) => {
   try {
+    await expireStaleReservedBookings();
+    await expireStalePendingBookings();
+
     const lotIds = await getAccessibleLotIds(req.user);
 
     const arrivalsRes = await db.query(
@@ -917,7 +933,10 @@ export const getGateQueue = async (req, res, next) => {
          WHERE booking_id = b.id
          ORDER BY generated_at DESC LIMIT 1
        ) q ON true
-       WHERE b.booking_status = 'reserved' AND s.lot_id = ANY($1::uuid[])
+       WHERE b.booking_status = 'reserved' 
+         AND (q.expires_at IS NULL OR q.expires_at > CURRENT_TIMESTAMP)
+         AND (q.is_active IS NULL OR q.is_active = true)
+         AND s.lot_id = ANY($1::uuid[])
        ORDER BY b.created_at DESC`,
       [lotIds]
     );
@@ -991,12 +1010,12 @@ export const autoValidate = async (req, res, next) => {
 
     const booking = lookup.booking;
 
-    // Check if session is already completed
-    if (booking.booking_status === 'completed' || booking.booking_status === 'cancelled') {
+    // Check if session is already completed or expired
+    if (booking.booking_status === 'completed' || booking.booking_status === 'cancelled' || booking.booking_status === 'expired') {
       return res.status(400).json({
         success: false,
         isExpired: true,
-        message: 'QR Pass Expired! This parking session is already completed and cannot be reused.'
+        message: 'QR Pass Expired! This parking session is already completed or expired and cannot be reused.'
       });
     }
 

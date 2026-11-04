@@ -3,12 +3,13 @@ import settingService from '../services/settingService.js';
 import { generateQRPayload, renderQRDataURL } from '../services/qrGenerator.js';
 import { broadcastSlotUpdate } from '../socket/socketManager.js';
 import { canAccessLot } from '../middleware/scope.js';
-import { findOverlappingBooking, describeConflict, lockVehicle, expireStalePendingBookings } from '../services/bookingRules.js';
+import { findOverlappingBooking, describeConflict, lockVehicle, expireStalePendingBookings, expireStaleReservedBookings } from '../services/bookingRules.js';
 
 // Create Pre-Booking (Raw SQL + Transaction)
 export const createPreBooking = async (req, res, next) => {
-  // Release slots held by abandoned, unpaid pre-bookings before checking availability
+  // Release slots held by abandoned, unpaid pre-bookings or expired passes before checking availability
   await expireStalePendingBookings();
+  await expireStaleReservedBookings();
 
   const client = await db.getClient();
   try {
@@ -265,9 +266,29 @@ export const confirmPreBookingPayment = async (req, res, next) => {
 // Get user bookings with live QR details (Raw SQL Join)
 export const getUserBookings = async (req, res, next) => {
   try {
+    await expireStaleReservedBookings();
+    await expireStalePendingBookings();
+
     const queryStr = `
       SELECT 
-        b.*,
+        b.id,
+        b.user_id,
+        b.vehicle_id,
+        b.slot_id,
+        b.booking_type,
+        CASE
+          WHEN b.booking_status = 'reserved' AND ((q.expires_at IS NOT NULL AND q.expires_at <= CURRENT_TIMESTAMP) OR q.is_active = false) THEN 'expired'
+          ELSE b.booking_status
+        END AS booking_status,
+        b.booking_start,
+        b.booking_end,
+        b.entry_time,
+        b.exit_time,
+        b.duration_minutes,
+        b.total_amount,
+        b.payment_status,
+        b.created_at,
+        b.updated_at,
         json_build_object('id', u.id, 'full_name', u.full_name, 'email', u.email, 'phone', u.phone) AS user,
         json_build_object(
           'id', s.id,
@@ -313,6 +334,9 @@ export const getUserBookings = async (req, res, next) => {
 // Get single booking detail with live dynamic QR render (Raw SQL)
 export const getBookingById = async (req, res, next) => {
   try {
+    await expireStaleReservedBookings();
+    await expireStalePendingBookings();
+
     const queryStr = `
       SELECT 
         b.*,

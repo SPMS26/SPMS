@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import crypto from 'crypto';
 import QRCodeLib from 'qrcode';
+import { formatDateTime } from '../utils/dateUtils.js';
 
 const QR_SECRET = process.env.QR_SECRET || 'spms_qr_hmac_secret_key_2026_dev';
 
@@ -119,7 +120,7 @@ function verifyQRPayload(payloadStr) {
     if (expiresAt) {
       const expiryDate = new Date(expiresAt);
       if (expiryDate < new Date()) {
-        return { isValid: false, isExpired: true, reason: `QR Code pass expired at ${expiryDate.toLocaleString()}`, payload: { bookingId, passCode, expiresAt } };
+        return { isValid: false, isExpired: true, reason: `QR Code pass expired at ${formatDateTime(expiryDate)}`, payload: { bookingId, passCode, expiresAt } };
       }
     }
 
