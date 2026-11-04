@@ -159,7 +159,7 @@ const AdminLotsPage = () => {
   const handleToggleLotActive = async () => {
     try {
       await lotService.updateLot(selectedLot.id, { is_active: !selectedLot.is_active });
-      toast.success(selectedLot.is_active ? 'Lot hidden from drivers.' : 'Lot is live for drivers.');
+      toast.success(selectedLot.is_active ? 'Lot hidden from users.' : 'Lot is live for users.');
       await fetchLots();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to update lot.');
@@ -247,7 +247,7 @@ const AdminLotsPage = () => {
         <div className="card" style={{ textAlign: 'center', padding: '2.5rem' }}>
           <h3 style={{ margin: '0 0 0.5rem 0' }}>Set up your first parking lot</h3>
           <p style={{ margin: '0 0 1rem 0', color: 'var(--text-muted)' }}>
-            Add your lot's details, generate its slots, then create security accounts. Drivers will see it as soon as it is live.
+            Add your lot's details, generate its slots, then create security accounts. Users will see it as soon as it is live.
           </p>
           <button className="btn-select-slot" style={{ marginTop: 0, width: 'auto', padding: '0.6rem 1.25rem' }} onClick={() => setLotForm({ ...blankLot })}>
             <i className="fa-solid fa-plus"></i> Create Parking Lot
@@ -255,7 +255,7 @@ const AdminLotsPage = () => {
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: '1.5rem' }}>
+      <div className="lots-split">
         {/* Lots List */}
         <div className="card">
           <h3 style={{ margin: '0 0 1rem 0', fontSize: '1.1rem' }}>Parking Lots</h3>
@@ -295,7 +295,7 @@ const AdminLotsPage = () => {
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
               <button className="change-btn" onClick={() => openEditLot(selectedLot)}><i className="fa-solid fa-pen"></i> Edit Lot Details</button>
               <button className="change-btn" onClick={handleToggleLotActive}>
-                {selectedLot.is_active ? 'Hide from drivers' : 'Make live'}
+                {selectedLot.is_active ? 'Hide from users' : 'Make live'}
               </button>
               <button className="change-btn" style={{ borderColor: 'var(--status-occupied)', color: 'var(--status-occupied)' }} onClick={handleDeleteLot}>
                 <i className="fa-solid fa-trash"></i> Remove Lot

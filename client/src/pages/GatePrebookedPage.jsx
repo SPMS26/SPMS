@@ -30,7 +30,7 @@ const GatePrebookedPage = () => {
             <thead>
               <tr>
                 <th>Vehicle</th>
-                <th>Driver</th>
+                <th>User</th>
                 <th>Phone</th>
                 <th>Slot</th>
                 <th>Pass</th>

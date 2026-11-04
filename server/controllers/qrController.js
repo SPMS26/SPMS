@@ -1082,7 +1082,7 @@ export const walkInCheckIn = async (req, res, next) => {
     if (conflict) {
       await client.query('ROLLBACK');
       const hint = conflict.booking_status === 'reserved' || conflict.booking_status === 'pending_payment'
-        ? ' If the driver has a pre-booking for now, scan their QR pass instead.'
+        ? ' If the user has a pre-booking for now, scan their QR pass instead.'
         : '';
       return res.status(409).json({ success: false, message: describeConflict(plate, conflict) + hint });
     }

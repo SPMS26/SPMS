@@ -27,7 +27,7 @@ const GateParkedPage = () => {
             <thead>
               <tr>
                 <th>Vehicle</th>
-                <th>Driver</th>
+                <th>User</th>
                 <th>Type</th>
                 <th>Slot</th>
                 <th>Entered</th>

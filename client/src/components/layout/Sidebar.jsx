@@ -23,18 +23,10 @@ const Sidebar = ({ onClose }) => {
             </div>
           </Link>
           <button
+            className="sidebar-close-btn"
             onClick={onClose}
             title="Close"
-            aria-label="Close"
-            style={{
-              background: 'transparent',
-              border: 'none',
-              color: 'var(--text-muted)',
-              cursor: 'pointer',
-              fontSize: '1.1rem',
-              padding: '0.4rem 0.6rem',
-              marginRight: '0.5rem'
-            }}
+            aria-label="Close menu"
           >
             <i className="fa-solid fa-xmark"></i>
           </button>

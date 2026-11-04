@@ -5,7 +5,7 @@ import { homeForRole } from '../components/layout/ProtectedRoute';
 import AuthShell from '../components/auth/AuthShell';
 
 const DEMO_ACCOUNTS = [
-  { role: 'Driver', email: 'mehanna@spms.com', password: 'user123' },
+  { role: 'User', email: 'mehanna@spms.com', password: 'user123' },
   { role: 'Lot Owner', email: 'admin@spms.com', password: 'admin123' },
   { role: 'Gate Security', email: 'operator@spms.com', password: 'admin123' }
 ];
@@ -59,7 +59,7 @@ const LoginPage = () => {
       title="Sign in"
       footer={
         <>
-          <span>New driver? <Link to="/register">Create an account</Link></span>
+          <span>New user? <Link to="/register">Create an account</Link></span>
           <span>Own a parking lot? <Link to="/register-owner">Register your lot</Link></span>
         </>
       }

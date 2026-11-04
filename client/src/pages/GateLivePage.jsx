@@ -59,7 +59,7 @@ const GateLivePage = () => {
               <tr>
                 <th>Ticket</th>
                 <th>Vehicle</th>
-                <th>Driver / Phone</th>
+                <th>User / Phone</th>
                 <th>Slot</th>
                 <th>Entered</th>
                 <th>Duration</th>
