@@ -12,7 +12,7 @@ const Sidebar = ({ onClose }) => {
     <aside className={`sidebar ${isAdmin ? 'admin-nav' : ''}`}>
       <div>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Link to="/" style={{ textDecoration: 'none', display: 'block', flex: 1 }}>
+          <Link to="/" onClick={onClose} style={{ textDecoration: 'none', display: 'block', flex: 1 }}>
             <div className="sidebar-brand">
               <div
                 className="brand-logo-icon"
@@ -54,27 +54,27 @@ const Sidebar = ({ onClose }) => {
           ) : isSecurity ? (
             <>
               <li className={`nav-item ${isActive('/admin/scanner') ? 'active' : ''}`}>
-                <Link to="/admin/scanner">
+                <Link to="/admin/scanner" onClick={onClose}>
                   <span>Gate Scanner</span>
                 </Link>
               </li>
               <li className={`nav-item ${isActive('/admin/desk') ? 'active' : ''}`}>
-                <Link to="/admin/desk">
+                <Link to="/admin/desk" onClick={onClose}>
                   <span>Walk-in Desk</span>
                 </Link>
               </li>
               <li className={`nav-item ${isActive('/admin/parked') ? 'active' : ''}`}>
-                <Link to="/admin/parked">
+                <Link to="/admin/parked" onClick={onClose}>
                   <span>Parked Vehicles</span>
                 </Link>
               </li>
               <li className={`nav-item ${isActive('/admin/prebooked') ? 'active' : ''}`}>
-                <Link to="/admin/prebooked">
+                <Link to="/admin/prebooked" onClick={onClose}>
                   <span>Pre-booked Vehicles</span>
                 </Link>
               </li>
               <li className={`nav-item ${isActive('/admin/live') ? 'active' : ''}`}>
-                <Link to="/admin/live">
+                <Link to="/admin/live" onClick={onClose}>
                   <span>Live Bookings</span>
                 </Link>
               </li>
@@ -82,27 +82,27 @@ const Sidebar = ({ onClose }) => {
           ) : (
             <>
               <li className={`nav-item ${isActive('/admin') ? 'active' : ''}`}>
-                <Link to="/admin">
+                <Link to="/admin" onClick={onClose}>
                   <span>Dashboard</span>
                 </Link>
               </li>
               <li className={`nav-item ${isActive('/admin/lots') ? 'active' : ''}`}>
-                <Link to="/admin/lots">
+                <Link to="/admin/lots" onClick={onClose}>
                   <span>Manage Lots & Slots</span>
                 </Link>
               </li>
               <li className={`nav-item ${isActive('/admin/reports') ? 'active' : ''}`}>
-                <Link to="/admin/reports">
+                <Link to="/admin/reports" onClick={onClose}>
                   <span>Incident Reports</span>
                 </Link>
               </li>
               <li className={`nav-item ${isActive('/admin/security') ? 'active' : ''}`}>
-                <Link to="/admin/security">
+                <Link to="/admin/security" onClick={onClose}>
                   <span>Security Staff</span>
                 </Link>
               </li>
               <li className={`nav-item ${isActive('/admin/users') ? 'active' : ''}`}>
-                <Link to="/admin/users">
+                <Link to="/admin/users" onClick={onClose}>
                   <span>My Customers</span>
                 </Link>
               </li>
@@ -112,7 +112,7 @@ const Sidebar = ({ onClose }) => {
       </div>
 
       <div className="sidebar-footer">
-        <a href="#logout" className="logout-link" onClick={(e) => { e.preventDefault(); logout(); }}>
+        <a href="#logout" className="logout-link" onClick={(e) => { e.preventDefault(); onClose(); logout(); }}>
           <span>Log out</span>
         </a>
       </div>

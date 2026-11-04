@@ -5,7 +5,7 @@ import { userService } from '../services/userService';
 import toast from 'react-hot-toast';
 
 const ProfilePage = () => {
-  const { user, vehicles, setVehicles, setSelectedVehicle } = useAuth();
+  const { user, vehicles, setVehicles, setSelectedVehicle, isStaff } = useAuth();
   const [showAddVehicle, setShowAddVehicle] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingPassword, setIsEditingPassword] = useState(false);
@@ -353,13 +353,14 @@ const ProfilePage = () => {
           </div>
         </div>
 
-        {/* Registered Vehicles Section */}
-        <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem' }}>
-            <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 600, color: 'var(--text-main)' }}>
-              Registered Vehicles
-            </h3>
-          </div>
+        {/* Registered Vehicles Section (regular drivers only) */}
+        {!isStaff && (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem' }}>
+              <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 600, color: 'var(--text-main)' }}>
+                Registered Vehicles
+              </h3>
+            </div>
 
           {vehicles.length === 0 ? (
             <div className="card" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)', borderRadius: '14px' }}>
@@ -520,6 +521,7 @@ const ProfilePage = () => {
             </form>
           )}
         </div>
+      )}
       </div>
     </AppLayout>
   );

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import AppLayout from '../components/layout/AppLayout';
 import { qrService } from '../services/qrService';
 import { Html5Qrcode } from 'html5-qrcode';
@@ -73,6 +73,14 @@ const QRScannerPage = () => {
   const [exitPaymentSession, setExitPaymentSession] = useState(null);
   const [exitPaymentSecondsLeft, setExitPaymentSecondsLeft] = useState(null);
   const [isExitPaymentExpired, setIsExitPaymentExpired] = useState(false);
+
+  // Filter out pre-booked arrivals whose pass validity has expired
+  const validPendingArrivals = useMemo(() => {
+    const now = new Date();
+    return (gateQueue.pending_arrivals || []).filter(
+      (item) => (!item.expires_at || new Date(item.expires_at) > now) && item.is_active !== false
+    );
+  }, [gateQueue.pending_arrivals]);
   const [isConfirmingExitPayment, setIsConfirmingExitPayment] = useState(false);
 
   const html5QrCodeRef = useRef(null);
@@ -736,7 +744,7 @@ const QRScannerPage = () => {
                   Live Gate Vehicles Queue
                 </span>
                 <span style={{ fontSize: '0.72rem', color: 'var(--text-dim)' }}>
-                  {gateQueue.pending_arrivals.length + gateQueue.active_parked.length} vehicle(s) ready
+                  {validPendingArrivals.length + gateQueue.active_parked.length} vehicle(s) ready
                 </span>
               </div>
 
@@ -746,10 +754,10 @@ const QRScannerPage = () => {
                     Arriving (Reserved)
                   </div>
                   <div style={{ maxHeight: '140px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                    {gateQueue.pending_arrivals.length === 0 ? (
+                    {validPendingArrivals.length === 0 ? (
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', padding: '0.5rem' }}>No pending arrivals</div>
                     ) : (
-                      gateQueue.pending_arrivals.map((item) => (
+                      validPendingArrivals.map((item) => (
                         <div
                           key={item.id}
                           onClick={() => executeSecurityValidation(item.id)}

@@ -13,6 +13,8 @@ const AdminSecurityPage = () => {
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
+  const [staffToDelete, setStaffToDelete] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   const load = async () => {
     try {
@@ -36,9 +38,29 @@ const AdminSecurityPage = () => {
 
   const handleCreate = async (e) => {
     e.preventDefault();
+
+    const trimmedPhone = form.phone.trim();
+    if (!trimmedPhone) {
+      toast.error('Phone number is required.');
+      return;
+    }
+
+    // Client-side quick duplicate check against currently loaded staff
+    const cleanPhone = trimmedPhone.replace(/[\s-]/g, '');
+    const duplicatePhone = staff.some(
+      (s) => s.phone && s.phone.replace(/[\s-]/g, '') === cleanPhone
+    );
+    if (duplicatePhone) {
+      toast.error('A security staff member with this phone number already exists.');
+      return;
+    }
+
     setSaving(true);
     try {
-      const res = await adminService.createSecurity(form);
+      const res = await adminService.createSecurity({
+        ...form,
+        phone: trimmedPhone
+      });
       toast.success(res.message);
       setForm({ ...emptyForm, assigned_lot_id: form.assigned_lot_id });
       await load();
@@ -67,6 +89,21 @@ const AdminSecurityPage = () => {
       return;
     }
     update(member.id, { password }, 'Password reset.');
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!staffToDelete) return;
+    setDeleting(true);
+    try {
+      const res = await adminService.deleteSecurity(staffToDelete.id);
+      toast.success(res.message || 'Security account deleted.');
+      setStaffToDelete(null);
+      await load();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to delete security account.');
+    } finally {
+      setDeleting(false);
+    }
   };
 
   return (
@@ -101,8 +138,16 @@ const AdminSecurityPage = () => {
                 <input className="search-input" style={{ width: '100%' }} type="text" name="password" minLength={6} value={form.password} onChange={handleChange} required />
               </div>
               <div>
-                <label style={labelStyle}>Phone</label>
-                <input className="search-input" style={{ width: '100%' }} name="phone" value={form.phone} onChange={handleChange} />
+                <label style={labelStyle}>Phone Number *</label>
+                <input
+                  className="search-input"
+                  style={{ width: '100%' }}
+                  name="phone"
+                  value={form.phone}
+                  onChange={handleChange}
+                  placeholder="e.g. 9876543210"
+                  required
+                />
               </div>
               <div>
                 <label style={labelStyle}>Assigned Lot</label>
@@ -166,6 +211,20 @@ const AdminSecurityPage = () => {
                           >
                             {m.is_active ? 'Deactivate' : 'Activate'}
                           </button>
+                          <button
+                            className="change-btn"
+                            style={{
+                              borderColor: '#EF4444',
+                              color: '#EF4444',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '0.35rem'
+                            }}
+                            onClick={() => setStaffToDelete(m)}
+                            title="Delete this security account"
+                          >
+                            Delete
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -178,6 +237,77 @@ const AdminSecurityPage = () => {
             </div>
           </div>
         </>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {staffToDelete && (
+        <div className="modal-overlay active" style={{ zIndex: 1100 }}>
+          <div className="modal-box" style={{ maxWidth: '440px', textAlign: 'center' }}>
+            <div className="modal-header">
+              <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#EF4444', margin: 0 }}>
+                Delete Security Account
+              </h3>
+              <button
+                className="modal-close"
+                disabled={deleting}
+                onClick={() => !deleting && setStaffToDelete(null)}
+              >
+                &times;
+              </button>
+            </div>
+
+            <div style={{ padding: '1rem 0 0.5rem 0' }}>
+              <p style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.6rem' }}>
+                Do you wish to delete this account?
+              </p>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1.5rem', lineHeight: 1.5 }}>
+                Account for <strong style={{ color: 'var(--text-main)' }}>{staffToDelete.full_name}</strong> (<span style={{ fontFamily: 'monospace', color: 'var(--accent-gold)' }}>{staffToDelete.email}</span>) will be permanently deleted from your database.
+              </p>
+
+              <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center' }}>
+                <button
+                  type="button"
+                  className="change-btn"
+                  style={{
+                    padding: '0.6rem 1.4rem',
+                    fontSize: '0.9rem',
+                    fontWeight: 600,
+                    minWidth: '100px',
+                    borderColor: 'var(--border-subtle)',
+                    color: 'var(--text-main)'
+                  }}
+                  disabled={deleting}
+                  onClick={() => setStaffToDelete(null)}
+                >
+                  No
+                </button>
+                <button
+                  type="button"
+                  className="btn-select-slot"
+                  style={{
+                    marginTop: 0,
+                    width: 'auto',
+                    padding: '0.6rem 1.4rem',
+                    fontSize: '0.9rem',
+                    fontWeight: 600,
+                    minWidth: '100px',
+                    background: '#EF4444',
+                    borderColor: '#EF4444',
+                    color: '#ffffff'
+                  }}
+                  disabled={deleting}
+                  onClick={handleConfirmDelete}
+                >
+                  {deleting ? (
+                    <span><i className="fa-solid fa-spinner fa-spin"></i> Deleting...</span>
+                  ) : (
+                    <span>Yes</span>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </AppLayout>
   );

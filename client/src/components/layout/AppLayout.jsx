@@ -2,10 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import TopHeader from './TopHeader';
-import { useAuth } from '../../context/AuthContext';
 
 const AppLayout = ({ children }) => {
-  const { isStaff: isAdmin } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
 
@@ -23,7 +21,7 @@ const AppLayout = ({ children }) => {
   }, [sidebarOpen]);
 
   return (
-    <div className={`app-layout ${!isAdmin ? 'user-layout' : ''} ${sidebarOpen ? 'sidebar-open' : ''}`}>
+    <div className={`app-layout user-layout ${sidebarOpen ? 'sidebar-open' : ''}`}>
       {sidebarOpen && (
         <div
           className="sidebar-backdrop"
@@ -32,8 +30,11 @@ const AppLayout = ({ children }) => {
         />
       )}
       <Sidebar onClose={() => setSidebarOpen(false)} />
-      <div className={`main-wrapper ${!isAdmin ? 'user-main-wrapper' : ''}`}>
-        <TopHeader onToggleSidebar={() => setSidebarOpen(prev => !prev)} />
+      <div className="main-wrapper user-main-wrapper">
+        <TopHeader
+          onToggleSidebar={() => setSidebarOpen(prev => !prev)}
+          sidebarOpen={sidebarOpen}
+        />
         <main className="page-content">
           {children}
         </main>

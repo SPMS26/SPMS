@@ -107,22 +107,6 @@ body {
   z-index: 40;
 }
 
-/* Admin layout: sidebar floats as a rounded panel inside the frame */
-.app-layout:not(.user-layout) .sidebar {
-  position: sticky;
-  top: 1rem;
-  bottom: auto;
-  left: auto;
-  align-self: flex-start;
-  height: calc(100vh - 4rem);
-  flex-shrink: 0;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-}
-
-.app-layout:not(.user-layout) .main-wrapper {
-  margin-left: 0;
-}
 
 .sidebar-brand {
   display: flex;
@@ -814,6 +798,97 @@ body {
   background: none; border: 1px solid var(--border-bright);
   color: var(--text-main); font-size: 0.75rem; font-weight: 600;
   padding: 0.25rem 0.8rem; border-radius: var(--radius-pill); cursor: pointer;
+}
+
+.vehicle-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 320px;
+  background: var(--grad-card);
+  border: 1px solid var(--border-bright);
+  border-radius: var(--radius-md);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.75);
+  padding: 0.75rem;
+  z-index: 100;
+  animation: fadeInBackdrop 0.15s ease forwards;
+}
+
+.vehicle-dropdown-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.2rem 0.4rem 0.6rem;
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: 0.5rem;
+}
+
+.vehicle-dropdown-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.vehicle-dropdown-list {
+  max-height: 250px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.vehicle-dropdown-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.65rem 0.8rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.03);
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+  box-sizing: border-box;
+}
+
+.vehicle-dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(217, 191, 140, 0.3);
+}
+
+.vehicle-dropdown-item.active {
+  background: rgba(217, 191, 140, 0.14);
+  border-color: var(--accent-gold);
+}
+
+.vehicle-dropdown-footer {
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  justify-content: center;
+}
+
+.vehicle-dropdown-footer-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  transition: color 0.15s ease;
+}
+
+.vehicle-dropdown-footer-btn:hover {
+  color: var(--accent-gold);
 }
 
 /* ---------- Auth pages (login, register, owner registration) ---------- */
