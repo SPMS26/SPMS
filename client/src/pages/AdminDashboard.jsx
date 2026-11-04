@@ -145,6 +145,13 @@ const AdminDashboard = () => {
   const handleAdminSlotAction = async (actionType) => {
     if (!selectedAdminSlot) return;
 
+    if (selectedAdminSlot.status === 'occupied') {
+      toast.error(actionType === 'maintenance'
+        ? 'A vehicle is parked and cannot set to maintenance'
+        : 'A vehicle is parked and cannot make it available');
+      return;
+    }
+
     try {
       await lotService.updateSlotStatus(selectedAdminSlot.id, actionType);
       toast.success(`Slot ${selectedAdminSlot.slot_number} marked as ${actionType.toUpperCase()}`);

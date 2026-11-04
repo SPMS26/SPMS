@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import AppLayout from '../components/layout/AppLayout';
 import { reportService } from '../services/reportService';
 import { lotService } from '../services/lotService';
+import { formatDateTime } from '../utils/dateUtils';
 import toast from 'react-hot-toast';
 
 const ReportIssuePage = () => {
@@ -288,7 +289,7 @@ const ReportIssuePage = () => {
                       {getStatusBadge(r.status)}
                     </div>
                     <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                      {new Date(r.created_at).toLocaleString()}
+                      {formatDateTime(r.created_at)}
                     </span>
                   </div>
 

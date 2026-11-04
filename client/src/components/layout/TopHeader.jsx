@@ -4,8 +4,8 @@ import { useAuth } from '../../context/AuthContext';
 import { notificationService } from '../../services/notificationService';
 import { useSocket } from '../../context/SocketContext';
 
-const TopHeader = ({ onToggleSidebar }) => {
-  const { user, isStaff: isAdmin } = useAuth();
+const TopHeader = ({ onToggleSidebar, sidebarOpen }) => {
+  const { user, isStaff, isAdmin, isSecurity } = useAuth();
   const { socket } = useSocket();
   const location = useLocation();
   const [notifications, setNotifications] = useState([]);
@@ -13,6 +13,7 @@ const TopHeader = ({ onToggleSidebar }) => {
   const [showNotifications, setShowNotifications] = useState(false);
 
   const isProfilePage = location.pathname === '/profile';
+  const homePath = isSecurity ? '/admin/scanner' : (isAdmin ? '/admin' : '/dashboard');
 
   const fetchNotifications = async () => {
     try {
@@ -53,43 +54,41 @@ const TopHeader = ({ onToggleSidebar }) => {
   return (
     <header className="top-header" style={{ position: 'sticky', top: 0, zIndex: 30 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
-        {!isAdmin && (
-          isProfilePage ? (
-            <Link
-              to="/dashboard"
-              className="nav-arrow-btn"
-              title="Exit to Main Page"
-              aria-label="Exit to Main Page"
-            >
-              <i className="fa-solid fa-chevron-left"></i>
-            </Link>
-          ) : (
-            <button
-              className="nav-icon-btn"
-              onClick={onToggleSidebar}
-              title="Menu"
-              aria-label="Menu"
-            >
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor">
-                <rect x="1" y="1" width="4" height="4" rx="1" />
-                <rect x="7" y="1" width="4" height="4" rx="1" />
-                <rect x="13" y="1" width="4" height="4" rx="1" />
-                <rect x="1" y="7" width="4" height="4" rx="1" />
-                <rect x="7" y="7" width="4" height="4" rx="1" />
-                <rect x="13" y="7" width="4" height="4" rx="1" />
-                <rect x="1" y="13" width="4" height="4" rx="1" />
-                <rect x="7" y="13" width="4" height="4" rx="1" />
-                <rect x="13" y="13" width="4" height="4" rx="1" />
-              </svg>
-            </button>
-          )
+        {isProfilePage ? (
+          <Link
+            to={homePath}
+            className="nav-arrow-btn"
+            title="Exit to Main Page"
+            aria-label="Exit to Main Page"
+          >
+            <i className="fa-solid fa-chevron-left"></i>
+          </Link>
+        ) : (
+          <button
+            className="nav-icon-btn"
+            onClick={onToggleSidebar}
+            title={sidebarOpen ? "Close menu" : "Menu"}
+            aria-label={sidebarOpen ? "Close menu" : "Menu"}
+            aria-expanded={sidebarOpen}
+          >
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor">
+              <rect x="1" y="1" width="4" height="4" rx="1" />
+              <rect x="7" y="1" width="4" height="4" rx="1" />
+              <rect x="13" y="1" width="4" height="4" rx="1" />
+              <rect x="1" y="7" width="4" height="4" rx="1" />
+              <rect x="7" y="7" width="4" height="4" rx="1" />
+              <rect x="13" y="7" width="4" height="4" rx="1" />
+              <rect x="1" y="13" width="4" height="4" rx="1" />
+              <rect x="7" y="13" width="4" height="4" rx="1" />
+              <rect x="13" y="13" width="4" height="4" rx="1" />
+            </svg>
+          </button>
         )}
 
-        {!isProfilePage && (
+        {!isProfilePage && !isStaff && (
           <div className="search-box">
             <i className="fa-solid fa-magnifying-glass"></i>
             <input type="text" className="search-input" placeholder="Search parking lots, locations, bookings..." />
-            {isAdmin && <span className="kbd-shortcut" style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'var(--grad-card)', border: '1px solid var(--border-bright)', padding: '0.15rem 0.4rem', borderRadius: '4px', fontSize: '0.7rem', color: 'var(--text-muted)' }}>⌘K</span>}
           </div>
         )}
       </div>

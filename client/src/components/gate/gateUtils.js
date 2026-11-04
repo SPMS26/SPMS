@@ -1,3 +1,7 @@
+import { formatDate, formatDateTime } from '../../utils/dateUtils';
+
+export { formatDate, formatDateTime };
+
 export const normalize = (v) => String(v || '').toUpperCase().replace(/[\s-]/g, '');
 
 export const formatDuration = (from, to = null) => {
@@ -25,4 +29,4 @@ export const matchesQuery = (item, query) => {
     || normalize(item.userName).includes(q);
 };
 
-export const formatTime = (t) => (t ? new Date(t).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : '-');
+export const formatTime = (t) => formatDateTime(t);

@@ -21,6 +21,11 @@ export const adminService = {
     return res.data;
   },
 
+  async deleteSecurity(id) {
+    const res = await api.delete(`/admin/security/${id}`);
+    return res.data;
+  },
+
   async getScanHistory() {
     const res = await api.get('/admin/scan-history');
     return res.data;

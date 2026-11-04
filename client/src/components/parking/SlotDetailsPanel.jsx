@@ -69,15 +69,32 @@ const SlotDetailsPanel = ({ selectedSlot, activeFloor, onConfirmSelect, isAdmin 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', marginTop: '1.25rem' }}>
           <button
             className="btn-select-slot"
-            style={{ color: '#fff', background: 'linear-gradient(135deg, #4b5563, #374151)', boxShadow: 'none', marginTop: 0 }}
+            disabled={status === 'occupied'}
+            style={{
+              color: '#fff',
+              background: 'linear-gradient(135deg, #4b5563, #374151)',
+              boxShadow: 'none',
+              marginTop: 0,
+              opacity: status === 'occupied' ? 0.45 : 1,
+              cursor: status === 'occupied' ? 'not-allowed' : 'pointer'
+            }}
             onClick={() => onAdminAction('maintenance')}
+            title={status === 'occupied' ? 'Vehicle is parked' : ''}
           >
             <i className="fa-solid fa-wrench"></i> Mark as Maintenance
           </button>
           <button
             className="btn-select-slot"
-            style={{ background: 'linear-gradient(135deg, var(--accent-emerald), #A98B55)', boxShadow: 'none', marginTop: 0 }}
+            disabled={status === 'occupied'}
+            style={{
+              background: 'linear-gradient(135deg, var(--accent-emerald), #A98B55)',
+              boxShadow: 'none',
+              marginTop: 0,
+              opacity: status === 'occupied' ? 0.45 : 1,
+              cursor: status === 'occupied' ? 'not-allowed' : 'pointer'
+            }}
             onClick={() => onAdminAction('available')}
+            title={status === 'occupied' ? 'Vehicle is parked' : ''}
           >
             <i className="fa-solid fa-circle-check"></i> Set Available
           </button>

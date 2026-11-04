@@ -1,15 +1,13 @@
 import React, { useState } from 'react';
 import Sidebar from './Sidebar';
 import TopHeader from './TopHeader';
-import { useAuth } from '../../context/AuthContext';
 
 const AppLayout = ({ children }) => {
-  const { isStaff: isAdmin } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className={`app-layout ${!isAdmin ? 'user-layout' : ''} ${sidebarOpen ? 'sidebar-open' : ''}`}>
-      {!isAdmin && sidebarOpen && (
+    <div className={`app-layout user-layout ${sidebarOpen ? 'sidebar-open' : ''}`}>
+      {sidebarOpen && (
         <div
           className="sidebar-backdrop"
           onClick={() => setSidebarOpen(false)}
@@ -17,8 +15,11 @@ const AppLayout = ({ children }) => {
         />
       )}
       <Sidebar onClose={() => setSidebarOpen(false)} />
-      <div className={`main-wrapper ${!isAdmin ? 'user-main-wrapper' : ''}`}>
-        <TopHeader onToggleSidebar={() => setSidebarOpen(prev => !prev)} />
+      <div className="main-wrapper user-main-wrapper">
+        <TopHeader
+          onToggleSidebar={() => setSidebarOpen(prev => !prev)}
+          sidebarOpen={sidebarOpen}
+        />
         <main className="page-content">
           {children}
         </main>
