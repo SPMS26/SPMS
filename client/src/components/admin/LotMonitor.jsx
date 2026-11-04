@@ -10,7 +10,7 @@ const STATUS_SEGMENTS = [
 const LotMonitor = ({ lots, selectedLotId, onSelectLot }) => (
   <div className="card" style={{ marginBottom: '1.75rem' }}>
     <h3 style={{ margin: '0 0 1rem 0', fontSize: '1rem' }}>
-      <i className="fa-solid fa-gauge-high" style={{ color: 'var(--accent-gold)' }}></i> Lot Monitoring
+      Lot Monitoring
     </h3>
 
     {lots.length === 0 ? (

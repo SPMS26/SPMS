@@ -653,7 +653,15 @@ body {
   max-width: 480px;
   padding: 1.75rem;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+  box-sizing: border-box;
+  /* never taller than the screen: scroll inside the modal instead of being cut off */
+  max-height: calc(100vh - 2rem);
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
+
+.modal-overlay { padding: 1rem; box-sizing: border-box; }
 
 .modal-header {
   display: flex;
@@ -1002,4 +1010,268 @@ body {
 .auth-demo-item .go { font-size: 0.75rem; color: var(--accent-gold); font-weight: 700; white-space: nowrap; }
 @media (max-width: 520px) {
   .auth-card { padding: 1.5rem 1.15rem; }
+}
+
+/* ---------- QR pass: sized to the screen ---------- */
+.qr-modal { max-width: 440px; text-align: center; }
+.qr-ticket {
+  background: var(--bg-input);
+  padding: clamp(0.85rem, 4vw, 1.25rem);
+  border-radius: 12px;
+  border: 1px solid var(--border-bright);
+}
+.qr-frame {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #ffffff;
+  padding: clamp(0.6rem, 3vw, 1rem);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  margin-bottom: 0.85rem;
+}
+/* Fills most of a phone's width, grows on larger screens up to 300px, and
+   never exceeds ~40% of the screen height so the ticket details stay reachable. */
+.qr-img,
+.qr-placeholder {
+  display: block;
+  width: clamp(150px, min(68vw, 40vh), 300px);
+  aspect-ratio: 1 / 1;
+  height: auto;
+  object-fit: contain;
+}
+.qr-placeholder { display: flex; align-items: center; justify-content: center; color: #8A8478; }
+.qr-stamp {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-12deg);
+  border: 3px solid #8A8478;
+  color: #8A8478;
+  padding: 0.35rem clamp(0.6rem, 4vw, 1rem);
+  border-radius: 8px;
+  font-weight: 900;
+  font-size: clamp(0.85rem, 4vw, 1.1rem);
+  letter-spacing: 0.1em;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 4px 12px rgba(138, 132, 120, 0.3);
+}
+.qr-code-label { font-size: clamp(1.1rem, 5vw, 1.35rem); font-weight: 800; color: var(--accent-gold); margin: 0.2rem 0 0.75rem 0; overflow-wrap: anywhere; }
+.qr-details { text-align: left; background: rgba(0, 0, 0, 0.3); border: 1px solid var(--border-subtle); padding: 0.85rem; border-radius: 8px; font-size: 0.8rem; }
+.qr-details .details-row { gap: 0.75rem; }
+.qr-details .details-row .val { text-align: right; overflow-wrap: anywhere; }
+.qr-actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+.qr-actions button { flex: 1 1 140px; }
+@media (max-width: 480px) {
+  .modal-box { padding: 1.1rem; }
+}
+/* Landscape phones are short: keep the QR comfortably inside the visible area */
+@media (max-height: 520px) and (orientation: landscape) {
+  .qr-img, .qr-placeholder { width: clamp(130px, 52vh, 220px); }
+}
+
+/* ======================================================================
+   Responsive layout (tablet and phone)
+   The base rules above are desktop-first; these keep every page inside the
+   screen instead of letting the browser zoom out to fit a wide layout.
+   ====================================================================== */
+
+/* Header: the search box shrinks instead of forcing a 380px minimum */
+.top-header > div:first-child { flex: 1 1 auto; min-width: 0; }
+.search-box { width: auto; flex: 1 1 auto; min-width: 0; max-width: 380px; }
+.header-right { flex-shrink: 0; }
+.page-header-row { flex-wrap: wrap; gap: 0.75rem; }
+.legend-bar { flex-wrap: wrap; }
+.floor-tabs-bar { overflow-x: auto; }
+.lots-cards-row { grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+
+@media (max-width: 1024px) {
+  .admin-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .slot-booking-layout { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 640px) {
+  .app-layout {
+    width: calc(100% - 1rem);
+    min-height: calc(100vh - 1rem);
+    margin: 0.5rem;
+    padding: 0.5rem;
+    border-radius: 18px;
+    gap: 0.5rem;
+  }
+  .top-header { height: 60px; padding: 0 0.6rem; gap: 0.5rem; }
+  .top-header > div:first-child { gap: 0.5rem !important; }
+  .header-right { gap: 0.5rem; }
+  .user-profile { padding-left: 0.5rem; gap: 0.5rem; }
+  .user-info { display: none; }
+  .search-input { padding-left: 2.3rem; }
+  .search-box i { left: 0.8rem; }
+  .page-content { padding: 0.75rem 0.15rem 0.25rem; }
+  .page-header-row { margin-bottom: 1.1rem; }
+  .page-title-box h1 { font-size: 1.4rem; }
+  .vehicle-selector-pill { padding: 0.3rem 0.75rem 0.3rem 0.4rem; gap: 0.5rem; }
+  .admin-kpi-grid { grid-template-columns: 1fr; gap: 0.85rem; }
+  .slot-picker-box { padding: 1rem; }
+  .slots-grid-4x10 { grid-template-columns: repeat(5, 1fr); gap: 0.45rem; }
+  .slot-item { height: 44px; }
+  .legend-bar { gap: 0.6rem 1rem; }
+  .section-subtitle { flex-wrap: wrap; gap: 0.35rem; }
+  .card { padding-left: 0.9rem; padding-right: 0.9rem; }
+}
+
+@media (max-width: 360px) {
+  .slots-grid-4x10 { grid-template-columns: repeat(4, 1fr); }
+  .search-box { display: none; }
+}
+
+/* ---------- Drawer navigation for the owner / guard layout ---------- */
+.staff-menu-btn { display: none; }
+.sidebar-close-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 1.1rem;
+  padding: 0.4rem 0.6rem;
+  margin-right: 0.5rem;
+}
+/* On desktop the owner / guard sidebar is always visible, so it has no close button */
+.app-layout:not(.user-layout) .sidebar-close-btn { display: none; }
+.user-layout .sidebar { width: min(280px, 85vw); }
+
+.notif-dropdown {
+  position: absolute;
+  right: 0;
+  top: 48px;
+  width: 320px;
+  background: var(--grad-card);
+  border: 1px solid var(--border-bright);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  padding: 1rem;
+  z-index: 100;
+}
+
+@media (max-width: 900px) {
+  .staff-menu-btn { display: inline-flex; }
+  .app-layout:not(.user-layout) .sidebar-close-btn { display: block; }
+  .app-layout:not(.user-layout) .sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    height: auto;
+    width: min(280px, 85vw);
+    overflow-y: auto;
+    align-self: auto;
+    border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+    transform: translateX(-105%);
+    transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 100;
+    box-shadow: none;
+  }
+  .app-layout:not(.user-layout).sidebar-open .sidebar {
+    transform: translateX(0);
+    box-shadow: 8px 0 30px rgba(0, 0, 0, 0.6);
+  }
+  .app-layout:not(.user-layout) .main-wrapper { width: 100%; }
+}
+
+@media (max-width: 640px) {
+  .notif-dropdown {
+    position: fixed;
+    left: 0.75rem;
+    right: 0.75rem;
+    top: 76px;
+    width: auto;
+  }
+}
+
+/* ---------- Page-level splits that stack on small screens ---------- */
+.lots-split {
+  display: grid;
+  grid-template-columns: 300px minmax(0, 1fr);
+  gap: 1.5rem;
+}
+.scanner-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 0.8fr);
+  gap: 1.5rem;
+  align-items: stretch;
+}
+@media (max-width: 1000px) {
+  .lots-split,
+  .scanner-layout { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 640px) {
+  .lots-split,
+  .scanner-layout { gap: 1rem; }
+}
+
+/* ---------- Phone polish ---------- */
+@media (max-width: 900px) {
+  .kbd-shortcut { display: none; }
+  /* fixed background attachment is janky on mobile browsers */
+  body { background-attachment: scroll; }
+}
+@media (max-width: 640px) {
+  .admin-kpi-grid { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+  .kpi-card { padding: 1rem; }
+  .data-table th { white-space: nowrap; }
+  .data-table th, .data-table td { padding: 0.65rem 0.6rem; }
+}
+@media (max-width: 340px) {
+  .admin-kpi-grid { grid-template-columns: 1fr; }
+}
+
+/* ---------- QR pass: side by side on wider screens (no vertical scrolling) ---------- */
+.qr-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 1rem; }
+.qr-right { min-width: 0; }
+@media (min-width: 640px) {
+  .qr-modal { max-width: 800px; }
+  .qr-layout { grid-template-columns: minmax(0, 0.85fr) minmax(0, 1fr); gap: 1.25rem; align-items: start; }
+  .qr-img, .qr-placeholder { width: clamp(150px, min(30vw, 46vh), 280px); }
+  .qr-right { text-align: left; }
+  .qr-actions { margin-top: 0.85rem; }
+}
+/* Landscape phones and very short windows: tighten everything so the pass still fits */
+@media (min-width: 640px) and (max-height: 560px) {
+  .modal-box.qr-modal { padding: 0.9rem 1.1rem; }
+  .qr-modal .modal-header { margin-bottom: 0.6rem; }
+  .qr-img, .qr-placeholder { width: clamp(110px, 38vh, 200px); }
+  .qr-ticket { padding: 0.6rem; }
+  .qr-frame { padding: 0.5rem; margin-bottom: 0; }
+  .qr-code-label { margin: 0 0 0.4rem 0; }
+  .qr-details { padding: 0.5rem 0.7rem; }
+  .qr-details .details-row { padding-top: 0.3rem; padding-bottom: 0.3rem; }
+  .qr-note { display: none; }
+}
+
+/* ---------- Confirmation dialog ---------- */
+.confirm-overlay { z-index: 1200; }
+.confirm-box { max-width: 420px; }
+.confirm-title { margin: 0 0 0.5rem 0; font-size: 1.1rem; font-weight: 700; color: var(--text-main); overflow-wrap: anywhere; }
+.confirm-title.danger { color: #F08A8A; }
+.confirm-message { margin: 0 0 1rem 0; font-size: 0.88rem; line-height: 1.5; color: var(--text-muted); }
+.confirm-error { margin-top: 0.4rem; font-size: 0.8rem; color: #F08A8A; }
+.confirm-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0.6rem; margin-top: 1.1rem; }
+.confirm-btn {
+  flex: 0 1 auto;
+  min-width: 96px;
+  padding: 0.6rem 1.1rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-bright);
+  background: var(--bg-input);
+  color: var(--text-main);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.confirm-btn:focus-visible { outline: 2px solid var(--accent-gold); outline-offset: 2px; }
+.confirm-btn.primary { background: var(--accent-gold); border-color: var(--accent-gold); color: #111114; }
+.confirm-btn.danger { background: #B3362F; border-color: #B3362F; color: #FFFFFF; }
+@media (max-width: 420px) {
+  .confirm-btn { flex: 1 1 100%; }
 }

@@ -1373,3 +1373,38 @@
 .landing-nav-actions button {
   white-space: nowrap;
 }
+
+/* ---------- Small-screen fixes: let grid columns shrink and content wrap ---------- */
+.cockpit-grid-layout > *,
+.sim-grid-layout > *,
+.calculator-grid > * { min-width: 0; }
+.cockpit-slots-radar { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+@media (max-width: 1024px) {
+  .cockpit-grid-layout,
+  .sim-grid-layout,
+  .calculator-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 640px) {
+  .hero-cockpit-box { padding: 1rem; margin-top: 2rem; }
+  .cockpit-header-bar { flex-wrap: wrap; gap: 0.35rem; }
+  .cockpit-grid-layout { gap: 1rem; }
+  .cockpit-lot-preview,
+  .cockpit-qr-pass-preview { padding: 0.9rem; min-width: 0; }
+  .cockpit-lot-preview > div:first-child,
+  .cockpit-qr-pass-preview > div:first-child { flex-wrap: wrap; gap: 0.4rem; }
+  .cockpit-qr-pass-preview { overflow-wrap: anywhere; }
+  .cockpit-slots-radar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+.sim-slots-grid-10 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+@media (max-width: 768px) {
+  .sim-slots-grid-10 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 420px) {
+  .sim-slots-grid-10 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 640px) {
+  .calc-grand-total { flex-wrap: wrap; gap: 0.5rem; }
+}

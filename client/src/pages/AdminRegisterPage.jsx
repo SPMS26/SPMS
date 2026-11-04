@@ -71,21 +71,20 @@ const AdminRegisterPage = () => {
 
   return (
     <AuthShell
-      icon="fa-building-shield"
       title="Register your parking lot"
       subtitle={`One-time registration fee: ₹${Number(fee).toFixed(2)}`}
       maxWidth={540}
       footer={!receipt && (
         <>
           <span>Already registered? <Link to="/login">Sign in</Link></span>
-          <span>Just need to park? <Link to="/register">Create a driver account</Link></span>
+          <span>Just need to park? <Link to="/register">Create a user account</Link></span>
         </>
       )}
     >
       {receipt ? (
         <div>
           <div style={{ textAlign: 'center', marginBottom: '1rem', color: 'var(--accent-emerald)', fontWeight: 700 }}>
-            <i className="fa-solid fa-circle-check"></i> Payment successful
+            Payment successful
           </div>
           <div style={{ background: 'var(--bg-input)', border: '1px solid var(--border-subtle)', padding: '1rem', borderRadius: '10px', marginBottom: '1.25rem' }}>
             <div className="details-row"><span className="key">Organization:</span><span className="val">{receipt.organization_name}</span></div>
@@ -100,7 +99,6 @@ const AdminRegisterPage = () => {
         <form onSubmit={handleSubmit}>
           {error && (
             <div className="auth-error" role="alert">
-              <i className="fa-solid fa-circle-exclamation"></i>
               <span>{error}</span>
             </div>
           )}
@@ -143,7 +141,6 @@ const AdminRegisterPage = () => {
           <div className="modal-box" style={{ maxWidth: '460px' }}>
             <div className="modal-header">
               <h3>
-                <i className="fa-solid fa-credit-card" style={{ color: 'var(--accent-gold)', marginRight: '0.4rem' }}></i>
                 Registration fee payment
               </h3>
               <button className="modal-close" onClick={() => !paying && setRegistration(null)}>&times;</button>
@@ -177,7 +174,7 @@ const AdminRegisterPage = () => {
                 {paying ? (
                   <span><i className="fa-solid fa-circle-notch fa-spin"></i> Processing payment...</span>
                 ) : (
-                  <span><i className="fa-solid fa-lock"></i> Pay ₹{formattedFee} and activate</span>
+                  <span>Pay ₹{formattedFee} and activate</span>
                 )}
               </button>
             </form>

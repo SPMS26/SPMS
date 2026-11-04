@@ -11,8 +11,10 @@ import { lotService } from '../services/lotService';
 import { useSocket } from '../context/SocketContext';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, CartesianGrid, ResponsiveContainer, Line, ComposedChart } from 'recharts';
 import toast from 'react-hot-toast';
+import { useConfirm } from '../components/common/ConfirmProvider';
 
 const AdminDashboard = () => {
+  const confirm = useConfirm();
   const { socket } = useSocket();
   const [kpis, setKpis] = useState({
     totalBookings: '—',
@@ -152,6 +154,12 @@ const AdminDashboard = () => {
       return;
     }
 
+        const code = selectedAdminSlot.slot_number;
+    const ok = await confirm(actionType === 'maintenance'
+      ? { title: `Put slot ${code} under maintenance?`, message: 'Users will not be able to book it until you set it available again.', confirmLabel: 'Mark as Maintenance', danger: true }
+      : { title: `Make slot ${code} available?`, message: 'Users will be able to book it straight away.', confirmLabel: 'Set Available' });
+    if (!ok) return;
+
     try {
       await lotService.updateSlotStatus(selectedAdminSlot.id, actionType);
       toast.success(`Slot ${selectedAdminSlot.slot_number} marked as ${actionType.toUpperCase()}`);
@@ -177,7 +185,7 @@ const AdminDashboard = () => {
       {/* Slot maintenance */}
       <div style={{ marginBottom: '2rem' }}>
         <div className="section-subtitle">
-          <span><i className="fa-solid fa-wrench" style={{ color: 'var(--accent-gold)' }}></i> Slot Maintenance</span>
+          <span>Slot Maintenance</span>
           <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>Click a slot to mark it under maintenance or available</span>
         </div>
 
@@ -202,18 +210,18 @@ const AdminDashboard = () => {
 
       {/* KPI Row */}
       <div className="admin-kpi-grid">
-        <KPICard title="Total Bookings" value={kpis.totalBookings} trend={kpis.bookingTrend} iconClass="fa-calendar-check" colorClass="kpi-icon-gold" />
-        <KPICard title="Active Vehicles" value={kpis.activeVehicles} iconClass="fa-car" colorClass="kpi-icon-green" />
-        <KPICard title="Revenue Generated" value={kpis.revenueGenerated} trend={kpis.revenueTrend} iconClass="fa-indian-rupee-sign" colorClass="kpi-icon-purple" />
-        <KPICard title="Total Slots" value={kpis.totalSlots} iconClass="fa-parking" colorClass="kpi-icon-orange" />
+        <KPICard title="Total Bookings" value={kpis.totalBookings} trend={kpis.bookingTrend} />
+        <KPICard title="Active Vehicles" value={kpis.activeVehicles} />
+        <KPICard title="Revenue Generated" value={kpis.revenueGenerated} trend={kpis.revenueTrend} />
+        <KPICard title="Total Slots" value={kpis.totalSlots} />
       </div>
 
       {/* Analytics Charts Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1fr', gap: '1.25rem', marginBottom: '1.75rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(300px, 100%), 1fr))', gap: '1.25rem', marginBottom: '1.75rem' }}>
         {/* Chart 1: Month Wise History */}
         <div className="card">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-            <h3 style={{ margin: 0, fontSize: '0.95rem' }}><i className="fa-regular fa-calendar"></i> Month Wise History</h3>
+            <h3 style={{ margin: 0, fontSize: '0.95rem' }}>Month Wise History</h3>
           </div>
 
           <div style={{ height: '220px', width: '100%' }}>
@@ -234,14 +242,14 @@ const AdminDashboard = () => {
 
         {/* Chart 2: Peak Times Heatmap */}
         <div className="card">
-          <h3 style={{ margin: '0 0 0.75rem 0', fontSize: '0.95rem' }}><i className="fa-regular fa-clock"></i> Peak Times</h3>
+          <h3 style={{ margin: '0 0 0.75rem 0', fontSize: '0.95rem' }}>Peak Times</h3>
           <HeatmapGrid times={peakTimesData.times} days={peakTimesData.days} matrix={peakTimesData.matrix} />
         </div>
 
         {/* Chart 3: Day Wise Revenue */}
         <div className="card">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-            <h3 style={{ margin: 0, fontSize: '0.95rem' }}><i className="fa-solid fa-indian-rupee-sign"></i> Revenue (Day Wise)</h3>
+            <h3 style={{ margin: 0, fontSize: '0.95rem' }}>Revenue (Day Wise)</h3>
           </div>
 
           <div style={{ height: '220px', width: '100%' }}>

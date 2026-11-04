@@ -8,6 +8,32 @@ export const PENDING_PAYMENT_MINUTES = Number(process.env.PENDING_PAYMENT_MINUTE
 // Walk-ins have no end time; for overlap checks assume this stay when comparing with future bookings
 export const WALK_IN_ASSUMED_HOURS = 2;
 
+// A reservation stops holding anything this long after it ends, matching how long its QR pass stays valid.
+// Without this a no-show would block its slot and vehicle forever.
+const NO_SHOW_GRACE_HOURS = 2;
+
+/**
+ * The booking currently using a slot or vehicle, if any: parked, awaiting payment,
+ * or reserved and not yet past its no-show window.
+ */
+export const findLiveBooking = async ({ slotId = null, vehicleId = null }) => {
+  const res = await db.query(
+    `SELECT b.id, b.booking_status, s.slot_number, l.name AS lot_name
+     FROM bookings b
+     JOIN parking_slots s ON b.slot_id = s.id
+     JOIN parking_lots l ON s.lot_id = l.id
+     WHERE ($1::uuid IS NULL OR b.slot_id = $1::uuid)
+       AND ($2::uuid IS NULL OR b.vehicle_id = $2::uuid)
+       AND (b.booking_status IN ('active', 'parked')
+            OR (b.booking_status IN ('pending_payment', 'reserved')
+                AND COALESCE(b.booking_end, b.booking_start, b.created_at) + make_interval(hours => $3::int) > CURRENT_TIMESTAMP))
+     ORDER BY (b.booking_status IN ('active', 'parked')) DESC
+     LIMIT 1`,
+    [slotId, vehicleId, NO_SHOW_GRACE_HOURS]
+  );
+  return res.rows[0] || null;
+};
+
 export const normalizePlate = (plate) => String(plate || '').toUpperCase().replace(/[\s-]/g, '');
 
 // Serialise concurrent bookings for the same vehicle so two requests cannot both pass the overlap check

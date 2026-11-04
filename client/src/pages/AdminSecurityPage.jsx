@@ -3,11 +3,13 @@ import AppLayout from '../components/layout/AppLayout';
 import { adminService } from '../services/adminService';
 import { lotService } from '../services/lotService';
 import toast from 'react-hot-toast';
+import { useConfirm } from '../components/common/ConfirmProvider';
 
 const labelStyle = { display: 'block', fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '0.3rem' };
 const emptyForm = { full_name: '', email: '', password: '', phone: '', assigned_lot_id: '' };
 
 const AdminSecurityPage = () => {
+  const confirm = useConfirm();
   const [staff, setStaff] = useState([]);
   const [lots, setLots] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -81,14 +83,28 @@ const AdminSecurityPage = () => {
     }
   };
 
-  const handleResetPassword = (member) => {
-    const password = window.prompt(`Enter a new password for ${member.full_name} (min 6 characters):`);
-    if (!password) return;
-    if (password.length < 6) {
-      toast.error('Password must be at least 6 characters long.');
-      return;
-    }
-    update(member.id, { password }, 'Password reset.');
+    const handleResetPassword = async (member) => {
+    const password = await confirm({
+      title: `Reset password for ${member.full_name}?`,
+      message: 'Their current password stops working immediately.',
+      input: { label: 'New password (min 6 characters)', type: 'password', minLength: 6 },
+      confirmLabel: 'Reset Password',
+      danger: true
+    });
+    if (password) update(member.id, { password }, 'Password reset.');
+  };
+
+  const handleToggleActive = async (member) => {
+    const ok = await confirm(member.is_active
+      ? { title: `Deactivate ${member.full_name}?`, message: 'They will be signed out and cannot log in until you activate the account again.', confirmLabel: 'Deactivate', danger: true }
+      : { title: `Activate ${member.full_name}?`, message: 'They will be able to log in and run the gate for their assigned lot.', confirmLabel: 'Activate' });
+    if (ok) update(member.id, { is_active: !member.is_active }, member.is_active ? 'Account deactivated.' : 'Account activated.');
+  };
+
+  const handleReassign = async (member, lotId) => {
+    const lotName = lots.find((l) => l.id === lotId)?.name;
+    const ok = await confirm({ title: `Move ${member.full_name} to ${lotName}?`, message: 'They will only be able to scan and check in vehicles for this lot from now on.', confirmLabel: 'Move Guard' });
+    if (ok) update(member.id, { assigned_lot_id: lotId }, 'Lot assignment updated.');
   };
 
   const handleConfirmDelete = async () => {
@@ -157,7 +173,7 @@ const AdminSecurityPage = () => {
               </div>
             </div>
             <button type="submit" className="btn-select-slot" style={{ marginTop: 0, width: 'auto', padding: '0.6rem 1.25rem' }} disabled={saving}>
-              <i className="fa-solid fa-user-plus"></i> {saving ? 'Creating...' : 'Create Security Account'}
+              {saving ? 'Creating...' : 'Create Security Account'}
             </button>
           </form>
 
@@ -185,7 +201,7 @@ const AdminSecurityPage = () => {
                         <select
                           className="search-input"
                           value={m.assigned_lot_id || ''}
-                          onChange={(e) => update(m.id, { assigned_lot_id: e.target.value }, 'Lot assignment updated.')}
+                          onChange={(e) => handleReassign(m, e.target.value)}
                         >
                           {!m.assigned_lot_id && <option value="">Unassigned</option>}
                           {lots.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
@@ -199,7 +215,7 @@ const AdminSecurityPage = () => {
                       <td>
                         <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
                           <button className="change-btn" onClick={() => handleResetPassword(m)}>
-                            <i className="fa-solid fa-key"></i> Reset Password
+                            Reset Password
                           </button>
                           <button
                             className="change-btn"
@@ -207,7 +223,7 @@ const AdminSecurityPage = () => {
                               borderColor: m.is_active ? 'var(--status-occupied)' : 'var(--accent-emerald)',
                               color: m.is_active ? 'var(--status-occupied)' : 'var(--accent-emerald)'
                             }}
-                            onClick={() => update(m.id, { is_active: !m.is_active }, m.is_active ? 'Account deactivated.' : 'Account activated.')}
+                            onClick={() => handleToggleActive(m)}
                           >
                             {m.is_active ? 'Deactivate' : 'Activate'}
                           </button>
@@ -223,7 +239,7 @@ const AdminSecurityPage = () => {
                             onClick={() => setStaffToDelete(m)}
                             title="Delete this security account"
                           >
-                            <i className="fa-solid fa-trash"></i> Delete
+                            Delete
                           </button>
                         </div>
                       </td>
@@ -245,7 +261,7 @@ const AdminSecurityPage = () => {
           <div className="modal-box" style={{ maxWidth: '440px', textAlign: 'center' }}>
             <div className="modal-header">
               <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#EF4444', margin: 0 }}>
-                <i className="fa-solid fa-triangle-exclamation"></i> Delete Security Account
+                Delete Security Account
               </h3>
               <button
                 className="modal-close"
@@ -301,7 +317,7 @@ const AdminSecurityPage = () => {
                   {deleting ? (
                     <span><i className="fa-solid fa-spinner fa-spin"></i> Deleting...</span>
                   ) : (
-                    <span><i className="fa-solid fa-trash"></i> Yes</span>
+                    <span>Yes</span>
                   )}
                 </button>
               </div>

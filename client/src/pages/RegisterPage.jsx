@@ -21,7 +21,7 @@ const RegisterPage = () => {
   const { user, loading: authLoading, register } = useAuth();
   const navigate = useNavigate();
 
-  // Registering signs the driver in, and this also sends signed-in visitors to their own home
+  // Registering signs the user in, and this also sends signed-in visitors to their own home
   useEffect(() => {
     if (!authLoading && user) navigate(homeForRole(user.role), { replace: true });
   }, [authLoading, user]);
@@ -45,7 +45,7 @@ const RegisterPage = () => {
 
   return (
     <AuthShell
-      title="Create a driver account"
+      title="Create a user account"
       maxWidth={540}
       footer={
         <>
@@ -57,7 +57,6 @@ const RegisterPage = () => {
       <form onSubmit={handleSubmit}>
         {error && (
           <div className="auth-error" role="alert">
-            <i className="fa-solid fa-circle-exclamation"></i>
             <span>{error}</span>
           </div>
         )}

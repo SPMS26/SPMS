@@ -132,12 +132,12 @@ export const confirmPreBookingPayment = async (req, res, next) => {
 
     // Lock booking for update
     const bookingRes = await client.query(
-      `SELECT b.*, u.full_name as user_name, v.vehicle_number, v.vehicle_type, v.vehicle_model,
+      `SELECT b.*, u.full_name as user_name, COALESCE(v.vehicle_number, b.guest_vehicle_number) as vehicle_number, v.vehicle_type, v.vehicle_model,
               s.slot_number, s.floor, s.section, s.hourly_price, s.lot_id,
               l.name as lot_name, l.address as lot_address
        FROM bookings b
        JOIN users u ON b.user_id = u.id
-       JOIN vehicles v ON b.vehicle_id = v.id
+       LEFT JOIN vehicles v ON b.vehicle_id = v.id
        JOIN parking_slots s ON b.slot_id = s.id
        JOIN parking_lots l ON s.lot_id = l.id
        WHERE b.id = $1 FOR UPDATE OF b`,
@@ -298,7 +298,7 @@ export const getUserBookings = async (req, res, next) => {
           'hourly_price', s.hourly_price,
           'parking_lot', json_build_object('id', l.id, 'name', l.name, 'address', l.address)
         ) AS slot,
-        json_build_object('id', v.id, 'vehicle_number', v.vehicle_number, 'vehicle_type', v.vehicle_type, 'vehicle_model', v.vehicle_model) AS vehicle,
+        json_build_object('id', v.id, 'vehicle_number', COALESCE(v.vehicle_number, b.guest_vehicle_number), 'vehicle_type', v.vehicle_type, 'vehicle_model', v.vehicle_model) AS vehicle,
         CASE 
           WHEN b.payment_status = 'paid' AND q.id IS NOT NULL THEN
             json_build_object(
@@ -350,7 +350,7 @@ export const getBookingById = async (req, res, next) => {
           'hourly_price', s.hourly_price,
           'parking_lot', json_build_object('id', l.id, 'name', l.name, 'address', l.address)
         ) AS slot,
-        json_build_object('id', v.id, 'vehicle_number', v.vehicle_number, 'vehicle_type', v.vehicle_type, 'vehicle_model', v.vehicle_model) AS vehicle,
+        json_build_object('id', v.id, 'vehicle_number', COALESCE(v.vehicle_number, b.guest_vehicle_number), 'vehicle_type', v.vehicle_type, 'vehicle_model', v.vehicle_model) AS vehicle,
         json_build_object('amount', p.amount, 'payment_status', p.payment_status, 'transaction_reference', p.transaction_reference, 'payment_type', p.payment_type) AS payment,
         q.expires_at,
         q.is_active as qr_is_active

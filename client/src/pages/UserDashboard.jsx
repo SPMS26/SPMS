@@ -247,9 +247,6 @@ const UserDashboard = () => {
             onClick={() => setShowVehicleDropdown(prev => !prev)}
             title="Click to select vehicle"
           >
-            <div className="car-icon">
-              <i className={`fa-solid ${selectedVehicle?.vehicle_type === 'two_wheeler' ? 'fa-motorcycle' : 'fa-car-side'}`}></i>
-            </div>
             <div>
               <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
                 {selectedVehicle?.vehicle_type === 'two_wheeler' ? '2-Wheeler' : selectedVehicle ? '4-Wheeler' : 'Current Vehicle'}
@@ -318,20 +315,6 @@ const UserDashboard = () => {
                         }}
                       >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                          <div style={{
-                            width: '32px',
-                            height: '32px',
-                            borderRadius: '8px',
-                            background: isSelected ? 'var(--accent-gold-bg)' : 'rgba(255, 255, 255, 0.06)',
-                            color: isSelected ? 'var(--accent-gold)' : 'var(--text-muted)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '0.9rem',
-                            flexShrink: 0
-                          }}>
-                            <i className={`fa-solid ${isTwoWheeler ? 'fa-motorcycle' : 'fa-car'}`}></i>
-                          </div>
                           <div>
                             <div style={{
                               fontSize: '0.88rem',
@@ -346,10 +329,6 @@ const UserDashboard = () => {
                             </div>
                           </div>
                         </div>
-
-                        {isSelected && (
-                          <i className="fa-solid fa-circle-check" style={{ color: 'var(--accent-gold)', fontSize: '0.95rem' }}></i>
-                        )}
                       </button>
                     );
                   })
@@ -381,7 +360,6 @@ const UserDashboard = () => {
                     }}
                     className="vehicle-dropdown-footer-btn"
                   >
-                    <i className="fa-solid fa-gear" style={{ fontSize: '0.7rem' }}></i>
                     <span>Manage in Profile</span>
                   </button>
                 </div>
@@ -395,7 +373,7 @@ const UserDashboard = () => {
       <div className="section-subtitle">
         <span>1. Available Parking Lots</span>
         <a href="#map" style={{ fontSize: '0.8rem', color: 'var(--accent-gold)', textDecoration: 'none' }}>
-          <i className="fa-solid fa-location-dot"></i> View on Map
+          View on Map
         </a>
       </div>
 

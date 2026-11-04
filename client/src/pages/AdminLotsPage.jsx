@@ -3,8 +3,10 @@ import AppLayout from '../components/layout/AppLayout';
 import { lotService } from '../services/lotService';
 import { sortFloors, floorLabel } from '../components/parking/SlotGrid';
 import toast from 'react-hot-toast';
+import { useConfirm } from '../components/common/ConfirmProvider';
 
 const AdminLotsPage = () => {
+  const confirm = useConfirm();
   const [lots, setLots] = useState([]);
   const [selectedLot, setSelectedLot] = useState(null);
   const [slots, setSlots] = useState([]);
@@ -61,6 +63,11 @@ const AdminLotsPage = () => {
         : 'A vehicle is parked and cannot make it available');
       return;
     }
+        const slotCode = slots.find(s => s.id === slotId)?.slot_number;
+    const ok = await confirm(nextStatus === 'maintenance'
+      ? { title: `Put slot ${slotCode} under maintenance?`, message: 'Users will not be able to book it until you set it available again.', confirmLabel: 'Mark as Maintenance', danger: true }
+      : { title: `Make slot ${slotCode} available?`, message: 'Users will be able to book it straight away.', confirmLabel: 'Set Available' });
+    if (!ok) return;
     try {
       await lotService.updateSlotStatus(slotId, nextStatus);
       toast.success(`Slot set to ${nextStatus.toUpperCase()}`);
@@ -92,7 +99,7 @@ const AdminLotsPage = () => {
   };
 
   const handleDeleteSlot = async (slot) => {
-    if (!window.confirm(`Delete slot ${slot.slot_number} from ${selectedLot.name}?`)) return;
+    if (!(await confirm({ title: `Delete slot ${slot.slot_number}?`, message: `This removes it from ${selectedLot.name}. Slots with booking history are deactivated so the history is kept.`, confirmLabel: 'Delete Slot', danger: true }))) return;
     try {
       const res = await lotService.deleteSlot(slot.id);
       toast.success(res.message);
@@ -145,7 +152,8 @@ const AdminLotsPage = () => {
   };
 
   const handleDeleteLot = async () => {
-    if (!selectedLot || !window.confirm(`Remove "${selectedLot.name}"? Lots with booking history are deactivated instead of deleted.`)) return;
+    if (!selectedLot) return;
+    if (!(await confirm({ title: `Remove ${selectedLot.name}?`, message: 'Users will no longer be able to book it, and its security staff lose their assigned lot. Lots with booking history are deactivated instead of deleted.', confirmLabel: 'Remove Lot', danger: true }))) return;
     try {
       const res = await lotService.deleteLot(selectedLot.id);
       toast.success(res.message);
@@ -156,10 +164,14 @@ const AdminLotsPage = () => {
     }
   };
 
-  const handleToggleLotActive = async () => {
+    const handleToggleLotActive = async () => {
+    const ok = await confirm(selectedLot.is_active
+      ? { title: `Hide ${selectedLot.name} from users?`, message: 'Users will not see or book this lot. Existing bookings stay in place.', confirmLabel: 'Hide Lot', danger: true }
+      : { title: `Make ${selectedLot.name} live?`, message: 'Users will be able to see and book this lot straight away.', confirmLabel: 'Make Live' });
+    if (!ok) return;
     try {
       await lotService.updateLot(selectedLot.id, { is_active: !selectedLot.is_active });
-      toast.success(selectedLot.is_active ? 'Lot hidden from drivers.' : 'Lot is live for drivers.');
+      toast.success(selectedLot.is_active ? 'Lot hidden from users.' : 'Lot is live for users.');
       await fetchLots();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to update lot.');
@@ -168,7 +180,10 @@ const AdminLotsPage = () => {
 
   const handleBulkAdd = async (e) => {
     e.preventDefault();
-    if (!selectedLot) return;
+        if (!selectedLot) return;
+    const sectionCount = bulk.sections.split(',').map(x => x.trim()).filter(Boolean).length;
+    const slotCount = sectionCount * Number(bulk.count_per_section);
+    if (!(await confirm({ title: `Generate ${slotCount} slots?`, message: `Adds ${sectionCount} section(s) of ${bulk.count_per_section} slots on floor ${bulk.floor} to ${selectedLot.name}. Users can book them straight away.`, confirmLabel: 'Generate Slots' }))) return;
     setSavingBulk(true);
     try {
       const res = await lotService.bulkAddSlots({
@@ -199,7 +214,7 @@ const AdminLotsPage = () => {
           <h1>Parking Lots & Slots Management</h1>
         </div>
         <button className="btn-select-slot" style={{ marginTop: 0, width: 'auto', padding: '0.6rem 1.1rem' }} onClick={() => setLotForm({ ...blankLot })}>
-          <i className="fa-solid fa-plus"></i> New Parking Lot
+          New Parking Lot
         </button>
       </div>
 
@@ -247,15 +262,15 @@ const AdminLotsPage = () => {
         <div className="card" style={{ textAlign: 'center', padding: '2.5rem' }}>
           <h3 style={{ margin: '0 0 0.5rem 0' }}>Set up your first parking lot</h3>
           <p style={{ margin: '0 0 1rem 0', color: 'var(--text-muted)' }}>
-            Add your lot's details, generate its slots, then create security accounts. Drivers will see it as soon as it is live.
+            Add your lot's details, generate its slots, then create security accounts. Users will see it as soon as it is live.
           </p>
           <button className="btn-select-slot" style={{ marginTop: 0, width: 'auto', padding: '0.6rem 1.25rem' }} onClick={() => setLotForm({ ...blankLot })}>
-            <i className="fa-solid fa-plus"></i> Create Parking Lot
+            Create Parking Lot
           </button>
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: '1.5rem' }}>
+      <div className="lots-split">
         {/* Lots List */}
         <div className="card">
           <h3 style={{ margin: '0 0 1rem 0', fontSize: '1.1rem' }}>Parking Lots</h3>
@@ -293,12 +308,12 @@ const AdminLotsPage = () => {
 
           {selectedLot && (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
-              <button className="change-btn" onClick={() => openEditLot(selectedLot)}><i className="fa-solid fa-pen"></i> Edit Lot Details</button>
+              <button className="change-btn" onClick={() => openEditLot(selectedLot)}>Edit Lot Details</button>
               <button className="change-btn" onClick={handleToggleLotActive}>
-                {selectedLot.is_active ? 'Hide from drivers' : 'Make live'}
+                {selectedLot.is_active ? 'Hide from users' : 'Make live'}
               </button>
               <button className="change-btn" style={{ borderColor: 'var(--status-occupied)', color: 'var(--status-occupied)' }} onClick={handleDeleteLot}>
-                <i className="fa-solid fa-trash"></i> Remove Lot
+                Remove Lot
               </button>
             </div>
           )}
@@ -321,7 +336,7 @@ const AdminLotsPage = () => {
               <input className="search-input" style={{ width: '120px' }} type="number" min="0" step="0.01" placeholder={String(selectedLot?.default_hourly_price ?? 30)} value={bulk.hourly_price} onChange={(e) => setBulk(prev => ({ ...prev, hourly_price: e.target.value }))} />
             </div>
             <button type="submit" className="btn-select-slot" style={{ marginTop: 0, width: 'auto', padding: '0.6rem 1.1rem' }} disabled={!selectedLot || savingBulk}>
-              <i className="fa-solid fa-wand-magic-sparkles"></i> {savingBulk ? 'Generating...' : 'Generate Slots'}
+              {savingBulk ? 'Generating...' : 'Generate Slots'}
             </button>
           </form>
 
@@ -368,7 +383,7 @@ const AdminLotsPage = () => {
               />
             </div>
             <button type="submit" className="btn-select-slot" style={{ marginTop: 0, width: 'auto', padding: '0.6rem 1.1rem' }} disabled={!selectedLot || savingSlot}>
-              <i className="fa-solid fa-plus"></i> {savingSlot ? 'Adding...' : 'Add Slot'}
+              {savingSlot ? 'Adding...' : 'Add Slot'}
             </button>
           </form>
 
@@ -416,7 +431,7 @@ const AdminLotsPage = () => {
                           style={{ borderColor: 'var(--status-occupied)', color: 'var(--status-occupied)' }}
                           onClick={() => handleDeleteSlot(slot)}
                         >
-                          <i className="fa-solid fa-trash"></i> Delete
+                          Delete
                         </button>
                       </div>
                     </td>

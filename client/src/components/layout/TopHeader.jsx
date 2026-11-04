@@ -85,7 +85,7 @@ const TopHeader = ({ onToggleSidebar, sidebarOpen }) => {
           </button>
         )}
 
-        {!isProfilePage && !isStaff && (
+        {!isProfilePage && (
           <div className="search-box">
             <i className="fa-solid fa-magnifying-glass"></i>
             <input type="text" className="search-input" placeholder="Search parking lots, locations, bookings..." />
@@ -110,7 +110,7 @@ const TopHeader = ({ onToggleSidebar, sidebarOpen }) => {
             </button>
 
             {showNotifications && (
-              <div style={{ position: 'absolute', right: 0, top: '48px', width: '320px', background: 'var(--grad-card)', border: '1px solid var(--border-bright)', borderRadius: '12px', boxShadow: '0 10px 30px rgba(0,0,0,0.5)', padding: '1rem', zIndex: 100 }}>
+              <div className="notif-dropdown">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.5rem' }}>
                   <h4 style={{ margin: 0, fontSize: '0.9rem' }}>Notifications</h4>
                   {unreadCount > 0 && (

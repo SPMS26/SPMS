@@ -1,13 +1,6 @@
 import React from 'react';
 
 const LotCard = ({ lot, selected, onSelect }) => {
-  const getIconClass = (name) => {
-    if (name.includes('Science')) return 'fa-flask';
-    if (name.includes('Library')) return 'fa-book';
-    if (name.includes('Hostel')) return 'fa-bed';
-    return 'fa-building-user';
-  };
-
   const isBusy = lot.available_slots < 10;
 
   return (
@@ -15,19 +8,15 @@ const LotCard = ({ lot, selected, onSelect }) => {
       className={`lot-summary-card ${selected ? 'selected' : ''}`}
       onClick={() => onSelect(lot)}
     >
-      <div className="lot-img-placeholder">
-        <i className={`fa-solid ${getIconClass(lot.name)}`}></i>
-      </div>
-
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
           <div className="lot-card-title">{lot.name}</div>
           <div className="lot-card-sub">
-            <i className="fa-solid fa-location-dot"></i> {lot.address || 'Location not set'}
+            {lot.address || 'Location not set'}
           </div>
           {lot.owner_name && (
             <div className="lot-card-sub">
-              <i className="fa-solid fa-building"></i> {lot.owner_name}
+              {lot.owner_name}
               {lot.opening_time && ` • ${String(lot.opening_time).slice(0, 5) === '00:00' && String(lot.closing_time || '').slice(0, 5) === '23:59' ? 'Open 24h' : `${String(lot.opening_time).slice(0, 5)}-${String(lot.closing_time || '').slice(0, 5)}`}`}
             </div>
           )}

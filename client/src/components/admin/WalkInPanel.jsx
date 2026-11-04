@@ -5,12 +5,14 @@ import { lotService } from '../../services/lotService';
 import { qrService } from '../../services/qrService';
 import SlotGrid, { sortFloors, floorLabel } from '../parking/SlotGrid';
 import toast from 'react-hot-toast';
+import { useConfirm } from '../../components/common/ConfirmProvider';
 
 const labelStyle = { display: 'block', fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '0.3rem' };
 
-// Gate slot map + walk-in desk. Guards see the same live slot map drivers see for their lot;
+// Gate slot map + walk-in desk. Guards see the same live slot map users see for their lot;
 // tapping a slot offers the right action: check in (free), release a hold (held), check out (occupied).
 const WalkInPanel = ({ onChanged, queue, onCheckout, plate: plateProp, onPlateChange }) => {
+  const confirm = useConfirm();
   const { user, isSecurity } = useAuth();
   const { socket } = useSocket();
   const [lots, setLots] = useState([]);
@@ -67,7 +69,7 @@ const WalkInPanel = ({ onChanged, queue, onCheckout, plate: plateProp, onPlateCh
     loadSlots();
   }, [loadSlots]);
 
-  // Live updates: statuses change when drivers pre-book, pay, or other staff act
+  // Live updates: statuses change when users pre-book, pay, or other staff act
   useEffect(() => {
     if (!socket) return;
     const onSlotChanged = ({ lotId: changedLot, slotId, status }) => {
@@ -100,7 +102,9 @@ const WalkInPanel = ({ onChanged, queue, onCheckout, plate: plateProp, onPlateCh
   };
 
   const handleCheckIn = async (e) => {
-    e.preventDefault();
+        e.preventDefault();
+    const vehicle = plate.trim().toUpperCase();
+    if (!(await confirm({ title: `Check in ${vehicle}?`, message: `Assigns slot ${selectedSlot.slot_number} and starts billing at ₹${selectedSlot.hourly_price}/hr. Check the number carefully: a check-in cannot be undone.`, confirmLabel: 'Check In' }))) return;
     setSubmitting(true);
     try {
       const res = await qrService.walkIn(selectedSlot.id, plate, phone);
@@ -121,6 +125,10 @@ const WalkInPanel = ({ onChanged, queue, onCheckout, plate: plateProp, onPlateCh
       toast.error('A vehicle is parked and cannot make it available');
       return;
     }
+        const ok = await confirm(status === 'reserved'
+      ? { title: `Hold slot ${slot.slot_number}?`, message: 'It is marked reserved, so nobody can book it until it is released.', confirmLabel: 'Hold Slot' }
+      : { title: `Release slot ${slot.slot_number}?`, message: 'Users will be able to book it straight away.', confirmLabel: 'Release Slot' });
+    if (!ok) return;
     try {
       await lotService.updateSlotStatus(slot.id, status);
       toast.success(status === 'reserved' ? 'Slot held.' : 'Slot released.');
@@ -144,7 +152,6 @@ const WalkInPanel = ({ onChanged, queue, onCheckout, plate: plateProp, onPlateCh
     <div className="card" style={{ marginBottom: '1rem' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.75rem' }}>
         <span style={{ fontWeight: 700, fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-          <i className="fa-solid fa-table-cells-large" style={{ color: 'var(--accent-gold)' }}></i>
           Slot Map{lotName ? ` - ${lotName}` : ''}
         </span>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -197,7 +204,7 @@ const WalkInPanel = ({ onChanged, queue, onCheckout, plate: plateProp, onPlateCh
                   <input className="search-input" style={{ width: '140px' }} value={phone} onChange={(e) => setPhone(e.target.value)} />
                 </div>
                 <button type="submit" className="btn-select-slot" style={{ marginTop: 0, width: 'auto', padding: '0.6rem 1.1rem' }} disabled={submitting || !plate.trim()}>
-                  <i className="fa-solid fa-right-to-bracket"></i> {submitting ? 'Checking in...' : 'Walk-in Check In'}
+                  {submitting ? 'Checking in...' : 'Walk-in Check In'}
                 </button>
                 <button type="button" className="change-btn" onClick={() => setHold(selectedSlot, 'reserved')} title="Mark this slot reserved without a vehicle">
                   Hold Slot
@@ -229,7 +236,7 @@ const WalkInPanel = ({ onChanged, queue, onCheckout, plate: plateProp, onPlateCh
                     </div>
                   </div>
                   <button type="button" className="btn-select-slot" style={{ marginTop: 0, width: 'auto', padding: '0.6rem 1.1rem' }} onClick={() => onCheckout && onCheckout(occupant.id)}>
-                    <i className="fa-solid fa-right-from-bracket"></i> Check Out
+                    Check Out
                   </button>
                 </div>
               ) : (
@@ -249,7 +256,7 @@ const WalkInPanel = ({ onChanged, queue, onCheckout, plate: plateProp, onPlateCh
             <div style={{ fontFamily: 'monospace', fontSize: '1.4rem', fontWeight: 800, color: 'var(--accent-gold)' }}>{ticket.ticket_code}</div>
             <div style={{ fontSize: '0.8rem' }}>
               {ticket.vehicle_number} • Slot {ticket.slot_number} ({ticket.floor}) • ₹{ticket.hourly_price}/hr
-              {ticket.linked_account && <span style={{ color: 'var(--accent-emerald)', marginLeft: '0.5rem' }}>linked to driver account</span>}
+              {ticket.linked_account && <span style={{ color: 'var(--accent-emerald)', marginLeft: '0.5rem' }}>linked to user account</span>}
             </div>
           </div>
         )}

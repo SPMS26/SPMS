@@ -5,7 +5,7 @@ import { homeForRole } from '../components/layout/ProtectedRoute';
 import AuthShell from '../components/auth/AuthShell';
 
 const DEMO_ACCOUNTS = [
-  { role: 'Driver', email: 'mehanna@spms.com', password: 'user123' },
+  { role: 'User', email: 'mehanna@spms.com', password: 'user123' },
   { role: 'Lot Owner', email: 'admin@spms.com', password: 'admin123' },
   { role: 'Gate Security', email: 'operator@spms.com', password: 'admin123' }
 ];
@@ -59,7 +59,7 @@ const LoginPage = () => {
       title="Sign in"
       footer={
         <>
-          <span>New driver? <Link to="/register">Create an account</Link></span>
+          <span>New user? <Link to="/register">Create an account</Link></span>
           <span>Own a parking lot? <Link to="/register-owner">Register your lot</Link></span>
         </>
       }
@@ -67,7 +67,6 @@ const LoginPage = () => {
       <form onSubmit={handleSubmit} noValidate={false}>
         {error && (
           <div className="auth-error" role="alert">
-            <i className="fa-solid fa-circle-exclamation"></i>
             <span>{error}</span>
           </div>
         )}
@@ -121,7 +120,7 @@ const LoginPage = () => {
 
       <div className="auth-demo">
         <button type="button" className="auth-demo-toggle" onClick={() => setDemoOpen((v) => !v)} aria-expanded={demoOpen}>
-          <span><i className="fa-solid fa-key" style={{ color: 'var(--accent-gold)', marginRight: '0.4rem' }}></i> Try a demo account</span>
+          <span>Try a demo account</span>
           <i className={`fa-solid ${demoOpen ? 'fa-chevron-up' : 'fa-chevron-down'}`}></i>
         </button>
         {demoOpen && (
@@ -132,7 +131,7 @@ const LoginPage = () => {
                   <div className="role">{acc.role}</div>
                   <div className="email">{acc.email}</div>
                 </span>
-                <span className="go">Sign in <i className="fa-solid fa-arrow-right"></i></span>
+                <span className="go">Sign in </span>
               </button>
             ))}
           </div>

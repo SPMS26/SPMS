@@ -22,7 +22,6 @@ const PaymentModal = ({ isOpen, onClose, slot, lot, preBookingFee = 10, onSubmit
       <div className="modal-box" style={{ maxWidth: '460px' }}>
         <div className="modal-header">
           <h3>
-            <i className="fa-solid fa-ticket" style={{ color: 'var(--accent-gold)', marginRight: '0.4rem' }}></i>
             Confirm Reservation & Payment
           </h3>
           <button className="modal-close" onClick={onClose}>&times;</button>
@@ -59,14 +58,12 @@ const PaymentModal = ({ isOpen, onClose, slot, lot, preBookingFee = 10, onSubmit
             <div className="details-row">
               <span className="key">Payment Method:</span>
               <span className="val">
-                <i className="fa-solid fa-shield-check" style={{ color: '#E3CC9A', marginRight: '0.3rem' }}></i>
                 Project Simulated Payment
               </span>
             </div>
           </div>
 
           <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '1rem', textAlign: 'center' }}>
-            <i className="fa-solid fa-circle-info" style={{ marginRight: '0.3rem', color: 'var(--accent-gold)' }}></i>
             Reservation fee confirms your slot reservation. Your Digital QR Parking Pass will be generated instantly upon payment.
           </div>
 
@@ -74,7 +71,7 @@ const PaymentModal = ({ isOpen, onClose, slot, lot, preBookingFee = 10, onSubmit
             {loading ? (
               <span><i className="fa-solid fa-circle-notch fa-spin"></i> Processing Reservation Payment...</span>
             ) : (
-              <span><i className="fa-solid fa-lock"></i> Pay ₹{formattedFee} Reservation Fee & Get QR Pass</span>
+              <span>Pay ₹{formattedFee} Reservation Fee & Get QR Pass</span>
             )}
           </button>
         </form>

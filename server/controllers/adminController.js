@@ -3,7 +3,7 @@ import db from '../config/database.js';
 import { getAccessibleLotIds } from '../middleware/scope.js';
 import { formatDateTime } from '../utils/dateUtils.js';
 
-// Admin: drivers who have booked in this admin's lots (never other owners' customers)
+// Admin: users who have booked in this admin's lots (never other owners' customers)
 export const getUsers = async (req, res, next) => {
   try {
     const lotIds = await getAccessibleLotIds(req.user);
@@ -234,55 +234,44 @@ export const updateSecurityStaff = async (req, res, next) => {
   }
 };
 
-// Permanently delete a security staff account
+// Delete one of this admin's security accounts. The guard's audit trail must outlive the account:
+// admin_logs would cascade away and slot_reassignments would block the delete, so both move to the owner first.
 export const deleteSecurityStaff = async (req, res, next) => {
+  const { id } = req.params;
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+    return res.status(404).json({ success: false, message: 'Security account not found.' });
+  }
+
   const client = await db.getClient();
   try {
-    const { id } = req.params;
+    await client.query('BEGIN');
 
-    // Verify staff account belongs to this lot owner
     const own = await client.query(
-      "SELECT id, full_name, email FROM users WHERE id = $1 AND role = 'SECURITY' AND managed_by = $2",
+      "SELECT id, full_name, email FROM users WHERE id = $1 AND role = 'SECURITY' AND managed_by = $2 FOR UPDATE",
       [id, req.user.id]
     );
     if (own.rows.length === 0) {
-      return res.status(404).json({ success: false, message: 'Security account not found or not managed by you.' });
+      await client.query('ROLLBACK');
+      return res.status(404).json({ success: false, message: 'Security account not found.' });
     }
+    const guard = own.rows[0];
 
-    const staffMember = own.rows[0];
-
-    await client.query('BEGIN');
-
-    // Reassign foreign references to avoid FK constraint blocks
     await client.query(
-      'UPDATE slot_reassignments SET changed_by = $1 WHERE changed_by = $2',
-      [req.user.id, id]
+      `UPDATE admin_logs
+       SET admin_id = $1, description = CONCAT(description, ' [former security account: ', $3::text, ']')
+       WHERE admin_id = $2`,
+      [req.user.id, guard.id, guard.email]
     );
-    await client.query(
-      'UPDATE bookings SET created_by = NULL WHERE created_by = $1',
-      [id]
-    );
-    await client.query(
-      'UPDATE incident_reports SET resolved_by = NULL WHERE resolved_by = $1',
-      [id]
-    );
-
-    // Delete user from database
-    await client.query('DELETE FROM users WHERE id = $1', [id]);
-
-    // Audit log
+    await client.query('UPDATE slot_reassignments SET changed_by = $1 WHERE changed_by = $2', [req.user.id, guard.id]);
+    await client.query('DELETE FROM users WHERE id = $1', [guard.id]);
     await client.query(
       `INSERT INTO admin_logs (admin_id, action, target_table, target_id, description)
        VALUES ($1, 'SECURITY_DELETED', 'users', $2, $3)`,
-      [req.user.id, id, `Deleted security staff account ${staffMember.email} (${staffMember.full_name}).`]
+      [req.user.id, guard.id, `Deleted security account ${guard.email} (${guard.full_name}).`]
     );
 
     await client.query('COMMIT');
-
-    res.status(200).json({
-      success: true,
-      message: `Security account ${staffMember.full_name} (${staffMember.email}) has been permanently deleted.`
-    });
+    res.status(200).json({ success: true, message: `Security account for ${guard.full_name} deleted.` });
   } catch (err) {
     await client.query('ROLLBACK');
     next(err);

@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import AppLayout from '../components/layout/AppLayout';
 import { reportService } from '../services/reportService';
 import toast from 'react-hot-toast';
+import { useConfirm } from '../components/common/ConfirmProvider';
 
 const AdminReportsPage = () => {
+  const confirm = useConfirm();
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -22,7 +24,11 @@ const AdminReportsPage = () => {
     fetchReports();
   }, []);
 
-  const handleStatusChange = async (id, status) => {
+    const handleStatusChange = async (id, status) => {
+    const ok = await confirm(status === 'solved'
+      ? { title: 'Mark this report as solved?', message: 'The user will see it as resolved.', confirmLabel: 'Mark Solved' }
+      : { title: 'Move this report back to pending?', message: 'The user will see it as open again.', confirmLabel: 'Set Pending' });
+    if (!ok) return;
     try {
       await reportService.updateStatus(id, status, 'Resolved by Admin');
       toast.success(`Report status updated to ${status.toUpperCase()}`);
@@ -73,7 +79,7 @@ const AdminReportsPage = () => {
                     <td>
                       {rep.image_url ? (
                         <a href={rep.image_url} target="_blank" rel="noreferrer" style={{ color: 'var(--accent-gold)', fontSize: '0.78rem', textDecoration: 'none' }}>
-                          <i className="fa-solid fa-image"></i> View Image
+                          View Image
                         </a>
                       ) : (
                         <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>None</span>
