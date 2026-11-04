@@ -2,7 +2,7 @@ import bcrypt from 'bcryptjs';
 import db from '../config/database.js';
 import { getAccessibleLotIds } from '../middleware/scope.js';
 
-// Admin: drivers who have booked in this admin's lots (never other owners' customers)
+// Admin: users who have booked in this admin's lots (never other owners' customers)
 export const getUsers = async (req, res, next) => {
   try {
     const lotIds = await getAccessibleLotIds(req.user);

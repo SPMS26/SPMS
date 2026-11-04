@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import TopHeader from './TopHeader';
 import { useAuth } from '../../context/AuthContext';
@@ -6,10 +7,24 @@ import { useAuth } from '../../context/AuthContext';
 const AppLayout = ({ children }) => {
   const { isStaff: isAdmin } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const location = useLocation();
+
+  // The drawer closes whenever the user navigates
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [location.pathname]);
+
+  // Escape closes the drawer
+  useEffect(() => {
+    if (!sidebarOpen) return;
+    const onKey = (e) => e.key === 'Escape' && setSidebarOpen(false);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [sidebarOpen]);
 
   return (
     <div className={`app-layout ${!isAdmin ? 'user-layout' : ''} ${sidebarOpen ? 'sidebar-open' : ''}`}>
-      {!isAdmin && sidebarOpen && (
+      {sidebarOpen && (
         <div
           className="sidebar-backdrop"
           onClick={() => setSidebarOpen(false)}

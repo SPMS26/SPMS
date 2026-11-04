@@ -11,7 +11,7 @@ const GateSearchBar = ({ value, onChange, placeholder, summary, autoFocus = fals
             ref={ref}
             className="search-input"
             style={{ width: '100%', paddingLeft: '2.5rem', fontSize: '1rem' }}
-            placeholder={placeholder || 'Search vehicle number (e.g. TS09 AB 1234), ticket code or driver name'}
+            placeholder={placeholder || 'Search vehicle number (e.g. TS09 AB 1234), ticket code or user name'}
             value={value}
             onChange={(e) => onChange(e.target.value)}
             autoFocus={autoFocus}

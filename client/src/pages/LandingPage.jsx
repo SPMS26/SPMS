@@ -147,7 +147,7 @@ const PLATFORM_FEATURES = [
   {
     icon: 'fa-person-walking-luggage',
     title: 'Walk-in Check-in',
-    desc: 'No booking? Gate security assigns a free slot on the spot. It shows as occupied to every driver immediately.',
+    desc: 'No booking? Gate security assigns a free slot on the spot. It shows as occupied to every user immediately.',
     tag: 'Gate Desk'
   },
   {
@@ -184,12 +184,12 @@ const PLATFORM_FEATURES = [
     icon: 'fa-triangle-exclamation',
     title: 'Incident Reporting',
     desc: 'Report a blocked slot, scanner fault or damaged bay. The report goes straight to the owner of that lot.',
-    tag: 'Driver Support'
+    tag: 'User Support'
   },
   {
     icon: 'fa-building-shield',
     title: 'Lot Owner Registration',
-    desc: 'Parking lot owners register for a one-time fee, then list their own lots and slots for drivers to book.',
+    desc: 'Parking lot owners register for a one-time fee, then list their own lots and slots for users to book.',
     tag: 'Multi-Owner'
   },
   {
@@ -209,7 +209,7 @@ const PLATFORM_FEATURES = [
 const FAQS = [
   {
     q: 'What is the difference between pre-booking and a walk-in?',
-    a: 'Pre-booking reserves a specific slot for a planned arrival time. You pay the lot\'s reservation fee up front and receive a QR pass. A walk-in is for drivers who arrive without a booking: gate security picks a free slot, checks the vehicle in, and you pay the parking charge when you leave.'
+    a: 'Pre-booking reserves a specific slot for a planned arrival time. You pay the lot\'s reservation fee up front and receive a QR pass. A walk-in is for users who arrive without a booking: gate security picks a free slot, checks the vehicle in, and you pay the parking charge when you leave.'
   },
   {
     q: 'What do I pay, and when?',
@@ -225,11 +225,11 @@ const FAQS = [
   },
   {
     q: 'What happens if I do not pay my reservation fee?',
-    a: 'An unpaid pre-booking holds the slot for 15 minutes. After that it is cancelled automatically and the slot becomes available to other drivers.'
+    a: 'An unpaid pre-booking holds the slot for 15 minutes. After that it is cancelled automatically and the slot becomes available to other users.'
   },
   {
     q: 'How do I list my own parking lot?',
-    a: 'Register as a lot owner and pay the one-time registration fee. You can then create your lots, generate slots, set hourly prices and the reservation fee, and add security accounts. Drivers see your lot alongside every other listed lot.'
+    a: 'Register as a lot owner and pay the one-time registration fee. You can then create your lots, generate slots, set hourly prices and the reservation fee, and add security accounts. Users see your lot alongside every other listed lot.'
   },
   {
     q: 'How do security accounts work?',
@@ -243,11 +243,11 @@ const FAQS = [
 
 // Content for the three role tabs
 const ROLE_CONTENT = {
-  driver: {
-    label: 'Driver',
+  user: {
+    label: 'User',
     icon: 'fa-car-side',
     title: 'Find and book parking in any listed lot',
-    badge: 'Driver',
+    badge: 'User',
     items: [
       { icon: 'fa-id-card', color: 'var(--accent-gold)', title: 'Vehicle Garage', desc: 'Register two-wheelers and four-wheelers with their plate numbers and switch the active vehicle with one tap.' },
       { icon: 'fa-map-location-dot', color: 'var(--accent-emerald)', title: 'Live Slot Grid', desc: 'A multi-floor layout showing which slots are free, reserved or occupied right now.' },
@@ -273,7 +273,7 @@ const ROLE_CONTENT = {
     title: 'Run the gate for one lot',
     badge: 'Gate Security',
     items: [
-      { icon: 'fa-camera', color: 'var(--accent-emerald)', title: 'Gate Scanner', desc: 'Scan QR passes to check pre-booked drivers in and out of your assigned lot.' },
+      { icon: 'fa-camera', color: 'var(--accent-emerald)', title: 'Gate Scanner', desc: 'Scan QR passes to check pre-booked users in and out of your assigned lot.' },
       { icon: 'fa-person-walking-luggage', color: 'var(--accent-gold)', title: 'Walk-in Desk', desc: 'Pick a free slot on the live map, enter the plate number and check the vehicle in. Search any vehicle by number.' },
       { icon: 'fa-square-parking', color: '#C9B07A', title: 'Parked & Pre-booked', desc: 'Separate lists of parked vehicles and expected pre-bookings, each searchable, with check-in and check-out.' },
       { icon: 'fa-bolt', color: '#EBD9AE', title: 'Live Bookings', desc: 'Every walk-in session for the day, with running charges and completed sessions.' }
@@ -359,7 +359,7 @@ const LandingPage = () => {
   const [calcHours, setCalcHours] = useState(2);
 
   // Role Perspective State
-  const [activeRole, setActiveRole] = useState('driver'); // 'driver', 'owner' or 'security'
+  const [activeRole, setActiveRole] = useState('user'); // 'user', 'owner' or 'security'
 
   // FAQ Accordion State
   const [openFaqIndex, setOpenFaqIndex] = useState(0);
@@ -436,7 +436,7 @@ const LandingPage = () => {
                   <span>List Your Lot</span>
                 </Link>
                 <Link to="/register" className="btn-landing-primary">
-                  <span>Register Driver</span>
+                  <span>Register User</span>
                   <i className="fa-solid fa-arrow-right" style={{ fontSize: '0.8rem' }}></i>
                 </Link>
               </>
@@ -451,7 +451,7 @@ const LandingPage = () => {
       <header className="landing-hero" id="overview">
         <div className="hero-badge-pill">
           <span className="pulse-dot"></span>
-          <span>SMART PARKING FOR DRIVERS AND LOT OWNERS</span>
+          <span>SMART PARKING FOR USERS AND LOT OWNERS</span>
         </div>
 
         <h1 className="hero-main-title">
@@ -461,7 +461,7 @@ const LandingPage = () => {
         </h1>
 
         <p className="hero-subtext">
-                    Drivers find open slots in real time, pre-book with a QR pass, and pay at exit. Parking lot owners
+                    Users find open slots in real time, pre-book with a QR pass, and pay at exit. Parking lot owners
           register, list their lots, add gate security and track revenue from one dashboard.
         </p>
 
@@ -484,7 +484,7 @@ const LandingPage = () => {
             </Link>
             <Link to="/register" className="btn-landing-secondary hero-btn-large">
               <i className="fa-solid fa-user-plus"></i>
-              <span>Register as Driver</span>
+              <span>Register as User</span>
             </Link>
                       <Link to="/register-owner" className="btn-landing-secondary hero-btn-large">
               <i className="fa-solid fa-building-shield"></i>
@@ -674,12 +674,12 @@ const LandingPage = () => {
       </header>
 
       {/* ====================================================================
-          How It Works: 6 Step Driver Journey
+          How It Works: 6 Step User Journey
           ==================================================================== */}
       <section className="landing-section" id="how-it-works">
         <div className="section-header-centered">
           <div className="section-pill-tag">
-            <i className="fa-solid fa-route"></i> The Driver Journey
+            <i className="fa-solid fa-route"></i> The User Journey
           </div>
           <h2 className="section-main-heading">
             How Smart Parking Works
@@ -797,10 +797,10 @@ const LandingPage = () => {
             <i className="fa-solid fa-cubes"></i> Core Capabilities
           </div>
           <h2 className="section-main-heading">
-            Everything for Drivers, Owners and Gate Security
+            Everything for Users, Owners and Gate Security
           </h2>
           <p className="section-description">
-                        Tools for drivers who park, owners who run lots, and security staff who run the gate.
+                        Tools for users who park, owners who run lots, and security staff who run the gate.
           </p>
         </div>
 
@@ -1017,7 +1017,7 @@ const LandingPage = () => {
                   <div className="sim-inspector-body-row">
                     <span style={{ color: 'var(--text-muted)' }}>Reservation Fee</span>
                     <span style={{ fontWeight: 700 }}>
-                      ₹{selectedSlot.type === 'two_wheeler' ? '10.00' : '20.00'} (Credited at exit)
+                      ₹{RESERVATION_FEE}.00 (paid when booking)
                     </span>
                   </div>
                   <div className="sim-inspector-body-row">
@@ -1035,7 +1035,7 @@ const LandingPage = () => {
                         <span>Bay Available for Reservation</span>
                       </div>
                       <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
-                        This parking space is currently vacant in the facility database. Drivers can book this space in advance or upon arrival once signed in to their account.
+                        This parking space is currently vacant in the facility database. Users can book this space in advance or upon arrival once signed in to their account.
                       </p>
                     </div>
                   ) : selectedSlot.status === 'occupied' ? (
@@ -1055,7 +1055,7 @@ const LandingPage = () => {
                         <span>Bay Pre-Booked (Reserved)</span>
                       </div>
                       <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
-                        This slot has been reserved in advance by a registered driver holding an active digital QR pass. It remains locked until arrival or booking expiration.
+                        This slot has been reserved in advance by a registered user holding an active digital QR pass. It remains locked until arrival or booking expiration.
                       </p>
                     </div>
                   ) : (
@@ -1252,7 +1252,7 @@ const LandingPage = () => {
       </section>
 
       {/* ====================================================================
-          Portals for Drivers, Lot Owners and Gate Security
+          Portals for Users, Lot Owners and Gate Security
           ==================================================================== */}
       <section className="landing-section" id="roles">
         <div className="section-header-centered">
@@ -1263,7 +1263,7 @@ const LandingPage = () => {
             One Platform, Three Portals
           </h2>
           <p className="section-description">
-            Drivers book slots, lot owners run their lots, and gate security handles arrivals and departures.
+            Users book slots, lot owners run their lots, and gate security handles arrivals and departures.
           </p>
         </div>
 
@@ -1447,7 +1447,7 @@ const LandingPage = () => {
 
           </h2>
           <p style={{ maxWidth: '650px', margin: '0 auto 2rem auto', color: 'var(--text-muted)', fontSize: '1rem' }}>
-                        Create a driver account to book a slot, or register as a lot owner to list your own parking lot.
+                        Create a user account to book a slot, or register as a lot owner to list your own parking lot.
           </p>
 
           {user ? (
@@ -1465,7 +1465,7 @@ const LandingPage = () => {
               </Link>
                           <Link to="/register" className="btn-landing-secondary hero-btn-large">
                 <i className="fa-solid fa-user-plus"></i>
-                <span>Register as Driver</span>
+                <span>Register as User</span>
               </Link>
               <Link to="/register-owner" className="btn-landing-secondary hero-btn-large">
                 <i className="fa-solid fa-building-shield"></i>
@@ -1491,7 +1491,7 @@ const LandingPage = () => {
               </div>
             </div>
             <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', lineHeight: 1.6, maxWidth: '340px' }}>
-                            A parking platform where drivers book slots in any listed lot and owners manage their own
+                            A parking platform where users book slots in any listed lot and owners manage their own
               lots, security staff and revenue.
             </p>
             <div style={{ fontSize: '0.78rem', color: 'var(--accent-emerald)', marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
@@ -1515,8 +1515,8 @@ const LandingPage = () => {
           <div className="footer-col">
             <h5>Access Portals</h5>
             <ul className="footer-links-list">
-              <li><Link to="/login">Sign In (Driver, Owner & Security)</Link></li>
-              <li><Link to="/register">Driver Registration</Link></li>
+              <li><Link to="/login">Sign In (User, Owner & Security)</Link></li>
+              <li><Link to="/register">User Registration</Link></li>
               <li><Link to="/register-owner">Register Your Parking Lot</Link></li>
                             <li><a href="#roles">Portal Features</a></li>
               <li><a href="#benchmarks">Reliability & Security</a></li>

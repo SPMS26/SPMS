@@ -16,7 +16,7 @@ router.post('/walk-in', ...gateStaff, qrController.walkInCheckIn);
 router.get('/gate-queue', ...gateStaff, qrController.getGateQueue);
 router.get('/walk-ins', ...gateStaff, qrController.getWalkInSessions);
 
-// Drivers fetch their own pass; staff of the owning lot may also view it
+// Users fetch their own pass; staff of the owning lot may also view it
 router.get('/booking/:bookingId', protect, qrController.getLiveQR);
 
 export default router;

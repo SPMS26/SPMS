@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 
 const labelStyle = { display: 'block', fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '0.3rem' };
 
-// Gate slot map + walk-in desk. Guards see the same live slot map drivers see for their lot;
+// Gate slot map + walk-in desk. Guards see the same live slot map users see for their lot;
 // tapping a slot offers the right action: check in (free), release a hold (held), check out (occupied).
 const WalkInPanel = ({ onChanged, queue, onCheckout, plate: plateProp, onPlateChange }) => {
   const { user, isSecurity } = useAuth();
@@ -67,7 +67,7 @@ const WalkInPanel = ({ onChanged, queue, onCheckout, plate: plateProp, onPlateCh
     loadSlots();
   }, [loadSlots]);
 
-  // Live updates: statuses change when drivers pre-book, pay, or other staff act
+  // Live updates: statuses change when users pre-book, pay, or other staff act
   useEffect(() => {
     if (!socket) return;
     const onSlotChanged = ({ lotId: changedLot, slotId, status }) => {
@@ -245,7 +245,7 @@ const WalkInPanel = ({ onChanged, queue, onCheckout, plate: plateProp, onPlateCh
             <div style={{ fontFamily: 'monospace', fontSize: '1.4rem', fontWeight: 800, color: 'var(--accent-gold)' }}>{ticket.ticket_code}</div>
             <div style={{ fontSize: '0.8rem' }}>
               {ticket.vehicle_number} • Slot {ticket.slot_number} ({ticket.floor}) • ₹{ticket.hourly_price}/hr
-              {ticket.linked_account && <span style={{ color: 'var(--accent-emerald)', marginLeft: '0.5rem' }}>linked to driver account</span>}
+              {ticket.linked_account && <span style={{ color: 'var(--accent-emerald)', marginLeft: '0.5rem' }}>linked to user account</span>}
             </div>
           </div>
         )}

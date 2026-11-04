@@ -476,12 +476,12 @@ const QRScannerPage = () => {
       </div>
 
       {/* Mode Selector Tabs */}
-      <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1.25rem' }}>
+      <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '1.25rem' }}>
         <button
           type="button"
           onClick={() => setGateMode('auto')}
           style={{
-            flex: 1,
+            flex: '1 1 160px',
             padding: '0.75rem',
             borderRadius: '10px',
             fontSize: '0.9rem',
@@ -504,7 +504,7 @@ const QRScannerPage = () => {
           type="button"
           onClick={() => setGateMode('entry')}
           style={{
-            flex: 1,
+            flex: '1 1 160px',
             padding: '0.75rem',
             borderRadius: '10px',
             fontSize: '0.9rem',
@@ -527,7 +527,7 @@ const QRScannerPage = () => {
           type="button"
           onClick={() => setGateMode('exit')}
           style={{
-            flex: 1,
+            flex: '1 1 160px',
             padding: '0.75rem',
             borderRadius: '10px',
             fontSize: '0.9rem',
@@ -548,7 +548,7 @@ const QRScannerPage = () => {
       </div>
 
       {/* Main Console Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: isKioskMode ? '1fr' : '1.3fr 0.8fr', gap: '1.5rem', alignItems: 'stretch' }}>
+      <div className="scanner-layout" style={isKioskMode ? { gridTemplateColumns: '1fr' } : undefined}>
         
         {/* Left Column: Full-Window Universal Camera Viewport */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
@@ -652,8 +652,8 @@ const QRScannerPage = () => {
                 zIndex: 5
               }}>
                 <div style={{
-                  width: '320px',
-                  height: '320px',
+                  width: 'min(320px, 70%)',
+                  aspectRatio: '1 / 1',
                   border: '2px solid rgba(227, 204, 154, 0.35)',
                   borderRadius: '24px',
                   position: 'relative'
@@ -747,7 +747,7 @@ const QRScannerPage = () => {
                 </span>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(220px, 100%), 1fr))', gap: '0.75rem' }}>
                 <div>
                   <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#E3CC9A', marginBottom: '0.4rem' }}>
                     <i className="fa-solid fa-arrow-down-to-bracket"></i> Arriving (Reserved)
@@ -824,7 +824,7 @@ const QRScannerPage = () => {
           )}
         </div>
 
-        {/* Right Column: Physical Barrier Arm & Driver Clearance Feedback */}
+        {/* Right Column: Physical Barrier Arm & User Clearance Feedback */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           
           {/* Barrier Arm Graphic */}
@@ -1087,7 +1087,7 @@ const QRScannerPage = () => {
                       </span>
                     </div>
 
-                    <div className="details-row"><span className="key">Driver:</span><span className="val" style={{ fontWeight: 700 }}>{scanResult.user_name}</span></div>
+                    <div className="details-row"><span className="key">User:</span><span className="val" style={{ fontWeight: 700 }}>{scanResult.user_name}</span></div>
 
                     <div className="details-row"><span className="key">Vehicle Number:</span><span className="val" style={{ color: '#EBD9AE', fontWeight: 700 }}>{scanResult.vehicle_number}</span></div>
                     <div className="details-row"><span className="key">Allocated Location:</span><span className="val">{scanResult.lot_name} (Floor {scanResult.floor})</span></div>

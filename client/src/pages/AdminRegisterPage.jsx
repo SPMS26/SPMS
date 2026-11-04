@@ -78,7 +78,7 @@ const AdminRegisterPage = () => {
       footer={!receipt && (
         <>
           <span>Already registered? <Link to="/login">Sign in</Link></span>
-          <span>Just need to park? <Link to="/register">Create a driver account</Link></span>
+          <span>Just need to park? <Link to="/register">Create a user account</Link></span>
         </>
       )}
     >

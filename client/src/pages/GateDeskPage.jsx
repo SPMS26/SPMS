@@ -53,7 +53,7 @@ const GateDeskPage = () => {
       <GateSearchBar
         value={search}
         onChange={setSearch}
-        placeholder="Quick find: vehicle number, ticket code or driver name"
+        placeholder="Quick find: vehicle number, ticket code or user name"
         summary={`${queue.active_parked.length} parked • ${queue.pending_arrivals.length} pre-booked arriving`}
       />
 
@@ -75,7 +75,7 @@ const GateDeskPage = () => {
               <thead>
                 <tr>
                   <th>Vehicle</th>
-                  <th>Driver / Ticket</th>
+                  <th>User / Ticket</th>
                   <th>Slot</th>
                   <th>Status</th>
                   <th>Action</th>

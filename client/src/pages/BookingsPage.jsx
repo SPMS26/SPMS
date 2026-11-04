@@ -61,7 +61,7 @@ const BookingsPage = () => {
           <p style={{ fontSize: '0.85rem' }}>Select an available slot from the Home dashboard to book parking.</p>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.25rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(320px, 100%), 1fr))', gap: '1.25rem' }}>
           {bookings.map(booking => {
             const isCompleted = booking.booking_status === 'completed';
             const isParked = booking.booking_status === 'active' || booking.booking_status === 'parked';
@@ -112,7 +112,7 @@ const BookingsPage = () => {
                   </div>
                   <div className="details-row">
                     <span className="key">Reservation Fee:</span>
-                    <span className="val" style={{ color: 'var(--accent-emerald)', fontWeight: 700 }}>₹{booking.pre_booking_fee || booking.total_amount || 10}.00</span>
+                    <span className="val" style={{ color: 'var(--accent-emerald)', fontWeight: 700 }}>₹{Number(booking.pre_booking_fee || booking.total_amount || 10).toFixed(2)}</span>
                   </div>
 
                   {expiresAt && !isPaymentPending && (
@@ -131,7 +131,7 @@ const BookingsPage = () => {
                     style={{ marginTop: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', background: 'linear-gradient(135deg, var(--accent-gold), #B8955A)' }}
                     onClick={() => handlePayReservation(booking)}
                   >
-                    <i className="fa-solid fa-lock"></i> Pay ₹{booking.pre_booking_fee || 10}.00 & Generate Pass
+                    <i className="fa-solid fa-lock"></i> Pay ₹{Number(booking.pre_booking_fee || 10).toFixed(2)} & Generate Pass
                   </button>
                 ) : (
                   <button
@@ -139,7 +139,7 @@ const BookingsPage = () => {
                     style={{ marginTop: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}
                     onClick={() => handleOpenQR(booking)}
                   >
-                    <i className="fa-solid fa-qrcode"></i> View Live QR Pass
+                    <i className="fa-solid fa-qrcode"></i> View QR Pass
                   </button>
                 )}
               </div>

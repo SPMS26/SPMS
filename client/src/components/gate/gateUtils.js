@@ -15,7 +15,7 @@ export const estimateCharge = (item) => {
   return Math.max(1, Math.ceil(mins / 60)) * Number(item.hourly_price || 0);
 };
 
-// Matches by vehicle number, ticket / pass code, or driver name (spaces, dashes and case ignored)
+// Matches by vehicle number, ticket / pass code, or user name (spaces, dashes and case ignored)
 export const matchesQuery = (item, query) => {
   const q = normalize(query);
   if (!q) return true;

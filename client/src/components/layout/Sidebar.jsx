@@ -22,24 +22,14 @@ const Sidebar = ({ onClose }) => {
               <h2>{isSecurity ? 'Gate Security' : isAdmin ? 'Owner Panel' : 'Smart Parking'}</h2>
             </div>
           </Link>
-          {!isAdmin && (
-            <button
-              onClick={onClose}
-              title="Close"
-              aria-label="Close"
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: 'var(--text-muted)',
-                cursor: 'pointer',
-                fontSize: '1.1rem',
-                padding: '0.4rem 0.6rem',
-                marginRight: '0.5rem'
-              }}
-            >
-              <i className="fa-solid fa-xmark"></i>
-            </button>
-          )}
+          <button
+            className="sidebar-close-btn"
+            onClick={onClose}
+            title="Close"
+            aria-label="Close menu"
+          >
+            <i className="fa-solid fa-xmark"></i>
+          </button>
         </div>
 
         <ul className="sidebar-menu">
