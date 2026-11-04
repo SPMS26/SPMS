@@ -39,8 +39,24 @@ const QRPassModal = ({ isOpen, onClose, booking }) => {
 
     if (isSessionComplete) {
       setIsExpired(true);
-      setTimeLeft('Session Completed (QR Expired)');
+      setTimeLeft('Session Completed (Exited)');
       return;
+    }
+
+    const isParked = booking.booking_status === 'active' || booking.booking_status === 'parked';
+    if (isParked) {
+      setIsExpired(false);
+      const updateParked = () => {
+        const start = booking.entry_time || booking.booking_start || booking.created_at;
+        const diffSec = Math.max(0, Math.floor((Date.now() - new Date(start).getTime()) / 1000));
+        const h = String(Math.floor(diffSec / 3600)).padStart(2, '0');
+        const m = String(Math.floor((diffSec % 3600) / 60)).padStart(2, '0');
+        const s = String(diffSec % 60).padStart(2, '0');
+        setTimeLeft(`${h}h ${m}m ${s}s`);
+      };
+      updateParked();
+      const interval = setInterval(updateParked, 1000);
+      return () => clearInterval(interval);
     }
 
     // Expiration timer logic
@@ -116,7 +132,7 @@ const QRPassModal = ({ isOpen, onClose, booking }) => {
               color: isExpired || isSessionComplete ? '#8A8478' : '#E3CC9A',
               border: `1px solid ${isExpired || isSessionComplete ? 'rgba(138, 132, 120, 0.3)' : 'rgba(227, 204, 154, 0.3)'}`
             }}>
-              {isSessionComplete ? 'SESSION COMPLETED (EXPIRED)' : (isExpired ? 'EXPIRED' : 'ACTIVE PASS')}
+              {isSessionComplete ? 'SESSION COMPLETED' : (booking.booking_status === 'active' || booking.booking_status === 'parked') ? 'VEHICLE PARKED' : (isExpired ? 'EXPIRED' : 'ACTIVE PASS')}
             </span>
           </div>
 
@@ -137,7 +153,7 @@ const QRPassModal = ({ isOpen, onClose, booking }) => {
               </div>
             )}
 
-            {(isExpired || isSessionComplete) && (
+            {(isExpired || isSessionComplete) && !(booking.booking_status === 'active' || booking.booking_status === 'parked') && (
               <div className="qr-stamp">
                 EXPIRED
               </div>
@@ -164,7 +180,7 @@ const QRPassModal = ({ isOpen, onClose, booking }) => {
             fontSize: '0.78rem'
           }}>
             <span style={{ color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-              Pass Status:
+              {(booking.booking_status === 'active' || booking.booking_status === 'parked') ? 'Time Parked:' : 'Pass Status:'}
             </span>
             <span style={{ fontWeight: 700, color: isExpired || isSessionComplete ? '#8A8478' : 'var(--text-main)', fontFamily: 'monospace', fontSize: '0.85rem' }}>
               {timeLeft}
@@ -219,7 +235,11 @@ const QRPassModal = ({ isOpen, onClose, booking }) => {
         </div>
 
         <p className="qr-note" style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.85rem' }}>
-          {(isExpired || isSessionComplete) ? 'This pass has already been used and completed.' : 'Show this QR code to gate security at the entrance and exit.'}
+          {(booking.booking_status === 'active' || booking.booking_status === 'parked')
+          ? 'Vehicle is parked in slot. Present this QR pass to gate security upon exit.'
+          : (isExpired || isSessionComplete)
+            ? 'This pass has already been used and completed.'
+            : 'Show this QR code to gate security at the entrance and exit.'}
         </p>
         </div>
         </div>

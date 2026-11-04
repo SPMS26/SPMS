@@ -5,6 +5,15 @@ import { bookingService } from '../services/bookingService';
 import toast from 'react-hot-toast';
 import { useConfirm } from '../components/common/ConfirmProvider';
 
+const formatParkedDuration = (startTime, currentNow) => {
+  if (!startTime) return '00h 00m 00s';
+  const diffSec = Math.max(0, Math.floor((currentNow - new Date(startTime).getTime()) / 1000));
+  const h = String(Math.floor(diffSec / 3600)).padStart(2, '0');
+  const m = String(Math.floor((diffSec % 3600) / 60)).padStart(2, '0');
+  const s = String(diffSec % 60).padStart(2, '0');
+  return `${h}h ${m}m ${s}s`;
+};
+
 const BookingsPage = () => {
   const confirm = useConfirm();
   const [bookings, setBookings] = useState([]);
@@ -78,8 +87,9 @@ const BookingsPage = () => {
             const isParked = booking.booking_status === 'active' || booking.booking_status === 'parked';
             const isPaymentPending = booking.payment_status === 'pending' || booking.booking_status === 'pending_payment';
             const expiresAt = booking.qr_meta?.expires_at || booking.expires_at;
-            const isPassExpired = Boolean(expiresAt && new Date(expiresAt).getTime() <= now);
-            const isExpired = booking.booking_status === 'expired' || isPassExpired;
+            // Pass arrival countdown only applies to unparked reservations
+            const isPassExpired = Boolean(!isParked && !isCompleted && expiresAt && new Date(expiresAt).getTime() <= now);
+            const isExpired = booking.booking_status === 'expired' || (booking.booking_status === 'reserved' && isPassExpired);
             const isReserved = booking.booking_status === 'reserved' && !isExpired;
 
             return (
@@ -166,7 +176,14 @@ const BookingsPage = () => {
                     <span className="val" style={{ color: 'var(--accent-emerald)', fontWeight: 700 }}>₹{Number(booking.pre_booking_fee || booking.total_amount || 10).toFixed(2)}</span>
                   </div>
 
-                  {expiresAt && !isPaymentPending && (
+                  {isParked ? (
+                    <div className="details-row">
+                      <span className="key">Time Parked:</span>
+                      <span className="val" style={{ color: 'var(--accent-emerald)', fontFamily: 'monospace', fontWeight: 700 }}>
+                        {formatParkedDuration(booking.entry_time || booking.booking_start || booking.created_at, now)}
+                      </span>
+                    </div>
+                  ) : expiresAt && !isPaymentPending && !isCompleted && (
                     <div className="details-row">
                       <span className="key">Pass Validity:</span>
                       <span className="val" style={{ color: isExpired ? '#EF4444' : 'var(--text-muted)', fontSize: '0.75rem', fontWeight: isExpired ? 600 : 400 }}>
@@ -208,7 +225,7 @@ const BookingsPage = () => {
                     style={{ marginTop: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}
                     onClick={() => handleOpenQR(booking)}
                   >
-                    View QR Pass
+                    {isParked ? 'View Exit Pass' : 'View QR Pass'}
                   </button>
                 )}
               </div>

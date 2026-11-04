@@ -1,3 +1,4 @@
+const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 import bcrypt from 'bcryptjs';
 import db from '../config/database.js';
 import { getAccessibleLotIds } from '../middleware/scope.js';
@@ -123,6 +124,9 @@ export const createSecurityStaff = async (req, res, next) => {
 
     if (!full_name || !email || !password || !assigned_lot_id) {
       return res.status(400).json({ success: false, message: 'Name, email, password and an assigned lot are required.' });
+    }
+    if (!EMAIL_REGEX.test(String(email).trim())) {
+      return res.status(400).json({ success: false, message: 'Invalid email address.' });
     }
     const trimmedPhone = phone ? String(phone).trim() : '';
     if (!trimmedPhone) {

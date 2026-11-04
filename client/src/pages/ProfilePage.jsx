@@ -1,3 +1,4 @@
+const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 import React, { useState, useEffect } from 'react';
 import AppLayout from '../components/layout/AppLayout';
 import { useAuth } from '../context/AuthContext';
@@ -39,6 +40,10 @@ const ProfilePage = () => {
   }, [user]);
 
     const handleSaveProfile = async () => {
+    if (editData.email && !EMAIL_REGEX.test(editData.email.trim())) {
+      toast.error('Invalid email address.');
+      return;
+    }
     if (editData.email !== user?.email) {
       const ok = await confirm({ title: 'Change your login email?', message: `You will sign in with ${editData.email} from now on.`, confirmLabel: 'Change Email', danger: true });
       if (!ok) return;

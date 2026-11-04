@@ -1,3 +1,4 @@
+const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import db from '../config/database.js';
@@ -13,6 +14,10 @@ const generateToken = (id) => {
 export const register = async (req, res, next) => {
   try {
     const { full_name, email, password, phone, vehicle_number, vehicle_type, vehicle_model, vehicle_color } = req.body;
+
+    if (!email || typeof email !== 'string' || !EMAIL_REGEX.test(email.trim())) {
+      return res.status(400).json({ success: false, message: 'Invalid email address.' });
+    }
 
     const checkRes = await db.query('SELECT id FROM users WHERE email = $1', [email]);
     if (checkRes.rows.length > 0) {
@@ -145,6 +150,9 @@ export const registerAdmin = async (req, res, next) => {
 
     if (!full_name || !email || !password || !organization_name) {
       return res.status(400).json({ success: false, message: 'Name, email, password and organization name are required.' });
+    }
+    if (!EMAIL_REGEX.test(String(email).trim())) {
+      return res.status(400).json({ success: false, message: 'Invalid email address.' });
     }
     if (String(password).length < 6) {
       return res.status(400).json({ success: false, message: 'Password must be at least 6 characters long.' });

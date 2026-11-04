@@ -1,3 +1,4 @@
+const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 import db from '../config/database.js';
 import bcrypt from 'bcryptjs';
 import { findLiveBooking } from '../services/bookingRules.js';
@@ -47,6 +48,10 @@ export const changePassword = async (req, res, next) => {
 export const updateProfile = async (req, res, next) => {
   try {
     const { full_name, phone, email, profile_image } = req.body;
+
+    if (email !== undefined && (!email || typeof email !== 'string' || !EMAIL_REGEX.test(email.trim()))) {
+      return res.status(400).json({ success: false, message: 'Invalid email address.' });
+    }
     const userId = req.user.id;
 
     const userRes = await db.query(
