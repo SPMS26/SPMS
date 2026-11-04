@@ -72,14 +72,14 @@ const SlotDetailsPanel = ({ selectedSlot, activeFloor, onConfirmSelect, isAdmin 
             style={{ color: '#fff', background: 'linear-gradient(135deg, #4b5563, #374151)', boxShadow: 'none', marginTop: 0 }}
             onClick={() => onAdminAction('maintenance')}
           >
-            <i className="fa-solid fa-wrench"></i> Mark as Maintenance
+            Mark as Maintenance
           </button>
           <button
             className="btn-select-slot"
             style={{ background: 'linear-gradient(135deg, var(--accent-emerald), #A98B55)', boxShadow: 'none', marginTop: 0 }}
             onClick={() => onAdminAction('available')}
           >
-            <i className="fa-solid fa-circle-check"></i> Set Available
+            Set Available
           </button>
         </div>
       )}

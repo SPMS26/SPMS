@@ -56,7 +56,6 @@ const BookingsPage = () => {
         </div>
       ) : bookings.length === 0 ? (
         <div className="card" style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
-          <i className="fa-solid fa-qrcode" style={{ fontSize: '3rem', marginBottom: '1rem', opacity: 0.4 }}></i>
           <h3>No Active Bookings or Passes</h3>
           <p style={{ fontSize: '0.85rem' }}>Select an available slot from the Home dashboard to book parking.</p>
         </div>
@@ -131,7 +130,7 @@ const BookingsPage = () => {
                     style={{ marginTop: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', background: 'linear-gradient(135deg, var(--accent-gold), #B8955A)' }}
                     onClick={() => handlePayReservation(booking)}
                   >
-                    <i className="fa-solid fa-lock"></i> Pay ₹{Number(booking.pre_booking_fee || 10).toFixed(2)} & Generate Pass
+                    Pay ₹{Number(booking.pre_booking_fee || 10).toFixed(2)} & Generate Pass
                   </button>
                 ) : (
                   <button
@@ -139,7 +138,7 @@ const BookingsPage = () => {
                     style={{ marginTop: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}
                     onClick={() => handleOpenQR(booking)}
                   >
-                    <i className="fa-solid fa-qrcode"></i> View QR Pass
+                    View QR Pass
                   </button>
                 )}
               </div>

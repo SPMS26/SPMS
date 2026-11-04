@@ -90,7 +90,7 @@ const GateLivePage = () => {
                     <td>
                       {!done && (
                         <button className="btn-select-slot" style={{ marginTop: 0, width: 'auto', padding: '0.4rem 0.9rem', fontSize: '0.8rem', whiteSpace: 'nowrap' }} disabled={actions.busyId === s.id} onClick={() => actions.startCheckout(s.id)}>
-                          <i className="fa-solid fa-right-from-bracket"></i> {actions.busyId === s.id ? 'Working...' : 'Check Out'}
+                          {actions.busyId === s.id ? 'Working...' : 'Check Out'}
                         </button>
                       )}
                     </td>

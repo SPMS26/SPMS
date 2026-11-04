@@ -100,7 +100,6 @@ const TopHeader = ({ onToggleSidebar }) => {
           <div className="search-box">
             <i className="fa-solid fa-magnifying-glass"></i>
             <input type="text" className="search-input" placeholder="Search parking lots, locations, bookings..." />
-            {isAdmin && <span className="kbd-shortcut" style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', background: 'var(--grad-card)', border: '1px solid var(--border-bright)', padding: '0.15rem 0.4rem', borderRadius: '4px', fontSize: '0.7rem', color: 'var(--text-muted)' }}>⌘K</span>}
           </div>
         )}
       </div>

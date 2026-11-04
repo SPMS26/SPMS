@@ -96,7 +96,7 @@ const QRPassModal = ({ isOpen, onClose, booking }) => {
       <div className="modal-box qr-modal">
         <div className="modal-header">
           <h3>
-            <i className="fa-solid fa-qrcode" style={{ color: 'var(--accent-gold)' }}></i> Booking QR Pass
+            Booking QR Pass
           </h3>
           <button className="modal-close" onClick={onClose}>&times;</button>
         </div>
@@ -116,7 +116,6 @@ const QRPassModal = ({ isOpen, onClose, booking }) => {
               color: isExpired || isSessionComplete ? '#8A8478' : '#E3CC9A',
               border: `1px solid ${isExpired || isSessionComplete ? 'rgba(138, 132, 120, 0.3)' : 'rgba(227, 204, 154, 0.3)'}`
             }}>
-              <i className={`fa-solid ${isExpired || isSessionComplete ? 'fa-ban' : 'fa-circle-check'}`} style={{ marginRight: '0.25rem' }}></i>
               {isSessionComplete ? 'SESSION COMPLETED (EXPIRED)' : (isExpired ? 'EXPIRED' : 'ACTIVE PASS')}
             </span>
           </div>
@@ -165,7 +164,7 @@ const QRPassModal = ({ isOpen, onClose, booking }) => {
             fontSize: '0.78rem'
           }}>
             <span style={{ color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-              <i className={`fa-solid ${isExpired || isSessionComplete ? 'fa-ban' : 'fa-hourglass-half'}`} style={{ color: isExpired || isSessionComplete ? '#8A8478' : 'var(--accent-gold)' }}></i> Pass Status:
+              Pass Status:
             </span>
             <span style={{ fontWeight: 700, color: isExpired || isSessionComplete ? '#8A8478' : 'var(--text-main)', fontFamily: 'monospace', fontSize: '0.85rem' }}>
               {timeLeft}
@@ -199,7 +198,7 @@ const QRPassModal = ({ isOpen, onClose, booking }) => {
               gap: '0.4rem'
             }}
           >
-            <i className="fa-solid fa-download"></i> Save QR Image
+            Save QR Image
           </button>
           <button
             type="button"

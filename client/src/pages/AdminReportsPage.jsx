@@ -73,7 +73,7 @@ const AdminReportsPage = () => {
                     <td>
                       {rep.image_url ? (
                         <a href={rep.image_url} target="_blank" rel="noreferrer" style={{ color: 'var(--accent-gold)', fontSize: '0.78rem', textDecoration: 'none' }}>
-                          <i className="fa-solid fa-image"></i> View Image
+                          View Image
                         </a>
                       ) : (
                         <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>None</span>

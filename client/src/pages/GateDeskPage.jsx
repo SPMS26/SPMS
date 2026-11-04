@@ -63,7 +63,7 @@ const GateDeskPage = () => {
             No parked or pre-booked vehicle matches <strong style={{ fontFamily: 'monospace', color: 'var(--accent-gold)' }}>{search.toUpperCase()}</strong>.
           </span>
           <button className="btn-select-slot" style={{ marginTop: 0, width: 'auto', padding: '0.55rem 1.1rem' }} onClick={startNewWalkIn}>
-            <i className="fa-solid fa-person-walking-luggage"></i> New walk-in for this vehicle
+            New walk-in for this vehicle
           </button>
         </div>
       )}
@@ -93,7 +93,7 @@ const GateDeskPage = () => {
                     <td>Parked {formatDuration(item.entry_time)} • {item.booking_type === 'walk_in' ? 'Walk-in' : 'Pre-booked'}</td>
                     <td>
                       <button className="btn-select-slot" style={btn} disabled={actions.busyId === item.id} onClick={() => actions.startCheckout(item.id)}>
-                        <i className="fa-solid fa-right-from-bracket"></i> {actions.busyId === item.id ? 'Working...' : 'Check Out'}
+                        {actions.busyId === item.id ? 'Working...' : 'Check Out'}
                       </button>
                     </td>
                   </tr>
@@ -106,7 +106,7 @@ const GateDeskPage = () => {
                     <td>Pre-booked, waiting to arrive</td>
                     <td>
                       <button className="btn-select-slot" style={btn} disabled={actions.busyId === item.id} onClick={() => actions.checkInPrebooked(item.id)}>
-                        <i className="fa-solid fa-right-to-bracket"></i> {actions.busyId === item.id ? 'Working...' : 'Check In'}
+                        {actions.busyId === item.id ? 'Working...' : 'Check In'}
                       </button>
                     </td>
                   </tr>

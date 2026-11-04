@@ -140,7 +140,6 @@ const WalkInPanel = ({ onChanged, queue, onCheckout, plate: plateProp, onPlateCh
     <div className="card" style={{ marginBottom: '1rem' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '0.75rem' }}>
         <span style={{ fontWeight: 700, fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-          <i className="fa-solid fa-table-cells-large" style={{ color: 'var(--accent-gold)' }}></i>
           Slot Map{lotName ? ` - ${lotName}` : ''}
         </span>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -193,7 +192,7 @@ const WalkInPanel = ({ onChanged, queue, onCheckout, plate: plateProp, onPlateCh
                   <input className="search-input" style={{ width: '140px' }} value={phone} onChange={(e) => setPhone(e.target.value)} />
                 </div>
                 <button type="submit" className="btn-select-slot" style={{ marginTop: 0, width: 'auto', padding: '0.6rem 1.1rem' }} disabled={submitting || !plate.trim()}>
-                  <i className="fa-solid fa-right-to-bracket"></i> {submitting ? 'Checking in...' : 'Walk-in Check In'}
+                  {submitting ? 'Checking in...' : 'Walk-in Check In'}
                 </button>
                 <button type="button" className="change-btn" onClick={() => setHold(selectedSlot, 'reserved')} title="Mark this slot reserved without a vehicle">
                   Hold Slot
@@ -225,7 +224,7 @@ const WalkInPanel = ({ onChanged, queue, onCheckout, plate: plateProp, onPlateCh
                     </div>
                   </div>
                   <button type="button" className="btn-select-slot" style={{ marginTop: 0, width: 'auto', padding: '0.6rem 1.1rem' }} onClick={() => onCheckout && onCheckout(occupant.id)}>
-                    <i className="fa-solid fa-right-from-bracket"></i> Check Out
+                    Check Out
                   </button>
                 </div>
               ) : (

@@ -470,7 +470,6 @@ const QRScannerPage = () => {
             boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
           }}
         >
-          <i className={`fa-solid ${isKioskMode ? 'fa-compress' : 'fa-expand'}`}></i>
           {isKioskMode ? 'Standard Layout' : 'Fullscreen Terminal View'}
         </button>
       </div>
@@ -496,7 +495,6 @@ const QRScannerPage = () => {
             color: gateMode === 'auto' ? 'var(--accent-gold)' : 'var(--text-muted)'
           }}
         >
-          <i className="fa-solid fa-arrows-split-up-and-left"></i>
           <span>Auto-Detect (Automatic Entry & Exit)</span>
         </button>
 
@@ -519,7 +517,6 @@ const QRScannerPage = () => {
             color: gateMode === 'entry' ? '#E3CC9A' : 'var(--text-muted)'
           }}
         >
-          <i className="fa-solid fa-door-open"></i>
           <span>Entry Gate (Check-In)</span>
         </button>
 
@@ -542,7 +539,6 @@ const QRScannerPage = () => {
             color: gateMode === 'exit' ? '#C9B07A' : 'var(--text-muted)'
           }}
         >
-          <i className="fa-solid fa-door-closed"></i>
           <span>Exit Gate (Check-Out)</span>
         </button>
       </div>
@@ -584,7 +580,6 @@ const QRScannerPage = () => {
               alignItems: 'center'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#ffffff', fontWeight: 700, fontSize: '0.95rem' }}>
-                <i className="fa-solid fa-camera" style={{ color: '#E3CC9A' }}></i>
                 <span>QR Scanner</span>
               </div>
 
@@ -615,7 +610,7 @@ const QRScannerPage = () => {
                   gap: '0.35rem',
                   backdropFilter: 'blur(8px)'
                 }}>
-                  <i className="fa-solid fa-file-image"></i> Upload Image
+                  Upload Image
                   <input type="file" accept="image/*" onChange={handleFileUpload} style={{ display: 'none' }} />
                 </label>
               </div>
@@ -682,7 +677,6 @@ const QRScannerPage = () => {
 
             {cameraError && (
               <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', padding: '2rem', color: 'var(--text-muted)', zIndex: 10 }}>
-                <i className="fa-solid fa-video-slash" style={{ fontSize: '3rem', color: '#D9BF8C', marginBottom: '0.75rem' }}></i>
                 <div style={{ fontWeight: 700, color: 'var(--text-main)', fontSize: '1.1rem', marginBottom: '0.35rem' }}>Camera Stream Notice</div>
                 <div style={{ fontSize: '0.85rem' }}>{cameraError}</div>
               </div>
@@ -728,7 +722,7 @@ const QRScannerPage = () => {
                   }}
                   disabled={isProcessing || !manualInput.trim()}
                 >
-                  {isProcessing ? <i className="fa-solid fa-circle-notch fa-spin"></i> : <><i className="fa-solid fa-shield-check"></i> Verify & Open</>}
+                  {isProcessing ? <i className="fa-solid fa-circle-notch fa-spin"></i> : <>Verify & Open</>}
                 </button>
               </form>
             </div>
@@ -739,7 +733,6 @@ const QRScannerPage = () => {
             <div className="card">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
                 <span style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                  <i className="fa-solid fa-list-check" style={{ color: 'var(--accent-gold)' }}></i>
                   Live Gate Vehicles Queue
                 </span>
                 <span style={{ fontSize: '0.72rem', color: 'var(--text-dim)' }}>
@@ -750,7 +743,7 @@ const QRScannerPage = () => {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(220px, 100%), 1fr))', gap: '0.75rem' }}>
                 <div>
                   <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#E3CC9A', marginBottom: '0.4rem' }}>
-                    <i className="fa-solid fa-arrow-down-to-bracket"></i> Arriving (Reserved)
+                    Arriving (Reserved)
                   </div>
                   <div style={{ maxHeight: '140px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                     {gateQueue.pending_arrivals.length === 0 ? (
@@ -786,7 +779,7 @@ const QRScannerPage = () => {
 
                 <div>
                   <div style={{ fontSize: '0.78rem', fontWeight: 700, color: '#C9B07A', marginBottom: '0.4rem' }}>
-                    <i className="fa-solid fa-arrow-right-from-bracket"></i> Departing (Parked)
+                    Departing (Parked)
                   </div>
                   <div style={{ maxHeight: '140px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                     {gateQueue.active_parked.length === 0 ? (
@@ -899,7 +892,7 @@ const QRScannerPage = () => {
 
             {isBarrierOpen && (
               <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: '#E3CC9A', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
-                <i className="fa-solid fa-clock"></i> Auto-closing barrier in {barrierCountdown}s
+                Auto-closing barrier in {barrierCountdown}s
               </div>
             )}
           </div>
@@ -908,7 +901,6 @@ const QRScannerPage = () => {
           <div className="card" style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
             <div>
               <h3 style={{ margin: '0 0 0.85rem 0', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                <i className="fa-solid fa-id-card" style={{ color: 'var(--accent-gold)' }}></i>
                 Scan Result
               </h3>
 
@@ -916,7 +908,6 @@ const QRScannerPage = () => {
                 <div style={{ background: 'var(--bg-input)', borderRadius: '12px', border: '1px solid #D9BF8C', padding: '1.25rem' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
                     <span style={{ fontSize: '0.75rem', fontWeight: 800, padding: '0.2rem 0.55rem', borderRadius: '4px', background: 'rgba(217, 191, 140, 0.2)', color: '#D9BF8C', border: '1px solid rgba(217, 191, 140, 0.4)' }}>
-                      <i className="fa-solid fa-clock" style={{ marginRight: '0.3rem' }}></i>
                       EXIT PAYMENT CONFIRMATION
                     </span>
                     <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--accent-gold)', fontFamily: 'monospace' }}>
@@ -1016,13 +1007,12 @@ const QRScannerPage = () => {
                   {/* Payment Timeout Indicator */}
                   {isExitPaymentExpired ? (
                     <div style={{ background: 'rgba(138, 132, 120, 0.15)', border: '1px solid #8A8478', borderRadius: '8px', padding: '0.6rem', textAlign: 'center', margin: '0.75rem 0', color: '#8A8478', fontWeight: 700, fontSize: '0.85rem' }}>
-                      <i className="fa-solid fa-triangle-exclamation" style={{ marginRight: '0.4rem' }}></i>
                       Payment session expired. Please scan again.
                     </div>
                   ) : (
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(0,0,0,0.25)', border: '1px solid var(--border-subtle)', borderRadius: '6px', padding: '0.4rem 0.75rem', margin: '0.65rem 0', fontSize: '0.78rem' }}>
                       <span style={{ color: 'var(--text-muted)' }}>
-                        <i className="fa-regular fa-clock" style={{ marginRight: '0.3rem', color: 'var(--accent-gold)' }}></i> Session Expiry:
+                        Session Expiry:
                       </span>
                       <span style={{ fontWeight: 800, color: 'var(--accent-gold)', fontFamily: 'monospace' }}>
                         {exitPaymentSecondsLeft != null ? `${Math.floor(exitPaymentSecondsLeft / 60)}m ${exitPaymentSecondsLeft % 60}s` : 'Active'}
@@ -1040,7 +1030,7 @@ const QRScannerPage = () => {
                         onClick={() => executeSecurityValidation(exitPaymentSession.rawCodeOrId)}
                         disabled={isProcessing}
                       >
-                        <i className="fa-solid fa-arrows-rotate"></i> Re-scan / Refresh Session
+                        Re-scan / Refresh Session
                       </button>
                     ) : (
                       <button
@@ -1053,7 +1043,7 @@ const QRScannerPage = () => {
                         {isConfirmingExitPayment ? (
                           <span><i className="fa-solid fa-circle-notch fa-spin"></i> Verifying Exit Payment...</span>
                         ) : (
-                          <span><i className="fa-solid fa-circle-check"></i> Confirm Payment Received</span>
+                          <span>Confirm Payment Received</span>
                         )}
                       </button>
                     )}
@@ -1071,7 +1061,6 @@ const QRScannerPage = () => {
               ) : scanResult ? (
                 scanResult.error ? (
                   <div style={{ background: 'rgba(138, 132, 120, 0.12)', border: '1px solid rgba(138, 132, 120, 0.35)', borderRadius: '10px', padding: '1.25rem', textAlign: 'center' }}>
-                    <i className="fa-solid fa-triangle-exclamation" style={{ color: '#8A8478', fontSize: '2.5rem', marginBottom: '0.5rem' }}></i>
                     <h4 style={{ color: '#8A8478', margin: '0 0 0.35rem 0', fontSize: '1.1rem' }}>Validation Rejected</h4>
                     <p style={{ fontSize: '0.85rem', color: '#D8C9A3', margin: 0 }}>{scanResult.message}</p>
                   </div>
@@ -1079,7 +1068,6 @@ const QRScannerPage = () => {
                   <div style={{ background: 'var(--bg-input)', borderRadius: '12px', border: '1px solid var(--border-bright)', padding: '1.25rem' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
                       <span style={{ fontSize: '0.75rem', fontWeight: 800, padding: '0.2rem 0.55rem', borderRadius: '4px', background: 'rgba(227, 204, 154, 0.2)', color: '#E3CC9A' }}>
-                        <i className="fa-solid fa-circle-check" style={{ marginRight: '0.3rem' }}></i>
                         {scanResult.action === 'ENTRY' ? 'GATE ENTRY CLEARED' : 'GATE EXIT CLEARED'}
                       </span>
                       <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--accent-gold)', fontFamily: 'monospace' }}>
@@ -1110,7 +1098,6 @@ const QRScannerPage = () => {
                 )
               ) : (
                 <div style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--text-muted)' }}>
-                  <i className="fa-solid fa-qrcode" style={{ fontSize: '3rem', opacity: 0.25, marginBottom: '0.75rem', display: 'block' }}></i>
                   <p style={{ fontSize: '0.85rem', margin: 0 }}>Waiting for a scan</p>
                 </div>
               )}

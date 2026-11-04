@@ -133,73 +133,61 @@ const LOT_SLOTS = {
 // Platform capabilities
 const PLATFORM_FEATURES = [
   {
-    icon: 'fa-magnifying-glass-location',
     title: 'Real-Time Availability',
     desc: 'See available, reserved and occupied slots across every listed lot and floor before you set off.',
     tag: 'Live Occupancy'
   },
   {
-    icon: 'fa-calendar-check',
     title: 'Advance Pre-Booking',
     desc: 'Reserve a specific slot for your planned arrival time by paying a small reservation fee set by the lot.',
     tag: 'Guaranteed Space'
   },
   {
-    icon: 'fa-person-walking-luggage',
     title: 'Walk-in Check-in',
     desc: 'No booking? Gate security assigns a free slot on the spot. It shows as occupied to every user immediately.',
     tag: 'Gate Desk'
   },
   {
-    icon: 'fa-qrcode',
     title: 'Contactless QR Gate Access',
     desc: 'Every paid pre-booking generates a signed QR pass. Security scans it at the gate to check you in and out.',
     tag: 'Zero Queues'
   },
   {
-    icon: 'fa-clock-rotate-left',
     title: 'Precise Duration Tracking',
     desc: 'Arrival and exit times are logged to the minute, so the parking charge is calculated without disputes.',
     tag: 'Automated Logs'
   },
   {
-    icon: 'fa-receipt',
     title: 'Clear Payments',
     desc: 'The reservation fee is paid when you book. The parking charge, hours times the slot rate, is paid at exit.',
     tag: 'Digital Billing'
   },
   {
-    icon: 'fa-motorcycle',
     title: 'Multi-Vehicle Management',
     desc: 'Register two-wheelers and four-wheelers on one account and switch the active vehicle with one click.',
     tag: 'Fleet Support'
   },
   {
-    icon: 'fa-ban',
     title: 'One Slot Per Vehicle',
     desc: 'A vehicle cannot hold two slots at overlapping times, whether it was pre-booked or checked in at the gate.',
     tag: 'No Double-Booking'
   },
   {
-    icon: 'fa-triangle-exclamation',
     title: 'Incident Reporting',
     desc: 'Report a blocked slot, scanner fault or damaged bay. The report goes straight to the owner of that lot.',
     tag: 'User Support'
   },
   {
-    icon: 'fa-building-shield',
     title: 'Lot Owner Registration',
     desc: 'Parking lot owners register for a one-time fee, then list their own lots and slots for users to book.',
     tag: 'Multi-Owner'
   },
   {
-    icon: 'fa-user-shield',
     title: 'Security Staff Per Lot',
     desc: 'Owners create gate accounts tied to one lot. A guard can only scan and check in vehicles for that lot.',
     tag: 'Scoped Access'
   },
   {
-    icon: 'fa-chart-pie',
     title: 'Owner Dashboard & Analytics',
     desc: 'Owners see revenue, month-wise history, peak times and incident reports for their own lots only.',
     tag: 'Control Deck'
@@ -245,38 +233,35 @@ const FAQS = [
 const ROLE_CONTENT = {
   user: {
     label: 'User',
-    icon: 'fa-car-side',
     title: 'Find and book parking in any listed lot',
     badge: 'User',
     items: [
-      { icon: 'fa-id-card', color: 'var(--accent-gold)', title: 'Vehicle Garage', desc: 'Register two-wheelers and four-wheelers with their plate numbers and switch the active vehicle with one tap.' },
-      { icon: 'fa-map-location-dot', color: 'var(--accent-emerald)', title: 'Live Slot Grid', desc: 'A multi-floor layout showing which slots are free, reserved or occupied right now.' },
-      { icon: 'fa-qrcode', color: '#C9B07A', title: 'Digital QR Passes', desc: 'Your paid pre-booking generates a QR pass in your portal, ready to scan at the gate.' },
-      { icon: 'fa-receipt', color: '#EBD9AE', title: 'History & Receipts', desc: 'Review past sessions with entry and exit times, durations and payments.' }
+      { title: 'Vehicle Garage', desc: 'Register two-wheelers and four-wheelers with their plate numbers and switch the active vehicle with one tap.' },
+      { title: 'Live Slot Grid', desc: 'A multi-floor layout showing which slots are free, reserved or occupied right now.' },
+      { title: 'Digital QR Passes', desc: 'Your paid pre-booking generates a QR pass in your portal, ready to scan at the gate.' },
+      { title: 'History & Receipts', desc: 'Review past sessions with entry and exit times, durations and payments.' }
     ]
   },
   owner: {
     label: 'Lot Owner',
-    icon: 'fa-building-shield',
     title: 'Run your own parking lot',
     badge: 'Lot Owner',
     items: [
-      { icon: 'fa-layer-group', color: 'var(--accent-gold)', title: 'Lots & Slots', desc: 'Create lots with opening hours and contact details, generate slots by section, and mark bays for maintenance.' },
-      { icon: 'fa-tags', color: '#C9B07A', title: 'Your Own Pricing', desc: 'Set the hourly price per slot and the reservation fee for each lot.' },
-      { icon: 'fa-user-shield', color: 'var(--accent-emerald)', title: 'Security Staff', desc: 'Create gate accounts, assign each to one lot, reset passwords and deactivate access at any time.' },
-      { icon: 'fa-chart-line', color: '#D9BF8C', title: 'Analytics & Reports', desc: 'Revenue, month-wise history, peak times and incident reports, limited to your own lots.' }
+      { title: 'Lots & Slots', desc: 'Create lots with opening hours and contact details, generate slots by section, and mark bays for maintenance.' },
+      { title: 'Your Own Pricing', desc: 'Set the hourly price per slot and the reservation fee for each lot.' },
+      { title: 'Security Staff', desc: 'Create gate accounts, assign each to one lot, reset passwords and deactivate access at any time.' },
+      { title: 'Analytics & Reports', desc: 'Revenue, month-wise history, peak times and incident reports, limited to your own lots.' }
     ]
   },
   security: {
     label: 'Gate Security',
-    icon: 'fa-user-shield',
     title: 'Run the gate for one lot',
     badge: 'Gate Security',
     items: [
-      { icon: 'fa-camera', color: 'var(--accent-emerald)', title: 'Gate Scanner', desc: 'Scan QR passes to check pre-booked users in and out of your assigned lot.' },
-      { icon: 'fa-person-walking-luggage', color: 'var(--accent-gold)', title: 'Walk-in Desk', desc: 'Pick a free slot on the live map, enter the plate number and check the vehicle in. Search any vehicle by number.' },
-      { icon: 'fa-square-parking', color: '#C9B07A', title: 'Parked & Pre-booked', desc: 'Separate lists of parked vehicles and expected pre-bookings, each searchable, with check-in and check-out.' },
-      { icon: 'fa-bolt', color: '#EBD9AE', title: 'Live Bookings', desc: 'Every walk-in session for the day, with running charges and completed sessions.' }
+      { title: 'Gate Scanner', desc: 'Scan QR passes to check pre-booked users in and out of your assigned lot.' },
+      { title: 'Walk-in Desk', desc: 'Pick a free slot on the live map, enter the plate number and check the vehicle in. Search any vehicle by number.' },
+      { title: 'Parked & Pre-booked', desc: 'Separate lists of parked vehicles and expected pre-bookings, each searchable, with check-in and check-out.' },
+      { title: 'Live Bookings', desc: 'Every walk-in session for the day, with running charges and completed sessions.' }
     ]
   }
 };
@@ -368,8 +353,8 @@ const LandingPage = () => {
     // Sample pricing. Each lot owner sets their own hourly rate and reservation fee.
   const RESERVATION_FEE = 10;
   const RATES = {
-    four_wheeler: { name: 'Four-Wheeler (Car)', hourly: 30, icon: 'fa-car' },
-    two_wheeler: { name: 'Two-Wheeler (Bike/Scooter)', hourly: 15, icon: 'fa-motorcycle' }
+    four_wheeler: { name: 'Four-Wheeler (Car)', hourly: 30 },
+    two_wheeler: { name: 'Two-Wheeler (Bike/Scooter)', hourly: 15 }
   };
 
   const currentRate = RATES[calcVehicle];
@@ -424,7 +409,6 @@ const LandingPage = () => {
                 </button>
                 <Link to={homeForRole(user.role)} className="btn-landing-primary">
                   <span>Open Dashboard</span>
-                  <i className="fa-solid fa-arrow-right" style={{ fontSize: '0.8rem' }}></i>
                 </Link>
               </>
             ) : (
@@ -437,7 +421,6 @@ const LandingPage = () => {
                 </Link>
                 <Link to="/register" className="btn-landing-primary">
                   <span>Register User</span>
-                  <i className="fa-solid fa-arrow-right" style={{ fontSize: '0.8rem' }}></i>
                 </Link>
               </>
             )}
@@ -468,30 +451,24 @@ const LandingPage = () => {
           {user ? (
             <div className="hero-cta-group">
               <Link to={homeForRole(user.role)} className="btn-landing-primary hero-btn-large">
-                <i className="fa-solid fa-gauge-high"></i>
                 <span>Open Dashboard</span>
               </Link>
               <a href="#live-slots" className="btn-landing-secondary hero-btn-large" style={{ opacity: 0.85 }}>
-                <i className="fa-solid fa-map-location-dot"></i>
                 <span>Slot Explorer</span>
               </a>
             </div>
           ) : (
         <div className="hero-cta-group">
             <Link to="/login" className="btn-landing-primary hero-btn-large">
-              <i className="fa-solid fa-arrow-right-to-bracket"></i>
               <span>Sign In</span>
             </Link>
             <Link to="/register" className="btn-landing-secondary hero-btn-large">
-              <i className="fa-solid fa-user-plus"></i>
               <span>Register as User</span>
             </Link>
                       <Link to="/register-owner" className="btn-landing-secondary hero-btn-large">
-              <i className="fa-solid fa-building-shield"></i>
               <span>Register Your Lot</span>
             </Link>
             <a href="#live-slots" className="btn-landing-secondary hero-btn-large" style={{ opacity: 0.85 }}>
-              <i className="fa-solid fa-map-location-dot"></i>
               <span>Slot Explorer</span>
             </a>
           </div>
@@ -503,25 +480,25 @@ const LandingPage = () => {
           <div className="telemetry-card">
                         <div className="telemetry-val" style={{ color: 'var(--accent-gold)' }}>{stats ? stats.lots : '-'} {stats && stats.lots === 1 ? 'Lot' : 'Lots'}</div>
             <div className="telemetry-label">
-              <i className="fa-solid fa-location-dot"></i> Listed Parking Lots
+              Listed Parking Lots
             </div>
           </div>
           <div className="telemetry-card">
                         <div className="telemetry-val" style={{ color: 'var(--accent-emerald)' }}>{stats ? stats.slots : '-'} {stats && stats.slots === 1 ? 'Slot' : 'Slots'}</div>
             <div className="telemetry-label">
-              <i className="fa-solid fa-layer-group"></i> Bookable Slots
+              Bookable Slots
             </div>
           </div>
           <div className="telemetry-card">
                         <div className="telemetry-val" style={{ color: '#C9B07A' }}>{stats ? stats.owners : '-'} {stats && stats.owners === 1 ? 'Owner' : 'Owners'}</div>
             <div className="telemetry-label">
-              <i className="fa-solid fa-building"></i> Lot Owners
+              Lot Owners
             </div>
           </div>
           <div className="telemetry-card">
             <div className="telemetry-val" style={{ color: '#E3CC9A' }}>100%</div>
             <div className="telemetry-label">
-              <i className="fa-solid fa-ticket"></i> Digital & Paperless
+              Digital & Paperless
             </div>
           </div>
         </div>
@@ -616,8 +593,8 @@ const LandingPage = () => {
               </div>
 
               <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                <span><i className="fa-solid fa-car"></i> Four-Wheeler Rate: ₹30/hr</span>
-                <span><i className="fa-solid fa-motorcycle"></i> Two-Wheeler Rate: ₹15/hr</span>
+                <span>Four-Wheeler Rate: ₹30/hr</span>
+                <span>Two-Wheeler Rate: ₹15/hr</span>
               </div>
             </div>
 
@@ -665,7 +642,7 @@ const LandingPage = () => {
               </div>
 
               <div style={{ marginTop: '0.75rem', paddingTop: '0.6rem', borderTop: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-                <span><i className="fa-regular fa-clock"></i> Entry Scan: Verified</span>
+                <span>Entry Scan: Verified</span>
                 <span style={{ color: 'var(--accent-emerald)', fontWeight: 600 }}>Fast Gate Access</span>
               </div>
             </div>
@@ -679,7 +656,7 @@ const LandingPage = () => {
       <section className="landing-section" id="how-it-works">
         <div className="section-header-centered">
           <div className="section-pill-tag">
-            <i className="fa-solid fa-route"></i> The User Journey
+            The User Journey
           </div>
           <h2 className="section-main-heading">
             How Smart Parking Works
@@ -701,7 +678,6 @@ const LandingPage = () => {
               opening hours and hourly rates before you travel.
             </p>
             <div className="process-step-footer-pill">
-              <i className="fa-solid fa-check-circle"></i>
               <span>Live vacancy per floor</span>
             </div>
           </div>
@@ -717,7 +693,6 @@ const LandingPage = () => {
               Arriving without a booking? Gate security can check you in as a <strong>walk-in</strong>.
             </p>
             <div className="process-step-footer-pill">
-              <i className="fa-solid fa-lock"></i>
               <span>Guaranteed spot reservation</span>
             </div>
           </div>
@@ -733,7 +708,6 @@ const LandingPage = () => {
               Save it on your mobile device for fast gate verification.
             </p>
             <div className="process-step-footer-pill">
-              <i className="fa-solid fa-qrcode"></i>
               <span>Mobile-ready entry pass</span>
             </div>
           </div>
@@ -749,7 +723,6 @@ const LandingPage = () => {
               authorizes entry, records your arrival timestamp, and opens the barrier.
             </p>
             <div className="process-step-footer-pill">
-              <i className="fa-solid fa-bolt"></i>
               <span>Fast & contactless check-in</span>
             </div>
           </div>
@@ -765,7 +738,6 @@ const LandingPage = () => {
               no billing disputes.
             </p>
             <div className="process-step-footer-pill">
-              <i className="fa-solid fa-stopwatch"></i>
               <span>Accurate per-minute tracking</span>
             </div>
           </div>
@@ -781,7 +753,6 @@ const LandingPage = () => {
               and the slot's hourly rate. Pay it and the slot is freed.
             </p>
             <div className="process-step-footer-pill">
-              <i className="fa-solid fa-receipt"></i>
               <span>Instant digital receipt</span>
             </div>
           </div>
@@ -794,7 +765,7 @@ const LandingPage = () => {
       <section className="landing-section" id="features">
         <div className="section-header-centered">
           <div className="section-pill-tag">
-            <i className="fa-solid fa-cubes"></i> Core Capabilities
+            Core Capabilities
           </div>
           <h2 className="section-main-heading">
             Everything for Users, Owners and Gate Security
@@ -809,7 +780,7 @@ const LandingPage = () => {
             <div key={i} className="srs-req-card">
               <div className="srs-card-top">
                 <span className="srs-id-badge" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                  <i className={`fa-solid ${feat.icon}`}></i> {feat.title}
+                  {feat.title}
                 </span>
                 <span className="srs-priority-badge priority-low">
                   {feat.tag}
@@ -818,7 +789,7 @@ const LandingPage = () => {
               <p className="srs-card-desc" style={{ marginTop: '0.5rem' }}>{feat.desc}</p>
               <div className="srs-card-tech">
                 <span>Integrated System Module</span>
-                <span style={{ color: 'var(--accent-emerald)', fontWeight: 700 }}>● Active</span>
+                <span style={{ color: 'var(--accent-emerald)', fontWeight: 700 }}>Active</span>
               </div>
             </div>
           ))}
@@ -831,7 +802,7 @@ const LandingPage = () => {
       <section className="landing-section" id="live-slots">
         <div className="section-header-centered">
           <div className="section-pill-tag">
-            <i className="fa-solid fa-gamepad"></i> Interactive Preview
+            Interactive Preview
           </div>
           <h2 className="section-main-heading">
                         Parking Slot Explorer
@@ -856,7 +827,6 @@ const LandingPage = () => {
                   className={`sim-lot-tab-btn ${selectedLot.id === lot.id ? 'active' : ''}`}
                   onClick={() => handleLotSelect(lot)}
                 >
-                  <i className="fa-solid fa-square-parking"></i>
                   <div style={{ textAlign: 'left' }}>
                     <div>{lot.name}</div>
                     <div style={{ fontSize: '0.68rem', opacity: 0.75, fontWeight: 500 }}>
@@ -899,14 +869,14 @@ const LandingPage = () => {
                   className={`sim-floor-btn ${slotTypeFilter === 'four_wheeler' ? 'active' : ''}`}
                   onClick={() => handleFilterSelect('four_wheeler')}
                 >
-                  <i className="fa-solid fa-car"></i> Cars
+                  Cars
                 </button>
                 <button
                   type="button"
                   className={`sim-floor-btn ${slotTypeFilter === 'two_wheeler' ? 'active' : ''}`}
                   onClick={() => handleFilterSelect('two_wheeler')}
                 >
-                  <i className="fa-solid fa-motorcycle"></i> Bikes
+                  Bikes
                 </button>
               </div>
             </div>
@@ -944,7 +914,6 @@ const LandingPage = () => {
                       >
                         <div className="sim-slot-tile-id">{slot.id}</div>
                         <div className="sim-slot-tile-type">
-                          <i className={`fa-solid ${isCar ? 'fa-car' : 'fa-motorcycle'}`}></i>
                           <span>{isCar ? 'Car' : 'Bike'}</span>
                         </div>
                         <div style={{ fontSize: '0.62rem', fontWeight: 700, textTransform: 'uppercase', marginTop: '0.35rem', color: slot.status === 'available' ? 'var(--status-available)' : slot.status === 'reserved' ? 'var(--status-reserved)' : slot.status === 'occupied' ? 'var(--status-occupied)' : 'var(--status-maintenance)' }}>
@@ -1031,7 +1000,6 @@ const LandingPage = () => {
                   {selectedSlot.status === 'available' ? (
                     <div style={{ background: 'rgba(227, 204, 154, 0.08)', border: '1px solid rgba(227, 204, 154, 0.25)', borderRadius: '10px', padding: '1rem' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--status-available)', fontWeight: 700, fontSize: '0.88rem', marginBottom: '0.35rem' }}>
-                        <i className="fa-solid fa-circle-check"></i>
                         <span>Bay Available for Reservation</span>
                       </div>
                       <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
@@ -1041,7 +1009,6 @@ const LandingPage = () => {
                   ) : selectedSlot.status === 'occupied' ? (
                     <div style={{ background: 'rgba(138, 132, 120, 0.08)', border: '1px solid rgba(138, 132, 120, 0.25)', borderRadius: '10px', padding: '1rem' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--status-occupied)', fontWeight: 700, fontSize: '0.88rem', marginBottom: '0.35rem' }}>
-                        <i className="fa-solid fa-ban"></i>
                         <span>Bay Currently Occupied</span>
                       </div>
                       <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
@@ -1051,7 +1018,6 @@ const LandingPage = () => {
                   ) : selectedSlot.status === 'reserved' ? (
                     <div style={{ background: 'rgba(217, 191, 140, 0.08)', border: '1px solid rgba(217, 191, 140, 0.25)', borderRadius: '10px', padding: '1rem' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--status-reserved)', fontWeight: 700, fontSize: '0.88rem', marginBottom: '0.35rem' }}>
-                        <i className="fa-solid fa-clock"></i>
                         <span>Bay Pre-Booked (Reserved)</span>
                       </div>
                       <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
@@ -1061,7 +1027,6 @@ const LandingPage = () => {
                   ) : (
                     <div style={{ background: 'rgba(107, 114, 128, 0.08)', border: '1px solid rgba(107, 114, 128, 0.25)', borderRadius: '10px', padding: '1rem' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#A8A39A', fontWeight: 700, fontSize: '0.88rem', marginBottom: '0.35rem' }}>
-                        <i className="fa-solid fa-wrench"></i>
                         <span>Under Scheduled Maintenance</span>
                       </div>
                       <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
@@ -1082,7 +1047,7 @@ const LandingPage = () => {
       <section className="landing-section" id="calculator">
         <div className="section-header-centered">
           <div className="section-pill-tag">
-            <i className="fa-solid fa-calculator"></i> Transparent Pricing
+            Transparent Pricing
           </div>
           <h2 className="section-main-heading">
                         Tariff Calculator
@@ -1108,7 +1073,6 @@ const LandingPage = () => {
                     className={`vehicle-option-card ${calcVehicle === key ? 'selected' : ''}`}
                     onClick={() => setCalcVehicle(key)}
                   >
-                    <i className={`fa-solid ${data.icon}`} style={{ fontSize: '1.6rem', color: calcVehicle === key ? 'var(--accent-gold)' : 'var(--text-muted)', marginBottom: '0.5rem' }}></i>
                     <div style={{ fontSize: '0.9rem', fontWeight: 700 }}>{data.name}</div>
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>₹{data.hourly}/hr</div>
                   </div>
@@ -1134,7 +1098,7 @@ const LandingPage = () => {
                     cursor: 'pointer'
                   }}
                 >
-                  <i className="fa-solid fa-clock"></i> Pre-Booking
+                  Pre-Booking
                 </button>
                 <button
                   type="button"
@@ -1151,7 +1115,7 @@ const LandingPage = () => {
                     cursor: 'pointer'
                   }}
                 >
-                  <i className="fa-solid fa-car-on"></i> Walk-in (Pay at Exit)
+                  Walk-in (Pay at Exit)
                 </button>
               </div>
 
@@ -1239,7 +1203,6 @@ const LandingPage = () => {
 
               <div style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid var(--border-subtle)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', color: 'var(--accent-gold)', fontSize: '0.8rem', fontWeight: 700, marginBottom: '0.35rem' }}>
-                  <i className="fa-solid fa-calculator"></i>
                                     <span>How billing works</span>
                 </div>
                 <p style={{ margin: 0, fontSize: '0.76rem', color: 'var(--text-muted)', lineHeight: 1.5 }}>
@@ -1257,7 +1220,7 @@ const LandingPage = () => {
       <section className="landing-section" id="roles">
         <div className="section-header-centered">
           <div className="section-pill-tag">
-            <i className="fa-solid fa-users-gear"></i> Platform Portals
+            Platform Portals
           </div>
           <h2 className="section-main-heading">
             One Platform, Three Portals
@@ -1275,7 +1238,6 @@ const LandingPage = () => {
                 className={`perspective-btn ${activeRole === key ? 'active' : ''}`}
                 onClick={() => setActiveRole(key)}
               >
-                <i className={`fa-solid ${role.icon}`}></i>
                 <span>{role.label}</span>
               </button>
             ))}
@@ -1289,7 +1251,6 @@ const LandingPage = () => {
                 {ROLE_CONTENT[activeRole].title}
               </h3>
               <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem', background: 'rgba(217, 191, 140, 0.12)', border: '1px solid rgba(217, 191, 140, 0.3)', color: 'var(--accent-gold)', padding: '0.35rem 0.85rem', borderRadius: '20px', fontSize: '0.8rem', fontWeight: 700 }}>
-                <i className={`fa-solid ${ROLE_CONTENT[activeRole].icon}`}></i>
                 <span>{ROLE_CONTENT[activeRole].badge}</span>
               </div>
             </div>
@@ -1297,7 +1258,6 @@ const LandingPage = () => {
             <div className="perspective-grid">
               {ROLE_CONTENT[activeRole].items.map((item) => (
                 <div key={item.title} className="perspective-feature-item">
-                  <i className={`fa-solid ${item.icon}`} style={{ color: item.color, fontSize: '1.3rem', marginBottom: '0.75rem' }}></i>
                   <h4 style={{ margin: '0 0 0.35rem 0', fontSize: '1.05rem' }}>{item.title}</h4>
                   <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--text-muted)' }}>{item.desc}</p>
                 </div>
@@ -1307,7 +1267,6 @@ const LandingPage = () => {
             {activeRole === 'owner' && (
               <div style={{ marginTop: '1.75rem', display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
                 <Link to="/register-owner" className="btn-landing-primary">
-                  <i className="fa-solid fa-building-shield"></i>
                   <span>Register Your Lot</span>
                 </Link>
                 <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
@@ -1325,7 +1284,7 @@ const LandingPage = () => {
       <section className="landing-section" id="benchmarks">
         <div className="section-header-centered">
           <div className="section-pill-tag">
-            <i className="fa-solid fa-shield-halved"></i> Engineering Standards
+            Engineering Standards
           </div>
           <h2 className="section-main-heading">
             Performance, Reliability & Security
@@ -1337,7 +1296,6 @@ const LandingPage = () => {
 
         <div className="benchmarks-grid">
           <div className="benchmark-card">
-            <i className="fa-solid fa-bolt" style={{ color: 'var(--accent-gold)', fontSize: '1.6rem', marginBottom: '1rem' }}></i>
             <h4 style={{ margin: '0 0 0.5rem 0', fontFamily: 'Outfit, sans-serif', fontSize: '1.2rem' }}>
               Sub-2-Second Gate Scans
             </h4>
@@ -1346,12 +1304,11 @@ const LandingPage = () => {
               preventing vehicle bottlenecks at the gate.
             </p>
             <div className="benchmark-target-pill">
-              <i className="fa-solid fa-check"></i> Gate Validation &le; 2.0s
+              Gate Validation &le; 2.0s
             </div>
           </div>
 
           <div className="benchmark-card">
-            <i className="fa-solid fa-server" style={{ color: 'var(--accent-emerald)', fontSize: '1.6rem', marginBottom: '1rem' }}></i>
             <h4 style={{ margin: '0 0 0.5rem 0', fontFamily: 'Outfit, sans-serif', fontSize: '1.2rem' }}>
                             Isolated Owner Data
             </h4>
@@ -1360,12 +1317,11 @@ const LandingPage = () => {
               are limited to the single lot they are assigned to.
             </p>
             <div className="benchmark-target-pill">
-              <i className="fa-solid fa-check"></i> Per-Owner Access Control
+              Per-Owner Access Control
             </div>
           </div>
 
           <div className="benchmark-card">
-            <i className="fa-solid fa-lock" style={{ color: '#C9B07A', fontSize: '1.6rem', marginBottom: '1rem' }}></i>
             <h4 style={{ margin: '0 0 0.5rem 0', fontFamily: 'Outfit, sans-serif', fontSize: '1.2rem' }}>
               Zero Double-Booking
             </h4>
@@ -1374,12 +1330,11 @@ const LandingPage = () => {
               cannot hold two slots at overlapping times.
             </p>
             <div className="benchmark-target-pill">
-              <i className="fa-solid fa-check"></i> Atomic Transaction Locks
+              Atomic Transaction Locks
             </div>
           </div>
 
           <div className="benchmark-card">
-            <i className="fa-solid fa-shield-check" style={{ color: '#EBD9AE', fontSize: '1.6rem', marginBottom: '1rem' }}></i>
             <h4 style={{ margin: '0 0 0.5rem 0', fontFamily: 'Outfit, sans-serif', fontSize: '1.2rem' }}>
               Security & Confidentiality
             </h4>
@@ -1388,7 +1343,7 @@ const LandingPage = () => {
               validation protecting user and payment records.
             </p>
             <div className="benchmark-target-pill">
-              <i className="fa-solid fa-check"></i> Secure JWT & Cryptography
+              Secure JWT & Cryptography
             </div>
           </div>
         </div>
@@ -1400,7 +1355,7 @@ const LandingPage = () => {
       <section className="landing-section" id="faqs">
         <div className="section-header-centered">
           <div className="section-pill-tag">
-            <i className="fa-solid fa-circle-question"></i> Help & FAQs
+            Help & FAQs
           </div>
           <h2 className="section-main-heading">
             Frequently Asked Questions
@@ -1440,7 +1395,7 @@ const LandingPage = () => {
       <section className="landing-section">
         <div className="landing-cta-banner">
           <div className="section-pill-tag" style={{ background: 'rgba(217, 191, 140, 0.15)' }}>
-            <i className="fa-solid fa-car-side"></i> Ready to Park?
+            Ready to Park?
           </div>
           <h2 style={{ fontFamily: 'Outfit, sans-serif', fontSize: '2.5rem', fontWeight: 800, margin: '1rem 0' }}>
                         Get Started with Smart Parking
@@ -1453,22 +1408,18 @@ const LandingPage = () => {
           {user ? (
             <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
               <Link to={homeForRole(user.role)} className="btn-landing-primary hero-btn-large">
-                <i className="fa-solid fa-gauge-high"></i>
                 <span>Open Dashboard</span>
               </Link>
             </div>
           ) : (
           <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem', flexWrap: 'wrap' }}>
               <Link to="/login" className="btn-landing-primary hero-btn-large">
-                <i className="fa-solid fa-arrow-right-to-bracket"></i>
                 <span>Sign In</span>
               </Link>
                           <Link to="/register" className="btn-landing-secondary hero-btn-large">
-                <i className="fa-solid fa-user-plus"></i>
                 <span>Register as User</span>
               </Link>
               <Link to="/register-owner" className="btn-landing-secondary hero-btn-large">
-                <i className="fa-solid fa-building-shield"></i>
                 <span>Register Your Lot</span>
               </Link>
             </div>

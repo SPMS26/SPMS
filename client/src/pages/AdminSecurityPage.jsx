@@ -112,7 +112,7 @@ const AdminSecurityPage = () => {
               </div>
             </div>
             <button type="submit" className="btn-select-slot" style={{ marginTop: 0, width: 'auto', padding: '0.6rem 1.25rem' }} disabled={saving}>
-              <i className="fa-solid fa-user-plus"></i> {saving ? 'Creating...' : 'Create Security Account'}
+              {saving ? 'Creating...' : 'Create Security Account'}
             </button>
           </form>
 
@@ -154,7 +154,7 @@ const AdminSecurityPage = () => {
                       <td>
                         <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
                           <button className="change-btn" onClick={() => handleResetPassword(m)}>
-                            <i className="fa-solid fa-key"></i> Reset Password
+                            Reset Password
                           </button>
                           <button
                             className="change-btn"

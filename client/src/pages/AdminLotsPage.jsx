@@ -193,7 +193,7 @@ const AdminLotsPage = () => {
           <h1>Parking Lots & Slots Management</h1>
         </div>
         <button className="btn-select-slot" style={{ marginTop: 0, width: 'auto', padding: '0.6rem 1.1rem' }} onClick={() => setLotForm({ ...blankLot })}>
-          <i className="fa-solid fa-plus"></i> New Parking Lot
+          New Parking Lot
         </button>
       </div>
 
@@ -244,7 +244,7 @@ const AdminLotsPage = () => {
             Add your lot's details, generate its slots, then create security accounts. Users will see it as soon as it is live.
           </p>
           <button className="btn-select-slot" style={{ marginTop: 0, width: 'auto', padding: '0.6rem 1.25rem' }} onClick={() => setLotForm({ ...blankLot })}>
-            <i className="fa-solid fa-plus"></i> Create Parking Lot
+            Create Parking Lot
           </button>
         </div>
       )}
@@ -287,12 +287,12 @@ const AdminLotsPage = () => {
 
           {selectedLot && (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}>
-              <button className="change-btn" onClick={() => openEditLot(selectedLot)}><i className="fa-solid fa-pen"></i> Edit Lot Details</button>
+              <button className="change-btn" onClick={() => openEditLot(selectedLot)}>Edit Lot Details</button>
               <button className="change-btn" onClick={handleToggleLotActive}>
                 {selectedLot.is_active ? 'Hide from users' : 'Make live'}
               </button>
               <button className="change-btn" style={{ borderColor: 'var(--status-occupied)', color: 'var(--status-occupied)' }} onClick={handleDeleteLot}>
-                <i className="fa-solid fa-trash"></i> Remove Lot
+                Remove Lot
               </button>
             </div>
           )}
@@ -315,7 +315,7 @@ const AdminLotsPage = () => {
               <input className="search-input" style={{ width: '120px' }} type="number" min="0" step="0.01" placeholder={String(selectedLot?.default_hourly_price ?? 30)} value={bulk.hourly_price} onChange={(e) => setBulk(prev => ({ ...prev, hourly_price: e.target.value }))} />
             </div>
             <button type="submit" className="btn-select-slot" style={{ marginTop: 0, width: 'auto', padding: '0.6rem 1.1rem' }} disabled={!selectedLot || savingBulk}>
-              <i className="fa-solid fa-wand-magic-sparkles"></i> {savingBulk ? 'Generating...' : 'Generate Slots'}
+              {savingBulk ? 'Generating...' : 'Generate Slots'}
             </button>
           </form>
 
@@ -362,7 +362,7 @@ const AdminLotsPage = () => {
               />
             </div>
             <button type="submit" className="btn-select-slot" style={{ marginTop: 0, width: 'auto', padding: '0.6rem 1.1rem' }} disabled={!selectedLot || savingSlot}>
-              <i className="fa-solid fa-plus"></i> {savingSlot ? 'Adding...' : 'Add Slot'}
+              {savingSlot ? 'Adding...' : 'Add Slot'}
             </button>
           </form>
 
@@ -406,7 +406,7 @@ const AdminLotsPage = () => {
                           style={{ borderColor: 'var(--status-occupied)', color: 'var(--status-occupied)' }}
                           onClick={() => handleDeleteSlot(slot)}
                         >
-                          <i className="fa-solid fa-trash"></i> Delete
+                          Delete
                         </button>
                       </div>
                     </td>

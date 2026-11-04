@@ -126,19 +126,6 @@ const ReportIssuePage = () => {
         {/* Submit Report Card */}
         <div className="card" style={{ padding: '1.75rem', borderRadius: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '1.25rem' }}>
-            <div style={{
-              width: '40px',
-              height: '40px',
-              borderRadius: '10px',
-              background: 'var(--accent-gold-bg)',
-              color: 'var(--accent-gold)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '1.15rem'
-            }}>
-              <i className="fa-solid fa-triangle-exclamation"></i>
-            </div>
             <div>
               <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-main)' }}>
                 New Incident Report
@@ -234,7 +221,7 @@ const ReportIssuePage = () => {
                   </>
                 ) : (
                   <>
-                    <i className="fa-solid fa-paper-plane"></i> Submit Incident Report
+                    Submit Incident Report
                   </>
                 )}
               </button>
@@ -253,7 +240,7 @@ const ReportIssuePage = () => {
               onClick={fetchReports}
               style={{ fontSize: '0.78rem', padding: '0.35rem 0.75rem' }}
             >
-              <i className="fa-solid fa-rotate-right"></i> Refresh
+              Refresh
             </button>
           </div>
 
@@ -263,7 +250,6 @@ const ReportIssuePage = () => {
             </div>
           ) : reports.length === 0 ? (
             <div className="card" style={{ padding: '2.5rem', textAlign: 'center', color: 'var(--text-muted)', borderRadius: '14px' }}>
-              <i className="fa-solid fa-clipboard-check" style={{ fontSize: '2.25rem', marginBottom: '0.65rem', opacity: 0.5 }}></i>
               <p style={{ margin: 0, fontSize: '0.9rem' }}>No incident reports submitted yet.</p>
             </div>
           ) : (
@@ -304,7 +290,7 @@ const ReportIssuePage = () => {
                         rel="noreferrer"
                         style={{ fontSize: '0.78rem', color: 'var(--accent-gold)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
                       >
-                        <i className="fa-solid fa-paperclip"></i> View Attached Photo
+                        View Attached Photo
                       </a>
                     </div>
                   )}

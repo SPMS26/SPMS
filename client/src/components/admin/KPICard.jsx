@@ -1,12 +1,9 @@
 import React from 'react';
 
-const KPICard = ({ title, value, trend, iconClass, colorClass }) => {
+const KPICard = ({ title, value, trend }) => {
   return (
     <div className="kpi-card">
       <div className="kpi-top">
-        <div className={`kpi-icon-box ${colorClass}`}>
-          <i className={`fa-regular ${iconClass}`}></i>
-        </div>
         <div>
           <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{title}</div>
         </div>
@@ -17,7 +14,7 @@ const KPICard = ({ title, value, trend, iconClass, colorClass }) => {
       <div className="kpi-trend">
         {trend && (
           <>
-            <i className={`fa-solid ${trend.startsWith('-') ? 'fa-arrow-down' : 'fa-arrow-up'}`}></i> {trend.replace(/^[+-]/, '')} <span style={{ color: 'var(--text-muted)', fontWeight: 'normal' }}>vs last month</span>
+            {trend} <span style={{ color: 'var(--text-muted)', fontWeight: 'normal' }}>vs last month</span>
           </>
         )}
       </div>

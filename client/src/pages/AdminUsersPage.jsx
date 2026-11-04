@@ -80,7 +80,7 @@ const AdminUsersPage = () => {
                     <td>
                       {u.is_verified ? (
                         <span style={{ color: 'var(--accent-emerald)', fontWeight: 700, fontSize: '0.8rem' }}>
-                          <i className="fa-solid fa-check-circle"></i> Verified
+                          Verified
                         </span>
                       ) : (
                         <span style={{ color: 'var(--text-muted)', fontWeight: 700, fontSize: '0.8rem' }}>Unverified</span>

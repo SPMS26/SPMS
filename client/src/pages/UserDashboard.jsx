@@ -194,9 +194,6 @@ const UserDashboard = () => {
         </div>
 
         <div className="vehicle-selector-pill">
-          <div className="car-icon">
-            <i className="fa-solid fa-car-side"></i>
-          </div>
           <div>
             <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>Current Vehicle</div>
             <div style={{ fontSize: '0.9rem', fontWeight: 700 }}>
@@ -211,7 +208,7 @@ const UserDashboard = () => {
       <div className="section-subtitle">
         <span>1. Available Parking Lots</span>
         <a href="#map" style={{ fontSize: '0.8rem', color: 'var(--accent-gold)', textDecoration: 'none' }}>
-          <i className="fa-solid fa-location-dot"></i> View on Map
+          View on Map
         </a>
       </div>
 
