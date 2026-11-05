@@ -1,179 +1,132 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
 import AppLayout from '../components/layout/AppLayout';
 import LotCard from '../components/parking/LotCard';
+import LotSearchOverlay from '../components/parking/LotSearchOverlay';
 import SlotGrid, { sortFloors } from '../components/parking/SlotGrid';
 import SlotDetailsPanel from '../components/parking/SlotDetailsPanel';
+import VehicleSelector from '../components/parking/VehicleSelector';
 import PaymentModal from '../components/booking/PaymentModal';
 import QRPassModal from '../components/booking/QRPassModal';
-
+import { useLots } from '../components/parking/useLots';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import { lotService } from '../services/lotService';
 import { bookingService } from '../services/bookingService';
-import { authService } from '../services/authService';
 import toast from 'react-hot-toast';
 
-const UserDashboard = () => {
-  const { user, vehicles, setVehicles, selectedVehicle, setSelectedVehicle } = useAuth();
-  const { socket } = useSocket();
-  const navigate = useNavigate();
+const LOTS_PREVIEW_COUNT = 4;
 
-  const [lots, setLots] = useState([]);
-  const [selectedLot, setSelectedLot] = useState(null);
-  const [slots, setSlots] = useState([]);
+const firstSlotOn = (slots, floor) => slots.find((slot) => slot.floor === floor) || null;
+
+// How far down the screen the slots can sit before tapping a card scrolls to them
+const SCROLL_THRESHOLD = 0.75;
+
+// All lots at the top, the selected lot's slots below. The selection lives in this page only, never in the URL.
+const UserDashboard = () => {
+  const { user, selectedVehicle } = useAuth();
+  const { socket } = useSocket();
+  const { lots, loading, refresh: refreshLots } = useLots();
+
+  const [pickedLotId, setPickedLotId] = useState(null);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [showOnlySelected, setShowOnlySelected] = useState(false);
+  const [showAllLots, setShowAllLots] = useState(false);
+  // A lot and its slots change together, so the screen never shows one lot's slots under another's name
+  const [slotData, setSlotData] = useState({ lotId: null, slots: [] });
   const [activeFloor, setActiveFloor] = useState('');
   const [selectedSlot, setSelectedSlot] = useState(null);
-  const [userBookings, setUserBookings] = useState([]);
-  const [preBookingFee, setPreBookingFee] = useState(10);
-  const [showVehicleDropdown, setShowVehicleDropdown] = useState(false);
-  const vehicleDropdownRef = useRef(null);
-
-  // Close dropdown on outside click or Escape
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (vehicleDropdownRef.current && !vehicleDropdownRef.current.contains(event.target)) {
-        setShowVehicleDropdown(false);
-      }
-    };
-    const handleEscape = (e) => {
-      if (e.key === 'Escape') setShowVehicleDropdown(false);
-    };
-
-    if (showVehicleDropdown) {
-      document.addEventListener('mousedown', handleClickOutside);
-      window.addEventListener('keydown', handleEscape);
-    }
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      window.removeEventListener('keydown', handleEscape);
-    };
-  }, [showVehicleDropdown]);
-
-  // Load vehicles if not cached in auth context
-  useEffect(() => {
-    if (user && (!vehicles || vehicles.length === 0)) {
-      authService.getMe().then(res => {
-        if (res?.vehicles && res.vehicles.length > 0) {
-          if (setVehicles) setVehicles(res.vehicles);
-          if (!selectedVehicle) {
-            const def = res.vehicles.find(v => v.is_default) || res.vehicles[0];
-            setSelectedVehicle(def);
-          }
-        }
-      }).catch(err => console.error('Failed to load user vehicles:', err));
-    }
-  }, [user, vehicles, selectedVehicle, setSelectedVehicle, setVehicles]);
-
-  // Ensure an active vehicle is selected if available
-  useEffect(() => {
-    if (!selectedVehicle && vehicles && vehicles.length > 0) {
-      const def = vehicles.find(v => v.is_default) || vehicles[0];
-      setSelectedVehicle(def);
-    }
-  }, [vehicles, selectedVehicle, setSelectedVehicle]);
-
-  // Modals
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showQRModal, setShowQRModal] = useState(false);
   const [activeQRBooking, setActiveQRBooking] = useState(null);
+  const slotRequest = useRef(0);
+  const slotSection = useRef(null);
+  const scrollPending = useRef(false);
 
-  const fetchBookingConfig = async () => {
-    try {
-      const config = await bookingService.getBookingConfig();
-      if (config && config.pre_booking_fee !== undefined) {
-        setPreBookingFee(Number(config.pre_booking_fee));
-      }
-    } catch (err) {
-      console.warn('Could not load booking config:', err);
-    }
-  };
+  // The first lot is the default, and takes over if the picked lot stops being available
+  const selectedLot = lots.find((lot) => lot.id === pickedLotId) || lots[0] || null;
+  // Effects follow the id: the lot object is replaced on every live refresh, which must not reset the slot map
+  const selectedLotId = selectedLot?.id;
+  const { slots } = slotData;
+  // The lot on screen. It stays until the picked lot's slots have arrived, which is what stops the blink.
+  const shownLot = lots.find((lot) => lot.id === slotData.lotId) || null;
 
-  const fetchLots = async () => {
-    try {
-      const res = await lotService.getAllLots();
-      setLots(res.lots || []);
-      if (res.lots && res.lots.length > 0 && !selectedLot) {
-        setSelectedLot(res.lots[0]);
-      }
-    } catch (err) {
-      console.error('Error fetching lots:', err);
-    }
-  };
-
-  // Coalesce bursts of refresh requests (socket events + post-payment refresh) into one /lots call
-  const fetchLotsRef = useRef(fetchLots);
-  fetchLotsRef.current = fetchLots;
-  const lotsRefreshTimer = useRef(null);
-  const refreshLotsDebounced = () => {
-    clearTimeout(lotsRefreshTimer.current);
-    lotsRefreshTimer.current = setTimeout(() => fetchLotsRef.current(), 300);
-  };
-  useEffect(() => () => clearTimeout(lotsRefreshTimer.current), []);
-
-  const fetchSlots = async (lotId, floor) => {
-    try {
-      const res = await lotService.getSlotsByLot(lotId, floor);
-      setSlots(res.slots || []);
-      if (res.slots && res.slots.length > 0) {
-        setSelectedSlot(res.slots[0]);
-      }
-    } catch (err) {
-      console.error('Error fetching slots:', err);
-    }
-  };
-
-  const fetchUserBookings = async () => {
-    try {
-      const res = await bookingService.getUserBookings();
-      setUserBookings(res.bookings || []);
-    } catch (err) {
-      console.error('Error fetching user bookings:', err);
-    }
-  };
-
+  // Every floor at once, so switching floors needs no request and cannot flash an empty map
   useEffect(() => {
-    fetchLots();
-    fetchUserBookings();
-    fetchBookingConfig();
-  }, []);
+    if (!selectedLot) return;
+    const request = ++slotRequest.current;
+    lotService.getSlotsByLot(selectedLot.id)
+      .then((res) => {
+        if (request !== slotRequest.current) return; // a newer lot was picked meanwhile
+        const lotSlots = res.slots || [];
+        const floor = sortFloors(selectedLot.floors)[0] || '';
+        setSlotData({ lotId: selectedLot.id, slots: lotSlots });
+        setActiveFloor(floor);
+        setSelectedSlot(firstSlotOn(lotSlots, floor));
+      })
+      .catch((err) => {
+        console.error('Error fetching slots:', err);
+        if (request === slotRequest.current) toast.error('Could not load the slots for this lot.');
+      });
+  }, [selectedLotId]);
 
-  // Default to the lot's first floor (floors come from the database)
-  useEffect(() => {
-    const floors = selectedLot ? sortFloors(selectedLot.floors) : [];
-    if (floors.length > 0 && !floors.includes(activeFloor)) {
-      setActiveFloor(floors[0]);
+  const refreshShownSlots = async () => {
+    const request = ++slotRequest.current;
+    try {
+      const res = await lotService.getSlotsByLot(slotData.lotId);
+      if (request !== slotRequest.current) return;
+      const lotSlots = res.slots || [];
+      setSlotData({ lotId: slotData.lotId, slots: lotSlots });
+      setSelectedSlot((prev) => lotSlots.find((slot) => slot.id === prev?.id) || prev);
+    } catch (err) {
+      console.error('Error refreshing slots:', err);
     }
-  }, [selectedLot]);
+  };
 
-  useEffect(() => {
-    if (selectedLot && activeFloor) {
-      fetchSlots(selectedLot.id, activeFloor);
+  const scrollToSlots = () => {
+    const section = slotSection.current;
+    if (section && section.getBoundingClientRect().top > window.innerHeight * SCROLL_THRESHOLD) {
+      section.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-  }, [selectedLot, activeFloor]);
+  };
 
-  // Socket.io real-time slot status updates
+  // After a card tap, wait for the new slots so the scroll lands on what the user asked for
+  useEffect(() => {
+    if (scrollPending.current && slotData.lotId === selectedLotId) {
+      scrollPending.current = false;
+      scrollToSlots();
+    }
+  }, [slotData.lotId, selectedLotId]);
+
+  const handleLotSelect = (lot) => {
+    if (lot.id === selectedLotId) {
+      scrollToSlots();
+      return;
+    }
+    scrollPending.current = true;
+    setPickedLotId(lot.id);
+  };
+
+  // A search pick replaces the content where it is and leaves the page position alone
+  const handleSearchSelect = (lot) => {
+    scrollPending.current = false;
+    setShowOnlySelected(true);
+    setPickedLotId(lot.id);
+  };
+
+  const handleFloorChange = (floor) => {
+    setActiveFloor(floor);
+    setSelectedSlot(firstSlotOn(slots, floor));
+  };
+
   useEffect(() => {
     if (!socket) return;
     const onSlotStatusChanged = ({ slotId, status }) => {
-      setSlots(prev => prev.map(s => s.id === slotId ? { ...s, status } : s));
-      refreshLotsDebounced(); // refresh available counts
+      setSlotData((prev) => ({ ...prev, slots: prev.slots.map((s) => (s.id === slotId ? { ...s, status } : s)) }));
+      setSelectedSlot((prev) => (prev?.id === slotId ? { ...prev, status } : prev));
     };
     socket.on('slot:statusChanged', onSlotStatusChanged);
     return () => socket.off('slot:statusChanged', onSlotStatusChanged);
   }, [socket]);
-
-  const handleLotSelect = (lot) => {
-    setSelectedLot(lot);
-  };
-
-  const handleFloorChange = (floorKey) => {
-    setActiveFloor(floorKey);
-  };
-
-  const handleSlotClick = (slot) => {
-    setSelectedSlot(slot);
-  };
 
   const handleOpenPaymentModal = () => {
     if (!selectedVehicle) {
@@ -217,206 +170,110 @@ const UserDashboard = () => {
         qr_code: confirmRes.qr_code,
         user: activeBookingData.user || user,
         vehicle: activeBookingData.vehicle || selectedVehicle,
-        slot: activeBookingData.slot || { ...selectedSlot, parking_lot: selectedLot }
+        slot: activeBookingData.slot || { ...selectedSlot, parking_lot: shownLot }
       });
       setShowQRModal(true);
 
-      // Refresh state
-      fetchSlots(selectedLot.id, activeFloor);
-      fetchUserBookings();
-      refreshLotsDebounced();
+      refreshShownSlots();
+      refreshLots();
     } catch (err) {
       toast.error(err.response?.data?.message || err.message || 'Payment processing failed.');
     }
   };
 
-  const activeBooking = userBookings.find(b => (b.booking_status === 'reserved' && (!b.qr_meta?.expires_at || new Date(b.qr_meta.expires_at) > new Date())) || b.booking_status === 'active');
+  const hasMoreLots = lots.length > LOTS_PREVIEW_COUNT;
+
+  const handleShowAllLots = () => {
+    setShowOnlySelected(false);
+    setShowAllLots(true);
+  };
+
+  // The preview always includes the selected lot, so collapsing the list never hides it
+  const previewLots = () => {
+    const preview = lots.slice(0, LOTS_PREVIEW_COUNT);
+    if (!selectedLot || preview.some((lot) => lot.id === selectedLotId)) return preview;
+    return [...preview.slice(0, LOTS_PREVIEW_COUNT - 1), selectedLot];
+  };
+
+  let visibleLots = lots;
+  if (showOnlySelected) visibleLots = lots.filter((lot) => lot.id === selectedLotId);
+  else if (hasMoreLots && !showAllLots) visibleLots = previewLots();
 
   return (
-    <AppLayout>
-      {/* Page title & vehicle pill */}
+    <AppLayout search={{ placeholder: 'Search lots by name or location', onOpen: () => setSearchOpen(true) }}>
       <div className="page-header-row">
         <div className="page-title-box">
           <h1>Book a Parking Slot</h1>
         </div>
-
-        <div style={{ position: 'relative' }} ref={vehicleDropdownRef}>
-          <div
-            className="vehicle-selector-pill"
-            style={{ cursor: 'pointer', userSelect: 'none' }}
-            onClick={() => setShowVehicleDropdown(prev => !prev)}
-            title="Click to select vehicle"
-          >
-            <div>
-              <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-                {selectedVehicle?.vehicle_type === 'two_wheeler' ? '2-Wheeler' : selectedVehicle ? '4-Wheeler' : 'Current Vehicle'}
-              </div>
-              <div style={{ fontSize: '0.9rem', fontWeight: 700 }}>
-                {selectedVehicle ? selectedVehicle.vehicle_number : 'No Vehicle Added'}
-              </div>
-            </div>
-            <button
-              className="change-btn"
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setShowVehicleDropdown(prev => !prev);
-              }}
-              aria-expanded={showVehicleDropdown}
-              aria-haspopup="listbox"
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.35rem',
-                cursor: 'pointer'
-              }}
-            >
-              <span>Change</span>
-              <i
-                className={`fa-solid fa-chevron-${showVehicleDropdown ? 'up' : 'down'}`}
-                style={{ fontSize: '0.65rem', opacity: 0.8 }}
-              ></i>
-            </button>
-          </div>
-
-          {showVehicleDropdown && (
-            <div
-              className="vehicle-dropdown-menu"
-              role="listbox"
-              aria-label="Select Vehicle"
-            >
-              <div className="vehicle-dropdown-header">
-                <span className="vehicle-dropdown-title">
-                  Select Vehicle
-                </span>
-                <span style={{ fontSize: '0.72rem', color: 'var(--accent-gold)' }}>
-                  {vehicles && vehicles.length > 0 ? `${vehicles.length} available` : '0 registered'}
-                </span>
-              </div>
-
-              <div className="vehicle-dropdown-list">
-                {vehicles && vehicles.length > 0 ? (
-                  vehicles.map(v => {
-                    const isSelected = selectedVehicle && selectedVehicle.id === v.id;
-                    const isTwoWheeler = v.vehicle_type === 'two_wheeler';
-                    const typeLabel = isTwoWheeler ? '2-Wheeler (Motorcycle)' : '4-Wheeler (Car)';
-                    return (
-                      <button
-                        key={v.id}
-                        type="button"
-                        role="option"
-                        aria-selected={isSelected}
-                        className={`vehicle-dropdown-item ${isSelected ? 'active' : ''}`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedVehicle(v);
-                          setShowVehicleDropdown(false);
-                          toast.success(`Active vehicle: ${v.vehicle_number}`);
-                        }}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                          <div>
-                            <div style={{
-                              fontSize: '0.88rem',
-                              fontWeight: 700,
-                              color: isSelected ? 'var(--accent-gold)' : 'var(--text-main)',
-                              letterSpacing: '0.02em'
-                            }}>
-                              {v.vehicle_number}
-                            </div>
-                            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-                              {typeLabel} {v.vehicle_model ? `• ${v.vehicle_model}` : ''}
-                            </div>
-                          </div>
-                        </div>
-                      </button>
-                    );
-                  })
-                ) : (
-                  <div style={{ padding: '0.85rem 0.5rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.8rem' }}>
-                    <p style={{ margin: '0 0 0.5rem' }}>No vehicles registered yet.</p>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowVehicleDropdown(false);
-                        navigate('/profile');
-                      }}
-                      className="change-btn"
-                      style={{ borderColor: 'var(--accent-gold)', color: 'var(--accent-gold)' }}
-                    >
-                      Add Vehicle in Profile
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {vehicles && vehicles.length > 0 && (
-                <div className="vehicle-dropdown-footer">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowVehicleDropdown(false);
-                      navigate('/profile');
-                    }}
-                    className="vehicle-dropdown-footer-btn"
-                  >
-                    <span>Manage in Profile</span>
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
+        <VehicleSelector />
       </div>
 
-      {/* Section 1: Available Parking Lots */}
       <div className="section-subtitle">
-        <span>1. Available Parking Lots</span>
-        <a href="#map" style={{ fontSize: '0.8rem', color: 'var(--accent-gold)', textDecoration: 'none' }}>
-          View on Map
-        </a>
+        <span>{showOnlySelected ? '1. Search Result' : '1. Available Parking Lots'}</span>
+        {showOnlySelected || (hasMoreLots && !showAllLots) ? (
+          <button type="button" className="change-btn" onClick={handleShowAllLots}>
+            <i className="fa-solid fa-table-cells-large"></i> Show all lots ({lots.length})
+          </button>
+        ) : hasMoreLots && (
+          <button type="button" className="change-btn" onClick={() => setShowAllLots(false)}>
+            <i className="fa-solid fa-chevron-up"></i> Show fewer
+          </button>
+        )}
       </div>
 
-      <div className="lots-cards-row">
-        {lots.map(lot => (
+      <div className={`lots-cards-row ${showOnlySelected ? 'single-lot' : ''}`}>
+        {visibleLots.map((lot) => (
           <LotCard
             key={lot.id}
             lot={lot}
-            selected={selectedLot && selectedLot.id === lot.id}
+            selected={lot.id === selectedLotId}
             onSelect={handleLotSelect}
           />
         ))}
       </div>
 
-      {/* Section 2: Select Parking Slot Grid + Side Details */}
-      <div className="section-subtitle">
-        2. Select Parking Slot - {selectedLot ? selectedLot.name : 'Central Parking'}
-      </div>
+      {shownLot ? (
+        <div className="book-slot-section" ref={slotSection}>
+          <div className="section-subtitle">
+            <span>2. Select Parking Slot - {shownLot.name}</span>
+          </div>
 
-      <div className="slot-booking-layout">
-        <SlotGrid
-          slots={slots}
-          floors={selectedLot ? selectedLot.floors : []}
-          selectedSlot={selectedSlot}
-          activeFloor={activeFloor}
-          onFloorChange={handleFloorChange}
-          onSlotClick={handleSlotClick}
+          <div className="slot-booking-layout">
+            <SlotGrid
+              slots={slots}
+              floors={shownLot.floors || []}
+              selectedSlot={selectedSlot}
+              activeFloor={activeFloor}
+              onFloorChange={handleFloorChange}
+              onSlotClick={setSelectedSlot}
+            />
+
+            <SlotDetailsPanel
+              selectedSlot={selectedSlot}
+              activeFloor={activeFloor}
+              onConfirmSelect={handleOpenPaymentModal}
+            />
+          </div>
+        </div>
+      ) : !loading && lots.length === 0 && (
+        <div className="card" style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)', fontSize: '0.88rem' }}>
+          No parking lots available yet.
+        </div>
+      )}
+
+      {searchOpen && (
+        <LotSearchOverlay
+          lots={lots}
+          onSelect={handleSearchSelect}
+          onClose={() => setSearchOpen(false)}
         />
+      )}
 
-        <SlotDetailsPanel
-          selectedSlot={selectedSlot}
-          activeFloor={activeFloor}
-          onConfirmSelect={handleOpenPaymentModal}
-        />
-      </div>
-
-      {/* Modals */}
       <PaymentModal
         isOpen={showPaymentModal}
         onClose={() => setShowPaymentModal(false)}
         slot={selectedSlot}
-        lot={selectedLot}
-        preBookingFee={selectedLot?.effective_pre_booking_fee ?? preBookingFee}
+        lot={shownLot}
         onSubmitPayment={handleProcessPayment}
       />
 

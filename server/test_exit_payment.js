@@ -237,8 +237,8 @@ async function runExitPaymentTests() {
 
     // 21. Config Test: Dynamic PRE_BOOKING_FEE change
     await db.query("UPDATE system_settings SET value = '20.00' WHERE key = 'PRE_BOOKING_FEE'");
-    const feeRes = await request({ host: 'localhost', port: 5000, path: '/api/bookings/config', method: 'GET', headers: userAuth });
-    logResult('21. Dynamic PRE_BOOKING_FEE Setting', feeRes.data.pre_booking_fee === 20, `Updated setting to 20 -> API returned ₹${feeRes.data.pre_booking_fee}`);
+    const feeRes = await request({ host: 'localhost', port: 5000, path: '/api/lots', method: 'GET', headers: userAuth });
+    logResult('21. Dynamic PRE_BOOKING_FEE Setting', (feeRes.data.lots || []).find((l) => l.pre_booking_fee === null)?.effective_pre_booking_fee === 20, `Updated setting to 20 -> API returned ₹${feeRes.data.pre_booking_fee}`);
     await db.query("UPDATE system_settings SET value = '10.00' WHERE key = 'PRE_BOOKING_FEE'");
 
     // 22. Config Test: Dynamic EXIT_PAYMENT_TIMEOUT_SECONDS change

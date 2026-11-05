@@ -10,7 +10,9 @@ const LOT_STATS_SQL = `
   COUNT(CASE WHEN s.status = 'occupied' AND s.is_active = true THEN 1 END)::int AS occupied_slots,
   COUNT(CASE WHEN s.status = 'maintenance' AND s.is_active = true THEN 1 END)::int AS maintenance_slots,
   COUNT(CASE WHEN s.is_active = true THEN 1 END)::int AS total_slots,
-  COALESCE(ARRAY_AGG(DISTINCT s.floor) FILTER (WHERE s.is_active = true), '{}') AS floors
+  COALESCE(ARRAY_AGG(DISTINCT s.floor) FILTER (WHERE s.is_active = true), '{}') AS floors,
+  MIN(s.hourly_price) FILTER (WHERE s.is_active = true) AS min_hourly_price,
+  MAX(s.hourly_price) FILTER (WHERE s.is_active = true) AS max_hourly_price
 `;
 
 // Attach the effective pre-booking fee (per-lot override, else global setting)

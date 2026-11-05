@@ -1,20 +1,23 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import AppLayout from '../components/layout/AppLayout';
+import NoResults from '../components/common/NoResults';
 import { useGateQueue } from '../components/gate/useGateQueue';
 import { useGateActions } from '../components/gate/useGateActions';
-import { formatTime } from '../components/gate/gateUtils';
+import { matchesQuery, formatTime } from '../components/gate/gateUtils';
 
 const GatePrebookedPage = () => {
   const { queue, loading, refresh } = useGateQueue();
   const actions = useGateActions(refresh);
+  const [search, setSearch] = useState('');
   const arrivals = useMemo(() => {
     const now = new Date();
     return (queue.pending_arrivals || [])
       .filter((i) => (!i.expires_at || new Date(i.expires_at) > now) && i.is_active !== false);
   }, [queue]);
+  const visible = arrivals.filter((item) => matchesQuery(item, search));
 
   return (
-    <AppLayout>
+    <AppLayout search={{ value: search, onChange: setSearch, placeholder: 'Search by vehicle number, ticket or name' }}>
       <div className="page-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
         <div className="page-title-box">
           <h1>Pre-booked Vehicles</h1>
@@ -39,7 +42,7 @@ const GatePrebookedPage = () => {
               </tr>
             </thead>
             <tbody>
-              {arrivals.map((item) => (
+              {visible.map((item) => (
                 <tr key={item.id}>
                   <td style={{ whiteSpace: 'nowrap' }}><strong style={{ fontFamily: 'monospace', color: 'var(--accent-gold)' }}>{item.vehicleNo}</strong></td>
                   <td>{item.userName}</td>
@@ -49,11 +52,14 @@ const GatePrebookedPage = () => {
                   <td style={{ fontSize: '0.8rem' }}>{formatTime(item.expires_at)}</td>
                   <td>
                     <button className="btn-select-slot" style={{ marginTop: 0, width: 'auto', padding: '0.4rem 0.9rem', fontSize: '0.8rem', whiteSpace: 'nowrap' }} disabled={actions.busyId === item.id} onClick={() => actions.checkInPrebooked(item.id, item.vehicleNo)}>
-                      {actions.busyId === item.id ? 'Working...' : 'Check In'}
+                      <i className="fa-solid fa-right-to-bracket"></i> {actions.busyId === item.id ? 'Working...' : 'Check In'}
                     </button>
                   </td>
                 </tr>
               ))}
+              {arrivals.length > 0 && visible.length === 0 && (
+                <tr><td colSpan={7}><NoResults query={search} onClear={() => setSearch('')} /></td></tr>
+              )}
               {!loading && arrivals.length === 0 && (
                 <tr><td colSpan={7} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>No pre-booked arrivals right now.</td></tr>
               )}

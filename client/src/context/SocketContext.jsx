@@ -9,13 +9,18 @@ export const SocketProvider = ({ children }) => {
   const [isConnected, setIsConnected] = useState(false);
   const { user, isAdmin } = useAuth();
   const socketRef = useRef(null);
+  const userId = user?.id;
 
+  // Only logged-in users need live updates. Logging out drops the connection and its private rooms.
   useEffect(() => {
-    // Target backend server on port 5000 directly with polling-first handshake
+    if (!userId) return;
+
+    // Target backend server on port 5000 directly, using a WebSocket straight away
     const backendUrl = window.location.hostname === 'localhost' ? 'http://localhost:5000' : window.location.origin;
 
     const socketInstance = io(backendUrl, {
-      transports: ['polling', 'websocket'],
+      auth: { token: localStorage.getItem('spms_jwt_token') },
+      transports: ['websocket', 'polling'],
       autoConnect: true,
       reconnection: true,
       reconnectionAttempts: 10,
@@ -39,11 +44,12 @@ export const SocketProvider = ({ children }) => {
     });
 
     return () => {
-      if (socketInstance) {
-        socketInstance.disconnect();
-      }
+      socketInstance.disconnect();
+      socketRef.current = null;
+      setSocket(null);
+      setIsConnected(false);
     };
-  }, []);
+  }, [userId]);
 
   // Handle room joining separately without reconnecting the entire transport
   useEffect(() => {

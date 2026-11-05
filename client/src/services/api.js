@@ -36,4 +36,15 @@ api.interceptors.response.use(
   }
 );
 
+// Identical GETs running at the same moment share one request
+const inFlightGets = new Map();
+const sendGet = api.get.bind(api);
+api.get = (url, config) => {
+  const key = `${url}|${JSON.stringify(config?.params ?? null)}`;
+  if (!inFlightGets.has(key)) {
+    inFlightGets.set(key, sendGet(url, config).finally(() => inFlightGets.delete(key)));
+  }
+  return inFlightGets.get(key);
+};
+
 export default api;

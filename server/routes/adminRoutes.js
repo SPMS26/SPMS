@@ -15,6 +15,5 @@ router.put('/security/:id', requireRole('ADMIN'), adminController.updateSecurity
 router.delete('/security/:id', requireRole('ADMIN'), adminController.deleteSecurityStaff);
 
 // Owner and gate staff (scoped to their lot(s) inside the controller)
-router.get('/scan-history', requireRole('ADMIN', 'SECURITY'), adminController.getScanHistory);
 
 export default router;

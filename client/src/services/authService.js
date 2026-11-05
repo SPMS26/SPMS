@@ -51,10 +51,5 @@ export const authService = {
   logout() {
     this.clearSession();
     window.location.href = '/login';
-  },
-
-  getCurrentUser() {
-    const userStr = localStorage.getItem('spms_user');
-    return userStr ? JSON.parse(userStr) : null;
   }
 };

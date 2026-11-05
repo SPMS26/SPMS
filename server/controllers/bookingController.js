@@ -1,7 +1,7 @@
 import db from '../config/database.js';
 import settingService from '../services/settingService.js';
 import { generateQRPayload, renderQRDataURL } from '../services/qrGenerator.js';
-import { broadcastSlotUpdate } from '../socket/socketManager.js';
+import { broadcastSlotUpdate, sendUserNotification } from '../socket/socketManager.js';
 import { canAccessLot } from '../middleware/scope.js';
 import { findOverlappingBooking, describeConflict, lockVehicle, expireStalePendingBookings, expireStaleReservedBookings } from '../services/bookingRules.js';
 
@@ -88,14 +88,16 @@ export const createPreBooking = async (req, res, next) => {
     );
 
     // Create user notification regarding pending payment
-    await client.query(
+    const pendingNotice = await client.query(
       `INSERT INTO notifications (user_id, title, message, type)
-       VALUES ($1, 'Pre-Booking Created - Payment Required', $2, 'info')`,
+       VALUES ($1, 'Pre-Booking Created - Payment Required', $2, 'info')
+       RETURNING *`,
       [req.user.id, `Pre-booking for slot ${slot.slot_number} at ${lot.name} is reserved. Complete the ₹${preBookingFee.toFixed(2)} reservation fee payment to activate your Digital QR Parking Pass.`]
     );
 
     await client.query('COMMIT');
 
+    sendUserNotification(req.user.id, pendingNotice.rows[0]);
     broadcastSlotUpdate(slot.lot_id, slot.id, 'reserved', slot.slot_number);
 
     // Notice: qr_code and qr_image are explicitly null. QR must NOT be generated before successful payment.
@@ -232,14 +234,16 @@ export const confirmPreBookingPayment = async (req, res, next) => {
     );
 
     // Create user notification
-    await client.query(
+    const paidNotice = await client.query(
       `INSERT INTO notifications (user_id, title, message, type)
-       VALUES ($1, 'Reservation Payment Confirmed', $2, 'success')`,
+       VALUES ($1, 'Reservation Payment Confirmed', $2, 'success')
+       RETURNING *`,
       [booking.user_id, `Payment for slot ${booking.slot_number} at ${booking.lot_name} is confirmed. Your Digital QR Parking Pass has been generated and is now active.`]
     );
 
     await client.query('COMMIT');
 
+    sendUserNotification(booking.user_id, paidNotice.rows[0]);
     broadcastSlotUpdate(booking.lot_id, booking.slot_id, 'reserved', booking.slot_number);
 
     // Enrich booking object with user, slot, and vehicle details
@@ -415,22 +419,6 @@ export const getBookingById = async (req, res, next) => {
       qr_code: payloadString,
       qr_image: qrImage 
     });
-  } catch (err) {
-    next(err);
-  }
-};
-
-
-// Public booking configuration (dynamic fees from system_settings)
-export const getBookingConfig = async (req, res, next) => {
-  try {
-    let preBookingFee = await settingService.getNumericSetting('PRE_BOOKING_FEE', 10.00);
-    if (req.query.lot_id) {
-      const lotFee = await db.query('SELECT pre_booking_fee FROM parking_lots WHERE id = $1', [req.query.lot_id]);
-      if (lotFee.rows[0] && lotFee.rows[0].pre_booking_fee !== null) preBookingFee = Number(lotFee.rows[0].pre_booking_fee);
-    }
-    const exitPaymentTimeoutSeconds = await settingService.getNumericSetting('EXIT_PAYMENT_TIMEOUT_SECONDS', 300);
-    res.json({ success: true, pre_booking_fee: preBookingFee, exit_payment_timeout_seconds: exitPaymentTimeoutSeconds });
   } catch (err) {
     next(err);
   }

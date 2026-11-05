@@ -299,6 +299,210 @@ body {
   border-color: var(--border-bright);
 }
 
+.lots-cards-row.single-lot {
+  grid-template-columns: minmax(0, 340px);
+}
+
+.book-slot-section {
+  scroll-margin-top: 84px;
+}
+
+.lot-search-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 12vh 1rem 1rem;
+  box-sizing: border-box;
+  background: rgba(5, 5, 6, 0.6);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.lot-search-panel {
+  width: 100%;
+  max-width: 600px;
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-card);
+  border: 1px solid var(--border-bright);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+}
+
+.lot-search-field {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+  padding: 0.5rem 0.6rem 0.5rem 1.1rem;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+}
+
+.lot-search-field input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.6rem 0;
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--text-main);
+  font-size: 1rem;
+  text-overflow: ellipsis;
+}
+
+.lot-search-close {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.lot-search-close:hover {
+  color: var(--text-main);
+}
+
+.lot-search-results {
+  overflow-y: auto;
+  padding: 0.5rem;
+}
+
+.lot-search-result {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.7rem;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  color: var(--text-main);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.lot-search-result.active {
+  background: var(--accent-gold-bg);
+  border-color: var(--border-bright);
+}
+
+.lot-search-icon {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--accent-gold);
+}
+
+.lot-search-text,
+.lot-search-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.lot-search-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.lot-search-text strong {
+  font-size: 0.92rem;
+}
+
+.lot-search-text span,
+.lot-search-meta span {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.lot-search-text strong,
+.lot-search-text span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lot-search-meta {
+  flex-shrink: 0;
+  align-items: flex-end;
+}
+
+.lot-search-meta strong {
+  font-size: 0.82rem;
+  color: var(--status-available);
+}
+
+.lot-search-chevron {
+  flex-shrink: 0;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.lot-search-empty {
+  margin: 0;
+  padding: 2rem 1rem;
+  text-align: center;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+
+@media (max-width: 640px) {
+  .lot-search-overlay {
+    padding: 4.5rem 0.75rem 0.75rem;
+  }
+
+  .lot-search-chevron {
+    display: none;
+  }
+}
+
+.search-box .search-input {
+  padding-right: 2.3rem;
+  text-overflow: ellipsis;
+}
+
+.search-clear {
+  position: absolute;
+  right: 0.35rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.search-clear:hover {
+  color: var(--text-main);
+}
+
+.search-box .search-clear i {
+  position: static;
+  transform: none;
+  color: inherit;
+}
+
 .header-right {
   display: flex;
   align-items: center;
@@ -360,6 +564,19 @@ body {
   height: 36px;
   border-radius: 50%;
   object-fit: cover;
+}
+
+.user-avatar-initials {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  background: #d97706;
+  color: #fff;
+  font-weight: 700;
+  line-height: 1;
+  user-select: none;
 }
 
 .page-content {
@@ -1122,7 +1339,6 @@ body {
 
 @media (max-width: 360px) {
   .slots-grid-4x10 { grid-template-columns: repeat(4, 1fr); }
-  .search-box { display: none; }
 }
 
 /* ---------- Drawer navigation for the owner / guard layout ---------- */

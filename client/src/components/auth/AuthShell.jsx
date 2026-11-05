@@ -6,7 +6,7 @@ const AuthShell = ({ icon = 'fa-square-parking', title, subtitle, maxWidth = 460
   <div className="auth-page">
     <div style={{ width: '100%', maxWidth }}>
       <Link to="/" className="auth-back">
-        Back to home
+        <i className="fa-solid fa-arrow-left"></i> Back to home
       </Link>
       <div className="auth-card">
         <div className="auth-head">

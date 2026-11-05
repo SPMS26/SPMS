@@ -61,19 +61,12 @@ async function runPhase2Tests() {
     const adminAuth = { 'Authorization': `Bearer ${adminToken}`, 'Content-Type': 'application/json' };
     logResult('Admin Auth', !!adminToken, `Logged in as admin@spms.com`);
 
-    // 4. Test dynamic pre-booking fee endpoint
-    const configRes = await request({
-      host: 'localhost',
-      port: 5000,
-      path: '/api/bookings/config',
-      method: 'GET',
-      headers: userAuth
-    });
-    const preBookingFee = configRes.data?.pre_booking_fee;
-    logResult('Dynamic Fee Config API', configRes.status === 200 && preBookingFee === 10, `Returned pre_booking_fee: ₹${preBookingFee}`);
+    // 4. Test the dynamic pre-booking fee, read from a lot with no fee of its own
+    const lotsRes = await request({ host: 'localhost', port: 5000, path: '/api/lots', method: 'GET', headers: userAuth });
+    const preBookingFee = (lotsRes.data?.lots || []).find((l) => l.pre_booking_fee === null)?.effective_pre_booking_fee;
+    logResult('Dynamic Fee Config API', lotsRes.status === 200 && preBookingFee === 10, `Returned pre_booking_fee: ₹${preBookingFee}`);
 
     // 5. Pick an available slot and vehicle
-    const lotsRes = await request({ host: 'localhost', port: 5000, path: '/api/lots', method: 'GET', headers: userAuth });
     const lotId = lotsRes.data?.lots?.[0]?.id;
     const slotsRes = await request({ host: 'localhost', port: 5000, path: `/api/slots/lot/${lotId}`, method: 'GET', headers: userAuth });
     const availableSlot = slotsRes.data?.slots?.find(s => s.status === 'available');
@@ -281,8 +274,8 @@ async function runPhase2Tests() {
 
     // 20. Non-Hardcoding Proof: Update system_settings to ₹25 and verify API returns ₹25
     await db.query("UPDATE system_settings SET value = '25.00' WHERE key = 'PRE_BOOKING_FEE'");
-    const updatedConfig = await request({ host: 'localhost', port: 5000, path: '/api/bookings/config', method: 'GET', headers: userAuth });
-    const isFeeDynamic = updatedConfig.data?.pre_booking_fee === 25;
+    const updatedLots = await request({ host: 'localhost', port: 5000, path: '/api/lots', method: 'GET', headers: userAuth });
+    const isFeeDynamic = (updatedLots.data?.lots || []).find((l) => l.pre_booking_fee === null)?.effective_pre_booking_fee === 25;
     logResult('Non-Hardcoding Proof (system_settings ₹25 test)', isFeeDynamic, `Updated setting to 25.00 -> API returned: ₹${updatedConfig.data?.pre_booking_fee}`);
     // Restore to 10.00
     await db.query("UPDATE system_settings SET value = '10.00' WHERE key = 'PRE_BOOKING_FEE'");

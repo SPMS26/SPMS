@@ -37,7 +37,7 @@ const SlotGrid = ({ slots, floors = [], selectedSlot, activeFloor, onFloorChange
               className={`floor-btn ${activeFloor === f ? 'active' : ''}`}
               onClick={() => onFloorChange(f)}
             >
-              {floorLabel(f)}
+              <i className="fa-solid fa-layer-group"></i> {floorLabel(f)}
             </button>
           ))}
         </div>

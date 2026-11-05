@@ -1,55 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { notificationService } from '../../services/notificationService';
-import { useSocket } from '../../context/SocketContext';
+import { useNotifications } from '../../context/NotificationContext';
+import UserAvatar from '../common/UserAvatar';
 
-const TopHeader = ({ onToggleSidebar, sidebarOpen }) => {
+const TopHeader = ({ onToggleSidebar, sidebarOpen, search }) => {
   const { user, isStaff, isAdmin, isSecurity } = useAuth();
-  const { socket } = useSocket();
   const location = useLocation();
-  const [notifications, setNotifications] = useState([]);
-  const [unreadCount, setUnreadCount] = useState(0);
+  const { notifications, unreadCount, markAllRead } = useNotifications();
   const [showNotifications, setShowNotifications] = useState(false);
 
   const isProfilePage = location.pathname === '/profile';
   const homePath = isSecurity ? '/admin/scanner' : (isAdmin ? '/admin' : '/dashboard');
-
-  const fetchNotifications = async () => {
-    try {
-      const res = await notificationService.getNotifications();
-      setNotifications(res.notifications || []);
-      setUnreadCount(res.unreadCount || 0);
-    } catch (err) {
-      console.error('Failed to fetch notifications:', err);
-    }
-  };
-
-  useEffect(() => {
-    if (user) {
-      fetchNotifications();
-    }
-  }, [user]);
-
-  useEffect(() => {
-    if (!socket) return;
-    const onNewNotification = (notif) => {
-      setNotifications(prev => [notif, ...prev]);
-      setUnreadCount(prev => prev + 1);
-    };
-    socket.on('notification:new', onNewNotification);
-    return () => socket.off('notification:new', onNewNotification);
-  }, [socket]);
-
-  const handleMarkAllRead = async () => {
-    try {
-      await notificationService.markAsRead('all');
-      setUnreadCount(0);
-      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
-    } catch (err) {
-      console.error('Failed to mark read:', err);
-    }
-  };
 
   return (
     <header className="top-header" style={{ position: 'sticky', top: 0, zIndex: 30 }}>
@@ -85,10 +47,28 @@ const TopHeader = ({ onToggleSidebar, sidebarOpen }) => {
           </button>
         )}
 
-        {!isProfilePage && (
-          <div className="search-box">
+        {search && (
+          <div className="search-box" role="search">
             <i className="fa-solid fa-magnifying-glass"></i>
-            <input type="text" className="search-input" placeholder="Search parking lots, locations, bookings..." />
+            <input
+              type="text"
+              className="search-input"
+              placeholder={search.placeholder}
+              aria-label={search.placeholder}
+              autoComplete="off"
+              {...(search.onOpen
+                ? { readOnly: true, value: '', onClick: search.onOpen, onFocus: search.onOpen, style: { cursor: 'pointer' } }
+                : {
+                    value: search.value,
+                    onChange: (e) => search.onChange(e.target.value),
+                    onKeyDown: (e) => e.key === 'Escape' && search.onChange('')
+                  })}
+            />
+            {search.value && (
+              <button type="button" className="search-clear" aria-label="Clear search" onClick={() => search.onChange('')}>
+                <i className="fa-solid fa-xmark"></i>
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -114,7 +94,7 @@ const TopHeader = ({ onToggleSidebar, sidebarOpen }) => {
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.5rem' }}>
                   <h4 style={{ margin: 0, fontSize: '0.9rem' }}>Notifications</h4>
                   {unreadCount > 0 && (
-                    <button onClick={handleMarkAllRead} style={{ background: 'none', border: 'none', color: 'var(--accent-gold)', fontSize: '0.75rem', cursor: 'pointer' }}>
+                    <button onClick={markAllRead} style={{ background: 'none', border: 'none', color: 'var(--accent-gold)', fontSize: '0.75rem', cursor: 'pointer' }}>
                       Mark all read
                     </button>
                   )}
@@ -142,11 +122,7 @@ const TopHeader = ({ onToggleSidebar, sidebarOpen }) => {
           title="Visit Profile"
           style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}
         >
-          <img
-            src={user && user.profile_image ? user.profile_image : `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.full_name || 'User')}&background=d97706&color=fff&bold=true`}
-            alt="Avatar"
-            className="user-avatar"
-          />
+          <UserAvatar user={user} />
           <div className="user-info">
             <h5 style={{ margin: 0, fontSize: '0.85rem' }}>{user ? user.full_name : 'User'}</h5>
             {isAdmin && <p style={{ margin: 0, fontSize: '0.72rem', color: 'var(--text-muted)' }}>{user?.role === 'SECURITY' ? 'Gate Security' : (user?.organization_name || 'Lot Owner')}</p>}

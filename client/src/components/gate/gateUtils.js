@@ -1,8 +1,7 @@
 import { formatDate, formatDateTime } from '../../utils/dateUtils';
+import { normalize } from '../../utils/searchUtils';
 
-export { formatDate, formatDateTime };
-
-export const normalize = (v) => String(v || '').toUpperCase().replace(/[\s-]/g, '');
+export { formatDate, formatDateTime, normalize };
 
 export const formatDuration = (from, to = null) => {
   if (!from) return '-';

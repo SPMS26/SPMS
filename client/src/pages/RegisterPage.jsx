@@ -63,6 +63,7 @@ const RegisterPage = () => {
       <form onSubmit={handleSubmit}>
         {error && (
           <div className="auth-error" role="alert">
+            <i className="fa-solid fa-circle-exclamation"></i>
             <span>{error}</span>
           </div>
         )}

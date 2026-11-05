@@ -6,7 +6,7 @@ const CheckoutModal = ({ bill, confirming, onConfirm, onClose }) => {
     <div className="modal-overlay active">
       <div className="modal-box" style={{ maxWidth: '440px' }}>
         <div className="modal-header">
-          <h3>Checkout</h3>
+          <h3><i className="fa-solid fa-receipt" style={{ color: 'var(--accent-gold)', marginRight: '0.4rem' }}></i> Checkout</h3>
           <button className="modal-close" onClick={onClose}>&times;</button>
         </div>
         <div style={{ background: 'var(--bg-input)', border: '1px solid var(--border-subtle)', padding: '1rem', borderRadius: '8px', marginBottom: '1.25rem' }}>
@@ -23,7 +23,7 @@ const CheckoutModal = ({ bill, confirming, onConfirm, onClose }) => {
           )}
         </div>
         <button className="btn-select-slot" disabled={confirming} onClick={onConfirm}>
-          {confirming ? 'Confirming...' : <span>Payment received - Check Out</span>}
+          {confirming ? 'Confirming...' : <span><i className="fa-solid fa-circle-check"></i> Payment received - Check Out</span>}
         </button>
       </div>
     </div>

@@ -2,7 +2,6 @@ const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 import bcrypt from 'bcryptjs';
 import db from '../config/database.js';
 import { getAccessibleLotIds } from '../middleware/scope.js';
-import { formatDateTime } from '../utils/dateUtils.js';
 
 // Admin: users who have booked in this admin's lots (never other owners' customers)
 export const getUsers = async (req, res, next) => {
@@ -26,46 +25,6 @@ export const getUsers = async (req, res, next) => {
       [lotIds]
     );
     res.status(200).json({ success: true, users: result.rows });
-  } catch (err) {
-    next(err);
-  }
-};
-
-// Admin / Security: scanned entry history for accessible lots only
-export const getScanHistory = async (req, res, next) => {
-  try {
-    const lotIds = await getAccessibleLotIds(req.user);
-    const result = await db.query(
-      `SELECT
-         b.id, b.booking_status, b.booking_type, b.entry_time, b.created_at, b.total_amount, b.ticket_code,
-         COALESCE(u.full_name, 'Walk-in guest') AS "userName",
-         COALESCE(v.vehicle_number, b.guest_vehicle_number) AS "vehicleNo",
-         s.slot_number AS "slotCode",
-         l.name AS "lotName"
-       FROM bookings b
-       JOIN parking_slots s ON b.slot_id = s.id
-       JOIN parking_lots l ON s.lot_id = l.id
-       LEFT JOIN users u ON b.user_id = u.id
-       LEFT JOIN vehicles v ON b.vehicle_id = v.id
-       WHERE b.booking_status IN ('active', 'completed', 'reserved') AND s.lot_id = ANY($1::uuid[])
-       ORDER BY b.created_at DESC
-       LIMIT 50`,
-      [lotIds]
-    );
-
-    const history = result.rows.map((b) => ({
-      id: b.id,
-      bookingId: b.ticket_code || `BK-${b.id.substring(0, 6).toUpperCase()}`,
-      userName: b.userName || 'N/A',
-      vehicleNo: b.vehicleNo || 'N/A',
-      slotCode: b.slotCode || 'N/A',
-      lotName: b.lotName || 'N/A',
-      timestamp: formatDateTime(b.entry_time) || formatDateTime(b.created_at),
-      amountPaid: `₹${Number(b.total_amount || 0)}`,
-      status: b.booking_status === 'completed' ? 'Completed' : 'Validated'
-    }));
-
-    res.status(200).json({ success: true, history });
   } catch (err) {
     next(err);
   }

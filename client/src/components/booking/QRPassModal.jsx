@@ -91,8 +91,8 @@ const QRPassModal = ({ isOpen, onClose, booking }) => {
   const bookingCode = booking.bookingCode || `BK-${booking.id?.substring(0, 8).toUpperCase()}` || 'BK-PASS';
   const userName = booking.userName || booking.user_name || booking.user?.full_name || authUser?.full_name || 'Valued User';
   const vehicleNo = booking.vehicleNo || booking.vehicle?.vehicle_number || booking.vehicle_number || 'N/A';
-  const lotName = booking.lotName || (booking.slot && booking.slot.parking_lot ? booking.slot.parking_lot.name : 'Central Parking');
-  const floor = booking.floor || (booking.slot ? booking.slot.floor : 'GF');
+  const lotName = booking.lotName || booking.slot?.parking_lot?.name || '--';
+  const floor = booking.floor || booking.slot?.floor || '--';
   const slotCode = booking.slotCode || (booking.slot ? booking.slot.slot_number : '--');
   const bookingType = booking.booking_type === 'walk_in' ? 'Walk-in' : 'Pre-Booking';
   const amountPaid = Number(booking.pre_booking_fee) > 0 ? booking.pre_booking_fee : (booking.total_amount || 0);
@@ -112,7 +112,7 @@ const QRPassModal = ({ isOpen, onClose, booking }) => {
       <div className="modal-box qr-modal">
         <div className="modal-header">
           <h3>
-            Booking QR Pass
+            <i className="fa-solid fa-qrcode" style={{ color: 'var(--accent-gold)' }}></i> Booking QR Pass
           </h3>
           <button className="modal-close" onClick={onClose}>&times;</button>
         </div>
@@ -132,7 +132,7 @@ const QRPassModal = ({ isOpen, onClose, booking }) => {
               color: isExpired || isSessionComplete ? '#8A8478' : '#E3CC9A',
               border: `1px solid ${isExpired || isSessionComplete ? 'rgba(138, 132, 120, 0.3)' : 'rgba(227, 204, 154, 0.3)'}`
             }}>
-              {isSessionComplete ? 'SESSION COMPLETED' : (booking.booking_status === 'active' || booking.booking_status === 'parked') ? 'VEHICLE PARKED' : (isExpired ? 'EXPIRED' : 'ACTIVE PASS')}
+              <i className={`fa-solid ${isExpired || isSessionComplete ? 'fa-ban' : 'fa-circle-check'}`} style={{ marginRight: '0.25rem' }}></i> {isSessionComplete ? 'SESSION COMPLETED' : (booking.booking_status === 'active' || booking.booking_status === 'parked') ? 'VEHICLE PARKED' : (isExpired ? 'EXPIRED' : 'ACTIVE PASS')}
             </span>
           </div>
 
@@ -180,7 +180,7 @@ const QRPassModal = ({ isOpen, onClose, booking }) => {
             fontSize: '0.78rem'
           }}>
             <span style={{ color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-              {(booking.booking_status === 'active' || booking.booking_status === 'parked') ? 'Time Parked:' : 'Pass Status:'}
+              <i className={`fa-solid ${isExpired || isSessionComplete ? 'fa-ban' : 'fa-hourglass-half'}`} style={{ color: isExpired || isSessionComplete ? '#8A8478' : 'var(--accent-gold)' }}></i> {(booking.booking_status === 'active' || booking.booking_status === 'parked') ? 'Time Parked:' : 'Pass Status:'}
             </span>
             <span style={{ fontWeight: 700, color: isExpired || isSessionComplete ? '#8A8478' : 'var(--text-main)', fontFamily: 'monospace', fontSize: '0.85rem' }}>
               {timeLeft}
@@ -214,7 +214,7 @@ const QRPassModal = ({ isOpen, onClose, booking }) => {
               gap: '0.4rem'
             }}
           >
-            Save QR Image
+            <i className="fa-solid fa-download"></i> Save QR Image
           </button>
           <button
             type="button"

@@ -6,10 +6,13 @@ const pool = new Pool({
   port: parseInt(process.env.DB_PORT || '5432', 10),
   user: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASSWORD || 'password',
-  database: process.env.DB_NAME || 'spms'
+  database: process.env.DB_NAME || 'spms',
+  // Reuse connections across quiet moments; the default of 10s reopens them after every pause
+  idleTimeoutMillis: 60000
 });
 
-pool.on('connect', () => {
+// Fires for every connection the pool opens, so only the first one is logged
+pool.once('connect', () => {
   console.log('[Database] Connected to PostgreSQL database via native pg pool.');
 });
 

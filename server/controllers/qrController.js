@@ -2,7 +2,7 @@ import db from '../config/database.js';
 import settingService from '../services/settingService.js';
 import { getPaymentProvider } from '../services/paymentProvider.js';
 import { generateQRPayload, generateExitPaymentQRPayload, verifyQRPayload, verifyExitPaymentQRPayload, renderQRDataURL } from '../services/qrGenerator.js';
-import { broadcastSlotUpdate, broadcastGateEvent } from '../socket/socketManager.js';
+import { broadcastSlotUpdate, broadcastGateEvent, sendUserNotification } from '../socket/socketManager.js';
 import { getAccessibleLotIds, canAccessLot } from '../middleware/scope.js';
 import { findOverlappingBooking, describeConflict, lockVehicle, WALK_IN_ASSUMED_HOURS, expireStaleReservedBookings, expireStalePendingBookings } from '../services/bookingRules.js';
 import { formatDateTime } from '../utils/dateUtils.js';
@@ -298,11 +298,13 @@ export const validateEntry = async (req, res, next) => {
 
     // User Notification (walk-in guests have no account)
     if (booking.user_id) {
-      await db.query(
+      const entryNotice = await db.query(
         `INSERT INTO notifications (user_id, title, message, type)
-         VALUES ($1, 'Gate Entry Verified', $2, 'info')`,
+         VALUES ($1, 'Gate Entry Verified', $2, 'info')
+         RETURNING *`,
         [booking.user_id, `Vehicle ${booking.vehicle_number} entered ${booking.lot_name} at ${new Date(entryTime).toLocaleTimeString()}. Head to Slot ${booking.slot_number} (${booking.floor}).`]
       );
+      sendUserNotification(booking.user_id, entryNotice.rows[0]);
     }
 
     broadcastSlotUpdate(booking.lot_id, booking.slot_id, 'occupied', booking.slot_number);
@@ -744,10 +746,12 @@ export const confirmExitPayment = async (req, res, next) => {
     }
 
     // User notification (walk-in guests have no account)
+    let exitNotice = null;
     if (booking.user_id) {
-      await client.query(
+      exitNotice = await client.query(
         `INSERT INTO notifications (user_id, title, message, type)
-         VALUES ($1, 'Gate Exit Completed', $2, 'payment')`,
+         VALUES ($1, 'Gate Exit Completed', $2, 'payment')
+         RETURNING *`,
         [booking.user_id, `Vehicle ${booking.vehicle_number} exited ${booking.lot_name}. Final parking charge: ₹${authoritativeParkingCharge.toFixed(2)}. Total: ₹${totalAmount.toFixed(2)}. Barrier opened.`]
       );
     }
@@ -755,6 +759,7 @@ export const confirmExitPayment = async (req, res, next) => {
     await client.query('COMMIT');
 
     // Emit Socket.io events
+    if (exitNotice) sendUserNotification(booking.user_id, exitNotice.rows[0]);
     broadcastSlotUpdate(booking.lot_id, booking.slot_id, 'available', booking.slot_number);
 
     const gateEventData = {
@@ -1149,16 +1154,19 @@ export const walkInCheckIn = async (req, res, next) => {
       [req.user.id, booking.id, `Walk-in check-in by ${req.user.full_name}: ${plate} at ${slot.lot_name}, slot ${slot.slot_number} (ticket ${ticketCode}).`]
     );
 
+    let walkInNotice = null;
     if (vehicle) {
-      await client.query(
+      walkInNotice = await client.query(
         `INSERT INTO notifications (user_id, title, message, type)
-         VALUES ($1, 'Walk-in Check-in', $2, 'info')`,
+         VALUES ($1, 'Walk-in Check-in', $2, 'info')
+         RETURNING *`,
         [vehicle.user_id, `Vehicle ${plate} was checked in at ${slot.lot_name}, slot ${slot.slot_number}. Ticket ${ticketCode}.`]
       );
     }
 
     await client.query('COMMIT');
 
+    if (walkInNotice) sendUserNotification(vehicle.user_id, walkInNotice.rows[0]);
     broadcastSlotUpdate(slot.lot_id, slot.id, 'occupied', slot.slot_number);
     broadcastGateEvent({
       event: 'ENTRY_CLEARED',

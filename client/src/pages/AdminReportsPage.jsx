@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import AppLayout from '../components/layout/AppLayout';
+import NoResults from '../components/common/NoResults';
+import { matchesSearch } from '../utils/searchUtils';
 import { reportService } from '../services/reportService';
 import toast from 'react-hot-toast';
 import { useConfirm } from '../components/common/ConfirmProvider';
@@ -7,6 +9,7 @@ import { useConfirm } from '../components/common/ConfirmProvider';
 const AdminReportsPage = () => {
   const confirm = useConfirm();
   const [reports, setReports] = useState([]);
+  const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
 
   const fetchReports = async () => {
@@ -38,8 +41,16 @@ const AdminReportsPage = () => {
     }
   };
 
+  const visibleReports = reports.filter((rep) => matchesSearch(search, [
+    rep.id.substring(0, 7),
+    rep.user?.full_name,
+    rep.incident_type,
+    rep.description,
+    rep.status
+  ]));
+
   return (
-    <AppLayout>
+    <AppLayout search={{ value: search, onChange: setSearch, placeholder: 'Search by user, category, description or status' }}>
       <div className="page-header-row">
         <div className="page-title-box">
           <h1>Incident Reports Management</h1>
@@ -55,6 +66,8 @@ const AdminReportsPage = () => {
           <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
             No incident reports submitted yet.
           </div>
+        ) : visibleReports.length === 0 ? (
+          <NoResults query={search} onClear={() => setSearch('')} />
         ) : (
           <div style={{ overflowX: 'auto' }}>
             <table className="data-table">
@@ -70,7 +83,7 @@ const AdminReportsPage = () => {
                 </tr>
               </thead>
               <tbody>
-                {reports.map(rep => (
+                {visibleReports.map(rep => (
                   <tr key={rep.id}>
                     <td><strong style={{ color: 'var(--accent-gold)' }}>{rep.id.substring(0, 7).toUpperCase()}</strong></td>
                     <td>{rep.user ? rep.user.full_name : 'N/A'}</td>
@@ -79,7 +92,7 @@ const AdminReportsPage = () => {
                     <td>
                       {rep.image_url ? (
                         <a href={rep.image_url} target="_blank" rel="noreferrer" style={{ color: 'var(--accent-gold)', fontSize: '0.78rem', textDecoration: 'none' }}>
-                          View Image
+                          <i className="fa-solid fa-image"></i> View Image
                         </a>
                       ) : (
                         <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>None</span>

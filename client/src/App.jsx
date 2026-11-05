@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { SocketProvider } from './context/SocketContext';
+import { NotificationProvider } from './context/NotificationContext';
 import { Toaster } from 'react-hot-toast';
 
 import ProtectedRoute from './components/layout/ProtectedRoute';
@@ -31,6 +32,7 @@ function App() {
     <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <AuthProvider>
         <SocketProvider>
+          <NotificationProvider>
           <Toaster
             position="top-right"
             toastOptions={{
@@ -72,6 +74,7 @@ function App() {
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
           </ConfirmProvider>
+          </NotificationProvider>
         </SocketProvider>
       </AuthProvider>
     </Router>

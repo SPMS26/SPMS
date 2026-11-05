@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 
-const PaymentModal = ({ isOpen, onClose, slot, lot, preBookingFee = 10, onSubmitPayment }) => {
+const PaymentModal = ({ isOpen, onClose, slot, lot, onSubmitPayment }) => {
   const { user, selectedVehicle } = useAuth();
   const [loading, setLoading] = useState(false);
 
@@ -14,14 +14,15 @@ const PaymentModal = ({ isOpen, onClose, slot, lot, preBookingFee = 10, onSubmit
     setLoading(false);
   };
 
-  const formattedFee = parseFloat(preBookingFee || 10).toFixed(2);
-  const hourlyRate = slot ? parseFloat(slot.hourly_price || 30).toFixed(2) : '30.00';
+  const formattedFee = Number(lot.effective_pre_booking_fee).toFixed(2);
+  const hourlyRate = Number(slot.hourly_price).toFixed(2);
 
   return (
     <div className={`modal-overlay ${isOpen ? 'active' : ''}`}>
       <div className="modal-box" style={{ maxWidth: '460px' }}>
         <div className="modal-header">
           <h3>
+            <i className="fa-solid fa-ticket" style={{ color: 'var(--accent-gold)', marginRight: '0.4rem' }}></i>
             Confirm Reservation & Payment
           </h3>
           <button className="modal-close" onClick={onClose}>&times;</button>
@@ -41,7 +42,7 @@ const PaymentModal = ({ isOpen, onClose, slot, lot, preBookingFee = 10, onSubmit
             </div>
             <div className="details-row">
               <span className="key">Assigned Slot:</span>
-              <span className="val">{slot ? slot.slot_number : 'C5'} ({lot ? lot.name : 'Central Parking'})</span>
+              <span className="val">{slot.slot_number} ({lot.name})</span>
             </div>
             <div className="details-row" style={{ background: 'rgba(217, 191, 140, 0.08)', padding: '0.4rem 0.5rem', borderRadius: '6px', margin: '0.35rem 0' }}>
               <span className="key" style={{ fontWeight: 700, color: 'var(--text-main)' }}>Pre-Booking Fee:</span>
@@ -58,12 +59,14 @@ const PaymentModal = ({ isOpen, onClose, slot, lot, preBookingFee = 10, onSubmit
             <div className="details-row">
               <span className="key">Payment Method:</span>
               <span className="val">
+                <i className="fa-solid fa-shield-halved" style={{ color: '#E3CC9A', marginRight: '0.3rem' }}></i>
                 Project Simulated Payment
               </span>
             </div>
           </div>
 
           <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '1rem', textAlign: 'center' }}>
+            <i className="fa-solid fa-circle-info" style={{ marginRight: '0.3rem', color: 'var(--accent-gold)' }}></i>
             Reservation fee confirms your slot reservation. Your Digital QR Parking Pass will be generated instantly upon payment.
           </div>
 
@@ -71,7 +74,7 @@ const PaymentModal = ({ isOpen, onClose, slot, lot, preBookingFee = 10, onSubmit
             {loading ? (
               <span><i className="fa-solid fa-circle-notch fa-spin"></i> Processing Reservation Payment...</span>
             ) : (
-              <span>Pay ₹{formattedFee} Reservation Fee & Get QR Pass</span>
+              <span><i className="fa-solid fa-lock"></i> Pay ₹{formattedFee} Reservation Fee & Get QR Pass</span>
             )}
           </button>
         </form>

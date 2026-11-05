@@ -1,16 +1,19 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import AppLayout from '../components/layout/AppLayout';
 import CheckoutModal from '../components/gate/CheckoutModal';
+import NoResults from '../components/common/NoResults';
 import { useGateActions } from '../components/gate/useGateActions';
 import { qrService } from '../services/qrService';
-import { useSocket } from '../context/SocketContext';
-import { formatDuration, estimateCharge, formatTime } from '../components/gate/gateUtils';
+import { useAuth } from '../context/AuthContext';
+import { useLiveRefresh } from '../hooks/useLiveRefresh';
+import { matchesQuery, formatDuration, estimateCharge, formatTime } from '../components/gate/gateUtils';
 
 const GateLivePage = () => {
-  const { socket } = useSocket();
+  const { user } = useAuth();
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [, setTick] = useState(0);
+  const [search, setSearch] = useState('');
 
   const refresh = useCallback(async () => {
     try {
@@ -27,22 +30,21 @@ const GateLivePage = () => {
 
   useEffect(() => {
     refresh();
-    const poll = setInterval(refresh, 20000);
     const clock = setInterval(() => setTick((t) => t + 1), 30000);
-    return () => { clearInterval(poll); clearInterval(clock); };
+    return () => clearInterval(clock);
   }, [refresh]);
 
-  useEffect(() => {
-    if (!socket) return;
-    socket.on('slot:statusChanged', refresh);
-    return () => socket.off('slot:statusChanged', refresh);
-  }, [socket, refresh]);
+  useLiveRefresh(refresh, {
+    pollMs: 60000,
+    disconnectedPollMs: 20000,
+    matches: (event) => !user?.assigned_lot_id || event.lotId === user.assigned_lot_id
+  });
 
-  const rows = sessions;
+  const rows = sessions.filter((s) => matchesQuery(s, search));
   const activeCount = sessions.filter((s) => s.booking_status !== 'completed').length;
 
   return (
-    <AppLayout>
+    <AppLayout search={{ value: search, onChange: setSearch, placeholder: 'Search by vehicle number, ticket or name' }}>
       <div className="page-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
         <div className="page-title-box">
           <h1>Live Bookings</h1>
@@ -89,14 +91,17 @@ const GateLivePage = () => {
                     <td>
                       {!done && (
                         <button className="btn-select-slot" style={{ marginTop: 0, width: 'auto', padding: '0.4rem 0.9rem', fontSize: '0.8rem', whiteSpace: 'nowrap' }} disabled={actions.busyId === s.id} onClick={() => actions.startCheckout(s.id)}>
-                          {actions.busyId === s.id ? 'Working...' : 'Check Out'}
+                          <i className="fa-solid fa-right-from-bracket"></i> {actions.busyId === s.id ? 'Working...' : 'Check Out'}
                         </button>
                       )}
                     </td>
                   </tr>
                 );
               })}
-              {!loading && rows.length === 0 && (
+              {sessions.length > 0 && rows.length === 0 && (
+                <tr><td colSpan={9}><NoResults query={search} onClear={() => setSearch('')} /></td></tr>
+              )}
+              {!loading && sessions.length === 0 && (
                 <tr><td colSpan={9} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>No walk-in sessions yet. Check vehicles in from the Walk-in Desk.</td></tr>
               )}
             </tbody>

@@ -81,7 +81,7 @@ const SlotDetailsPanel = ({ selectedSlot, activeFloor, onConfirmSelect, isAdmin 
             onClick={() => onAdminAction('maintenance')}
             title={status === 'occupied' ? 'Vehicle is parked' : ''}
           >
-            Mark as Maintenance
+            <i className="fa-solid fa-wrench"></i> Mark as Maintenance
           </button>
           <button
             className="btn-select-slot"
@@ -96,7 +96,7 @@ const SlotDetailsPanel = ({ selectedSlot, activeFloor, onConfirmSelect, isAdmin 
             onClick={() => onAdminAction('available')}
             title={status === 'occupied' ? 'Vehicle is parked' : ''}
           >
-            Set Available
+            <i className="fa-solid fa-circle-check"></i> Set Available
           </button>
         </div>
       )}

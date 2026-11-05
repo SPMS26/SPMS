@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import TopHeader from './TopHeader';
 
-const AppLayout = ({ children }) => {
+const AppLayout = ({ children, search }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
 
@@ -34,6 +34,7 @@ const AppLayout = ({ children }) => {
         <TopHeader
           onToggleSidebar={() => setSidebarOpen(prev => !prev)}
           sidebarOpen={sidebarOpen}
+          search={search}
         />
         <main className="page-content">
           {children}

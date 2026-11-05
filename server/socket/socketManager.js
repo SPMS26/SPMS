@@ -1,4 +1,6 @@
 import { Server } from 'socket.io';
+import jwt from 'jsonwebtoken';
+import db from '../config/database.js';
 
 let io = null;
 
@@ -8,6 +10,19 @@ function initSocket(server, clientUrl) {
       origin: clientUrl || '*',
       methods: ['GET', 'POST']
     }
+  });
+
+  // Private rooms are only for the logged-in user the token proves. A bad token still connects,
+  // but gets public slot updates only.
+  io.use(async (socket, next) => {
+    try {
+      const { id } = jwt.verify(socket.handshake.auth?.token, process.env.JWT_SECRET || 'spms_jwt_secret_key_2026_dev');
+      const result = await db.query('SELECT id, role FROM users WHERE id = $1 AND is_active = true', [id]);
+      socket.data.user = result.rows[0] || null;
+    } catch {
+      socket.data.user = null;
+    }
+    next();
   });
 
   io.on('connection', (socket) => {
@@ -21,12 +36,14 @@ function initSocket(server, clientUrl) {
 
     // Join user room for private notifications
     socket.on('join:user', (userId) => {
+      if (socket.data.user?.id !== userId) return;
       socket.join(`user:${userId}`);
       console.log(`[Socket.io] Socket ${socket.id} joined room user:${userId}`);
     });
 
     // Join admin room
     socket.on('join:admin', () => {
+      if (!['ADMIN', 'SECURITY'].includes(socket.data.user?.role)) return;
       socket.join('admin');
       console.log(`[Socket.io] Socket ${socket.id} joined admin room`);
     });

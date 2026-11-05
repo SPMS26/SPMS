@@ -72,6 +72,7 @@ const LoginPage = () => {
       <form onSubmit={handleSubmit} noValidate={false}>
         {error && (
           <div className="auth-error" role="alert">
+            <i className="fa-solid fa-circle-exclamation"></i>
             <span>{error}</span>
           </div>
         )}
@@ -125,7 +126,7 @@ const LoginPage = () => {
 
       <div className="auth-demo">
         <button type="button" className="auth-demo-toggle" onClick={() => setDemoOpen((v) => !v)} aria-expanded={demoOpen}>
-          <span>Try a demo account</span>
+          <span><i className="fa-solid fa-key" style={{ color: 'var(--accent-gold)', marginRight: '0.4rem' }}></i> Try a demo account</span>
           <i className={`fa-solid ${demoOpen ? 'fa-chevron-up' : 'fa-chevron-down'}`}></i>
         </button>
         {demoOpen && (
@@ -136,7 +137,7 @@ const LoginPage = () => {
                   <div className="role">{acc.role}</div>
                   <div className="email">{acc.email}</div>
                 </span>
-                <span className="go">Sign in </span>
+                <span className="go">Sign in <i className="fa-solid fa-arrow-right"></i></span>
               </button>
             ))}
           </div>

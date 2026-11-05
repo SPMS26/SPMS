@@ -2,6 +2,8 @@ const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
 import React, { useState, useEffect } from 'react';
 import AppLayout from '../components/layout/AppLayout';
+import NoResults from '../components/common/NoResults';
+import { matchesSearch } from '../utils/searchUtils';
 import { adminService } from '../services/adminService';
 import { lotService } from '../services/lotService';
 import toast from 'react-hot-toast';
@@ -13,6 +15,7 @@ const emptyForm = { full_name: '', email: '', password: '', phone: '', assigned_
 const AdminSecurityPage = () => {
   const confirm = useConfirm();
   const [staff, setStaff] = useState([]);
+  const [search, setSearch] = useState('');
   const [lots, setLots] = useState([]);
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState(emptyForm);
@@ -129,8 +132,15 @@ const AdminSecurityPage = () => {
     }
   };
 
+  const visibleStaff = staff.filter((m) => matchesSearch(search, [
+    m.full_name,
+    m.email,
+    m.phone,
+    lots.find((l) => l.id === m.assigned_lot_id)?.name
+  ]));
+
   return (
-    <AppLayout>
+    <AppLayout search={{ value: search, onChange: setSearch, placeholder: 'Search staff by name, email, phone or lot' }}>
       <div className="page-header-row">
         <div className="page-title-box">
           <h1>Security Staff</h1>
@@ -180,7 +190,7 @@ const AdminSecurityPage = () => {
               </div>
             </div>
             <button type="submit" className="btn-select-slot" style={{ marginTop: 0, width: 'auto', padding: '0.6rem 1.25rem' }} disabled={saving}>
-              {saving ? 'Creating...' : 'Create Security Account'}
+              <i className="fa-solid fa-user-plus"></i> {saving ? 'Creating...' : 'Create Security Account'}
             </button>
           </form>
 
@@ -199,7 +209,7 @@ const AdminSecurityPage = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {staff.map((m) => (
+                  {visibleStaff.map((m) => (
                     <tr key={m.id}>
                       <td><strong>{m.full_name}</strong></td>
                       <td>{m.email}</td>
@@ -222,7 +232,7 @@ const AdminSecurityPage = () => {
                       <td>
                         <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
                           <button className="change-btn" onClick={() => handleResetPassword(m)}>
-                            Reset Password
+                            <i className="fa-solid fa-key"></i> Reset Password
                           </button>
                           <button
                             className="change-btn"
@@ -246,12 +256,15 @@ const AdminSecurityPage = () => {
                             onClick={() => setStaffToDelete(m)}
                             title="Delete this security account"
                           >
-                            Delete
+                            <i className="fa-solid fa-trash"></i> Delete
                           </button>
                         </div>
                       </td>
                     </tr>
                   ))}
+                  {staff.length > 0 && visibleStaff.length === 0 && (
+                    <tr><td colSpan={6}><NoResults query={search} onClear={() => setSearch('')} /></td></tr>
+                  )}
                   {!loading && staff.length === 0 && (
                     <tr><td colSpan={6} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>No security accounts yet.</td></tr>
                   )}
@@ -268,7 +281,7 @@ const AdminSecurityPage = () => {
           <div className="modal-box" style={{ maxWidth: '440px', textAlign: 'center' }}>
             <div className="modal-header">
               <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#EF4444', margin: 0 }}>
-                Delete Security Account
+                <i className="fa-solid fa-triangle-exclamation"></i> Delete Security Account
               </h3>
               <button
                 className="modal-close"
@@ -324,7 +337,7 @@ const AdminSecurityPage = () => {
                   {deleting ? (
                     <span><i className="fa-solid fa-spinner fa-spin"></i> Deleting...</span>
                   ) : (
-                    <span>Yes</span>
+                    <span><i className="fa-solid fa-trash"></i> Yes</span>
                   )}
                 </button>
               </div>

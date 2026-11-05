@@ -8,6 +8,7 @@ const HeatmapGrid = ({ times, days, matrix }) => {
   if (!hasData) {
     return (
       <div style={{ textAlign: 'center', padding: '2.5rem 1rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+        <i className="fa-regular fa-clock" style={{ display: 'block', fontSize: '1.5rem', marginBottom: '0.5rem', opacity: 0.5 }}></i>
         No analytics data available
       </div>
     );
