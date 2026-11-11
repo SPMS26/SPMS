@@ -9,8 +9,13 @@ import path from 'path';
 import db from './config/database.js';
 import { initDb } from './config/initDb.js';
 import { initSocket } from './socket/socketManager.js';
-import { startPendingBookingSweeper } from './services/bookingRules.js';
+import {
+  startPendingBookingSweeper,
+  expireStalePendingBookings,
+  expireStaleReservedBookings
+} from './services/bookingRules.js';
 import errorHandler from './middleware/errorHandler.js';
+import { uploadDir } from './middleware/upload.js';
 
 // Route imports
 import authRoutes from './routes/authRoutes.js';
@@ -26,6 +31,9 @@ import adminRoutes from './routes/adminRoutes.js';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// On Vercel the app runs as a serverless function: no long-lived process, no listen(), no WebSockets
+const ON_VERCEL = Boolean(process.env.VERCEL);
 
 // Process-level crash prevention guards
 process.on('uncaughtException', (err) => {
@@ -63,7 +71,30 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(morgan('dev'));
 
 // Static uploads folder
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static(uploadDir));
+
+if (ON_VERCEL) {
+  // There is no boot step to run initDb in, so the first API request of each instance does it
+  let dbReady = null;
+  // Stands in for the 30s interval sweeper, which can't run without a persistent process:
+  // stale bookings are expired at most every 30s, triggered by incoming requests
+  let lastSweep = 0;
+  app.use('/api', async (req, res, next) => {
+    try {
+      dbReady ??= initDb();
+      await dbReady;
+    } catch (err) {
+      dbReady = null; // retry on the next request instead of caching the failure
+      return next(err);
+    }
+    if (Date.now() - lastSweep > 30 * 1000) {
+      lastSweep = Date.now();
+      await expireStalePendingBookings();
+      await expireStaleReservedBookings();
+    }
+    next();
+  });
+}
 
 // Mount API Routes
 app.use('/api/auth', authRoutes);
@@ -99,9 +130,6 @@ app.get(/^\/(?!api|uploads|socket\.io).*/, (req, res, next) => {
 
 // Global Error Handler
 app.use(errorHandler);
-
-// Initialize Socket.io
-initSocket(server, process.env.CLIENT_URL);
 
 const PORT = process.env.PORT || 5000;
 
@@ -155,4 +183,10 @@ async function startServer() {
   }
 }
 
-startServer();
+if (!ON_VERCEL) {
+  initSocket(server, process.env.CLIENT_URL);
+  startServer();
+}
+
+// Vercel picks up the default export and wraps it in a function
+export default app;

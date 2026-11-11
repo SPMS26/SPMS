@@ -150,7 +150,7 @@ const AdminDashboard = () => {
   useLiveRefresh(() => {
     fetchKpis();
     refreshLots();
-  }, { groupMs: 1000, matches: (event) => lots.some((lot) => lot.id === event.lotId) });
+  }, { groupMs: 1000, disconnectedPollMs: 15000, matches: (event) => lots.some((lot) => lot.id === event.lotId) });
 
   const handleAdminSlotAction = async (actionType) => {
     if (!selectedAdminSlot) return;

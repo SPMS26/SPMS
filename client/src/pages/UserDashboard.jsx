@@ -11,6 +11,7 @@ import { useLots } from '../components/parking/useLots';
 import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import { lotService } from '../services/lotService';
+import { useLiveRefresh } from '../hooks/useLiveRefresh';
 import { bookingService } from '../services/bookingService';
 import toast from 'react-hot-toast';
 
@@ -81,6 +82,11 @@ const UserDashboard = () => {
       console.error('Error refreshing slots:', err);
     }
   };
+
+  // Socket events already update the map in place above; this only polls when there is no live connection
+  useLiveRefresh(() => {
+    if (slotData.lotId) refreshShownSlots();
+  }, { disconnectedPollMs: 15000, matches: () => false });
 
   const scrollToSlots = () => {
     const section = slotSection.current;

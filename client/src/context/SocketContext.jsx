@@ -13,7 +13,7 @@ export const SocketProvider = ({ children }) => {
 
   // Only logged-in users need live updates. Logging out drops the connection and its private rooms.
   useEffect(() => {
-    if (!userId) return;
+    if (!userId || import.meta.env.VITE_REALTIME === 'off') return;
 
     // Target backend server on port 5000 directly, using a WebSocket straight away
     const backendUrl = window.location.hostname === 'localhost' ? 'http://localhost:5000' : window.location.origin;

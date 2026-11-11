@@ -1,11 +1,15 @@
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import os from 'os';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const uploadDir = path.join(__dirname, '../uploads');
+// Vercel's filesystem is read-only apart from /tmp, and /tmp is wiped whenever the function instance is recycled
+export const uploadDir = process.env.VERCEL
+  ? path.join(os.tmpdir(), 'spms-uploads')
+  : path.join(__dirname, '../uploads');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
