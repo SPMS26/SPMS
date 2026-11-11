@@ -209,3 +209,23 @@
   .lp-nav .brand-full { display: none; }
   .lp-nav .brand-short { display: inline; }
 }
+
+/* ---------- Light theme ---------- */
+:root[data-theme='light'] .lp-nav { background: rgba(243, 242, 238, 0.88); }
+:root[data-theme='light'] .lp-section-alt { background: var(--surface); }
+:root[data-theme='light'] .lp-hero::before {
+  background-image:
+    linear-gradient(rgba(22, 24, 29, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(22, 24, 29, 0.055) 1px, transparent 1px);
+}
+:root[data-theme='light'] .lp-hero::after {
+  background: radial-gradient(closest-side, rgba(30, 78, 216, 0.14), rgba(30, 78, 216, 0.04) 55%, transparent);
+}
+:root[data-theme='light'] #owners::before {
+  background-image: repeating-linear-gradient(-60deg, transparent 0 58px, rgba(22, 24, 29, 0.05) 58px 60px);
+}
+:root[data-theme='light'] .lp-cta-band::before { background: radial-gradient(600px 260px at 50% 100%, rgba(30, 78, 216, 0.12), transparent 70%); }
+:root[data-theme='light'] .lp-visual-map { box-shadow: 0 30px 70px -30px rgba(22, 24, 29, 0.3); }
+:root[data-theme='light'] .lp-ticket-qr { box-shadow: 0 0 0 1px var(--line); }
+:root[data-theme='light'] .lp-bay.busy { color: #FFFFFF; }
+:root[data-theme='light'] .lp-eyebrow { background: var(--surface); }

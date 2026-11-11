@@ -16,9 +16,9 @@ const HeatmapGrid = ({ times, days, matrix }) => {
 
   const getHeatColor = (level) => {
     if (!level || level === 0) return 'var(--surface-2)';
-    if (level === 1) return '#16233F';
-    if (level === 2) return '#1D3A78';
-    if (level === 3) return '#2A57C4';
+    if (level === 1) return 'var(--heat-1)';
+    if (level === 2) return 'var(--heat-2)';
+    if (level === 3) return 'var(--heat-3)';
     if (level === 4) return 'var(--accent)';
     return 'var(--accent)';
   };

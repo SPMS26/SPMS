@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import UserAvatar from '../common/UserAvatar';
+import ThemeToggle from '../common/ThemeToggle';
 
 const TopHeader = ({ onToggleSidebar, sidebarOpen, search }) => {
   const { user, isAdmin, isSecurity, isStaff } = useAuth();
@@ -60,6 +61,7 @@ const TopHeader = ({ onToggleSidebar, sidebarOpen, search }) => {
       </div>
 
       <div className="header-right">
+        <ThemeToggle />
         <Link to="/profile" className="user-profile" title="Your profile">
           <UserAvatar user={user} size={32} />
           <div className="user-info">

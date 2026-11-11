@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import QRCode from 'qrcode';
+import ThemeToggle from '../components/common/ThemeToggle';
 import { useAuth } from '../context/AuthContext';
 import { lotService } from '../services/lotService';
 import { authService } from '../services/authService';
@@ -160,6 +161,7 @@ const LandingPage = () => {
             <li><a href="#faq">FAQ</a></li>
           </ul>
           <div className="lp-nav-actions">
+            <ThemeToggle />
             {user ? (
               <>
                 <button type="button" className="btn btn-ghost" onClick={signOut}>Sign out</button>

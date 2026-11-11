@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import ThemeToggle from '../common/ThemeToggle';
 
 // Shared frame for sign-in and both registration pages:
 // one centred column with the logo above a dark card that holds the whole form.
@@ -15,6 +16,7 @@ const AuthShell = ({ title, subtitle, children, footer, steps, maxWidth = 460 })
             <span className="brand-short" aria-hidden="true">SPMS</span>
           </span>
         </Link>
+        <ThemeToggle />
       </div>
     </header>
 
