@@ -167,6 +167,13 @@ ALTER TABLE bookings ADD COLUMN IF NOT EXISTS pre_booking_fee NUMERIC(10, 2) DEF
 ALTER TABLE bookings ADD COLUMN IF NOT EXISTS parking_charge NUMERIC(10, 2) DEFAULT 0.00;
 ALTER TABLE payments ADD COLUMN IF NOT EXISTS payment_type VARCHAR(30) DEFAULT 'reservation';
 ALTER TABLE payments ADD COLUMN IF NOT EXISTS expires_at TIMESTAMP WITH TIME ZONE;
+
+-- Rate limit counters shared by every server instance (see middleware/rateLimit.js)
+CREATE TABLE IF NOT EXISTS rate_limits (
+  key VARCHAR(255) PRIMARY KEY,
+  hits INT NOT NULL,
+  reset_at TIMESTAMP WITH TIME ZONE NOT NULL
+);
 `;
 
 async function initDb() {

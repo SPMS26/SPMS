@@ -16,6 +16,7 @@ import {
 } from './services/bookingRules.js';
 import errorHandler from './middleware/errorHandler.js';
 import { uploadDir } from './middleware/upload.js';
+import { apiLimiter } from './middleware/rateLimit.js';
 
 // Route imports
 import authRoutes from './routes/authRoutes.js';
@@ -72,6 +73,9 @@ app.use(morgan('dev'));
 
 // Static uploads folder
 app.use('/uploads', express.static(uploadDir));
+
+// Flood guard for the whole API; stricter limits sit on login, sign-up and other sensitive routes
+app.use('/api', apiLimiter);
 
 if (ON_VERCEL) {
   // There is no boot step to run initDb in, so the first API request of each instance does it
