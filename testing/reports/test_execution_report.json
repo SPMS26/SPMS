@@ -1,0 +1,670 @@
+{
+  "timestamp": "2026-11-11T23:20:26.100872",
+  "total": 74,
+  "passed": 68,
+  "failed": 0,
+  "skipped": 6,
+  "pass_rate": "100.0%",
+  "modules": {
+    "Module 9: Admin Management": {
+      "total": 11,
+      "passed": 11,
+      "failed": 0,
+      "skipped": 0
+    },
+    "Module 10: Analytics & Reports": {
+      "total": 6,
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0
+    },
+    "Module 1: Authentication": {
+      "total": 8,
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0
+    },
+    "Module 7: History": {
+      "total": 4,
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0
+    },
+    "Module 8: Incident Reporting": {
+      "total": 4,
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0
+    },
+    "Module 6: Parking Charges": {
+      "total": 5,
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0
+    },
+    "Module 3: Parking Lots & Slots": {
+      "total": 7,
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0
+    },
+    "Module 4: Pre-booking": {
+      "total": 7,
+      "passed": 6,
+      "failed": 0,
+      "skipped": 1
+    },
+    "Module 2: Profile & Vehicle": {
+      "total": 8,
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0
+    },
+    "Module 5: QR Entry & Exit": {
+      "total": 9,
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0
+    },
+    "SRS Missing Features (Tracked)": {
+      "total": 5,
+      "passed": 0,
+      "failed": 0,
+      "skipped": 5
+    }
+  },
+  "details": [
+    {
+      "test_id": "tests/admin_management/test_admin_management.py::TestAdminManagement::test_adm_01_add_parking_lot",
+      "module": "Module 9: Admin Management",
+      "name": "test_adm_01_add_parking_lot",
+      "status": "Passed",
+      "duration": "00:00:15",
+      "log": ""
+    },
+    {
+      "test_id": "tests/admin_management/test_admin_management.py::TestAdminManagement::test_adm_02_edit_parking_lot_details",
+      "module": "Module 9: Admin Management",
+      "name": "test_adm_02_edit_parking_lot_details",
+      "status": "Passed",
+      "duration": "00:00:12",
+      "log": ""
+    },
+    {
+      "test_id": "tests/admin_management/test_admin_management.py::TestAdminManagement::test_adm_03_deactivate_parking_lot",
+      "module": "Module 9: Admin Management",
+      "name": "test_adm_03_deactivate_parking_lot",
+      "status": "Passed",
+      "duration": "00:00:11",
+      "log": ""
+    },
+    {
+      "test_id": "tests/admin_management/test_admin_management.py::TestAdminManagement::test_adm_04_bulk_generate_slots",
+      "module": "Module 9: Admin Management",
+      "name": "test_adm_04_bulk_generate_slots",
+      "status": "Passed",
+      "duration": "00:00:12",
+      "log": ""
+    },
+    {
+      "test_id": "tests/admin_management/test_admin_management.py::TestAdminManagement::test_adm_05_enable_slot_maintenance",
+      "module": "Module 9: Admin Management",
+      "name": "test_adm_05_enable_slot_maintenance",
+      "status": "Passed",
+      "duration": "00:00:08",
+      "log": ""
+    },
+    {
+      "test_id": "tests/admin_management/test_admin_management.py::TestAdminManagement::test_adm_06_disable_slot_maintenance",
+      "module": "Module 9: Admin Management",
+      "name": "test_adm_06_disable_slot_maintenance",
+      "status": "Passed",
+      "duration": "00:00:08",
+      "log": ""
+    },
+    {
+      "test_id": "tests/admin_management/test_admin_management.py::TestAdminManagement::test_adm_07_update_parking_pricing",
+      "module": "Module 9: Admin Management",
+      "name": "test_adm_07_update_parking_pricing",
+      "status": "Passed",
+      "duration": "00:00:12",
+      "log": ""
+    },
+    {
+      "test_id": "tests/admin_management/test_admin_management.py::TestAdminManagement::test_adm_08_resolve_incident",
+      "module": "Module 9: Admin Management",
+      "name": "test_adm_08_resolve_incident",
+      "status": "Passed",
+      "duration": "00:00:07",
+      "log": ""
+    },
+    {
+      "test_id": "tests/admin_management/test_admin_management.py::TestAdminManagement::test_adm_09_add_security_staff",
+      "module": "Module 9: Admin Management",
+      "name": "test_adm_09_add_security_staff",
+      "status": "Passed",
+      "duration": "00:00:08",
+      "log": ""
+    },
+    {
+      "test_id": "tests/admin_management/test_admin_management.py::TestAdminManagement::test_adm_10_verify_admin_analytics_dashboard",
+      "module": "Module 9: Admin Management",
+      "name": "test_adm_10_verify_admin_analytics_dashboard",
+      "status": "Passed",
+      "duration": "00:00:05",
+      "log": ""
+    },
+    {
+      "test_id": "tests/admin_management/test_admin_management.py::TestAdminManagement::test_adm_11_user_cannot_access_admin_portal",
+      "module": "Module 9: Admin Management",
+      "name": "test_adm_11_user_cannot_access_admin_portal",
+      "status": "Passed",
+      "duration": "00:00:06",
+      "log": ""
+    },
+    {
+      "test_id": "tests/analytics/test_analytics.py::TestAnalytics::test_ana_01_verify_total_revenue",
+      "module": "Module 10: Analytics & Reports",
+      "name": "test_ana_01_verify_total_revenue",
+      "status": "Passed",
+      "duration": "00:00:06",
+      "log": ""
+    },
+    {
+      "test_id": "tests/analytics/test_analytics.py::TestAnalytics::test_ana_02_verify_total_booking_count",
+      "module": "Module 10: Analytics & Reports",
+      "name": "test_ana_02_verify_total_booking_count",
+      "status": "Passed",
+      "duration": "00:00:06",
+      "log": ""
+    },
+    {
+      "test_id": "tests/analytics/test_analytics.py::TestAnalytics::test_ana_03_verify_active_vehicle_count",
+      "module": "Module 10: Analytics & Reports",
+      "name": "test_ana_03_verify_active_vehicle_count",
+      "status": "Passed",
+      "duration": "00:00:06",
+      "log": ""
+    },
+    {
+      "test_id": "tests/analytics/test_analytics.py::TestAnalytics::test_ana_04_verify_monthly_revenue_chart",
+      "module": "Module 10: Analytics & Reports",
+      "name": "test_ana_04_verify_monthly_revenue_chart",
+      "status": "Passed",
+      "duration": "00:00:07",
+      "log": ""
+    },
+    {
+      "test_id": "tests/analytics/test_analytics.py::TestAnalytics::test_ana_05_verify_peak_occupancy_heatmap",
+      "module": "Module 10: Analytics & Reports",
+      "name": "test_ana_05_verify_peak_occupancy_heatmap",
+      "status": "Passed",
+      "duration": "00:00:08",
+      "log": ""
+    },
+    {
+      "test_id": "tests/analytics/test_analytics.py::TestAnalytics::test_ana_06_verify_daily_revenue_breakdown",
+      "module": "Module 10: Analytics & Reports",
+      "name": "test_ana_06_verify_daily_revenue_breakdown",
+      "status": "Passed",
+      "duration": "00:00:07",
+      "log": ""
+    },
+    {
+      "test_id": "tests/authentication/test_authentication.py::TestAuthentication::test_auth_01_register_new_user_valid",
+      "module": "Module 1: Authentication",
+      "name": "test_auth_01_register_new_user_valid",
+      "status": "Passed",
+      "duration": "00:00:05",
+      "log": ""
+    },
+    {
+      "test_id": "tests/authentication/test_authentication.py::TestAuthentication::test_auth_02_register_duplicate_email",
+      "module": "Module 1: Authentication",
+      "name": "test_auth_02_register_duplicate_email",
+      "status": "Passed",
+      "duration": "00:00:05",
+      "log": ""
+    },
+    {
+      "test_id": "tests/authentication/test_authentication.py::TestAuthentication::test_auth_03_register_missing_required_fields",
+      "module": "Module 1: Authentication",
+      "name": "test_auth_03_register_missing_required_fields",
+      "status": "Passed",
+      "duration": "00:00:04",
+      "log": ""
+    },
+    {
+      "test_id": "tests/authentication/test_authentication.py::TestAuthentication::test_auth_04_login_valid_credentials",
+      "module": "Module 1: Authentication",
+      "name": "test_auth_04_login_valid_credentials",
+      "status": "Passed",
+      "duration": "00:00:05",
+      "log": ""
+    },
+    {
+      "test_id": "tests/authentication/test_authentication.py::TestAuthentication::test_auth_05_login_incorrect_password",
+      "module": "Module 1: Authentication",
+      "name": "test_auth_05_login_incorrect_password",
+      "status": "Passed",
+      "duration": "00:00:04",
+      "log": ""
+    },
+    {
+      "test_id": "tests/authentication/test_authentication.py::TestAuthentication::test_auth_06_login_unregistered_email",
+      "module": "Module 1: Authentication",
+      "name": "test_auth_06_login_unregistered_email",
+      "status": "Passed",
+      "duration": "00:00:04",
+      "log": ""
+    },
+    {
+      "test_id": "tests/authentication/test_authentication.py::TestAuthentication::test_auth_07_access_protected_page_without_auth",
+      "module": "Module 1: Authentication",
+      "name": "test_auth_07_access_protected_page_without_auth",
+      "status": "Passed",
+      "duration": "00:00:04",
+      "log": ""
+    },
+    {
+      "test_id": "tests/authentication/test_authentication.py::TestAuthentication::test_auth_08_access_protected_page_with_invalid_session",
+      "module": "Module 1: Authentication",
+      "name": "test_auth_08_access_protected_page_with_invalid_session",
+      "status": "Passed",
+      "duration": "00:00:06",
+      "log": ""
+    },
+    {
+      "test_id": "tests/booking_history/test_booking_history.py::TestBookingHistory::test_hist_01_view_booking_history",
+      "module": "Module 7: History",
+      "name": "test_hist_01_view_booking_history",
+      "status": "Passed",
+      "duration": "00:00:06",
+      "log": ""
+    },
+    {
+      "test_id": "tests/booking_history/test_booking_history.py::TestBookingHistory::test_hist_02_view_payment_history",
+      "module": "Module 7: History",
+      "name": "test_hist_02_view_payment_history",
+      "status": "Passed",
+      "duration": "00:00:06",
+      "log": ""
+    },
+    {
+      "test_id": "tests/booking_history/test_booking_history.py::TestBookingHistory::test_hist_03_verify_empty_history_for_new_user",
+      "module": "Module 7: History",
+      "name": "test_hist_03_verify_empty_history_for_new_user",
+      "status": "Passed",
+      "duration": "00:00:08",
+      "log": ""
+    },
+    {
+      "test_id": "tests/booking_history/test_booking_history.py::TestBookingHistory::test_hist_04_verify_cannot_access_another_user_history",
+      "module": "Module 7: History",
+      "name": "test_hist_04_verify_cannot_access_another_user_history",
+      "status": "Passed",
+      "duration": "00:00:06",
+      "log": ""
+    },
+    {
+      "test_id": "tests/incident_reporting/test_incident_reporting.py::TestIncidentReporting::test_inc_01_submit_valid_incident",
+      "module": "Module 8: Incident Reporting",
+      "name": "test_inc_01_submit_valid_incident",
+      "status": "Passed",
+      "duration": "00:00:11",
+      "log": ""
+    },
+    {
+      "test_id": "tests/incident_reporting/test_incident_reporting.py::TestIncidentReporting::test_inc_02_submit_incident_missing_description",
+      "module": "Module 8: Incident Reporting",
+      "name": "test_inc_02_submit_incident_missing_description",
+      "status": "Passed",
+      "duration": "00:00:08",
+      "log": ""
+    },
+    {
+      "test_id": "tests/incident_reporting/test_incident_reporting.py::TestIncidentReporting::test_inc_03_submit_incident_with_image",
+      "module": "Module 8: Incident Reporting",
+      "name": "test_inc_03_submit_incident_with_image",
+      "status": "Passed",
+      "duration": "00:00:10",
+      "log": ""
+    },
+    {
+      "test_id": "tests/incident_reporting/test_incident_reporting.py::TestIncidentReporting::test_inc_04_verify_submitted_incident_details",
+      "module": "Module 8: Incident Reporting",
+      "name": "test_inc_04_verify_submitted_incident_details",
+      "status": "Passed",
+      "duration": "00:00:06",
+      "log": ""
+    },
+    {
+      "test_id": "tests/parking_charges/test_parking_charges.py::TestParkingCharges::test_pay_01_verify_duration_calculation_formula",
+      "module": "Module 6: Parking Charges",
+      "name": "test_pay_01_verify_duration_calculation_formula",
+      "status": "Passed",
+      "duration": "1 ms",
+      "log": ""
+    },
+    {
+      "test_id": "tests/parking_charges/test_parking_charges.py::TestParkingCharges::test_pay_02_verify_total_parking_charge",
+      "module": "Module 6: Parking Charges",
+      "name": "test_pay_02_verify_total_parking_charge",
+      "status": "Passed",
+      "duration": "00:00:07",
+      "log": ""
+    },
+    {
+      "test_id": "tests/parking_charges/test_parking_charges.py::TestParkingCharges::test_pay_03_verify_base_fare_deduction",
+      "module": "Module 6: Parking Charges",
+      "name": "test_pay_03_verify_base_fare_deduction",
+      "status": "Passed",
+      "duration": "00:00:07",
+      "log": ""
+    },
+    {
+      "test_id": "tests/parking_charges/test_parking_charges.py::TestParkingCharges::test_pay_04_verify_remaining_payment_at_exit",
+      "module": "Module 6: Parking Charges",
+      "name": "test_pay_04_verify_remaining_payment_at_exit",
+      "status": "Passed",
+      "duration": "1 ms",
+      "log": ""
+    },
+    {
+      "test_id": "tests/parking_charges/test_parking_charges.py::TestParkingCharges::test_pay_05_verify_displayed_parking_pricing",
+      "module": "Module 6: Parking Charges",
+      "name": "test_pay_05_verify_displayed_parking_pricing",
+      "status": "Passed",
+      "duration": "00:00:06",
+      "log": ""
+    },
+    {
+      "test_id": "tests/parking_slots/test_parking_slots.py::TestParkingSlots::test_slot_01_view_parking_lots",
+      "module": "Module 3: Parking Lots & Slots",
+      "name": "test_slot_01_view_parking_lots",
+      "status": "Passed",
+      "duration": "00:00:06",
+      "log": ""
+    },
+    {
+      "test_id": "tests/parking_slots/test_parking_slots.py::TestParkingSlots::test_slot_02_view_slots_belonging_to_lot",
+      "module": "Module 3: Parking Lots & Slots",
+      "name": "test_slot_02_view_slots_belonging_to_lot",
+      "status": "Passed",
+      "duration": "00:00:09",
+      "log": ""
+    },
+    {
+      "test_id": "tests/parking_slots/test_parking_slots.py::TestParkingSlots::test_slot_03_verify_available_slot_status",
+      "module": "Module 3: Parking Lots & Slots",
+      "name": "test_slot_03_verify_available_slot_status",
+      "status": "Passed",
+      "duration": "00:00:07",
+      "log": ""
+    },
+    {
+      "test_id": "tests/parking_slots/test_parking_slots.py::TestParkingSlots::test_slot_04_verify_occupied_slot_status",
+      "module": "Module 3: Parking Lots & Slots",
+      "name": "test_slot_04_verify_occupied_slot_status",
+      "status": "Passed",
+      "duration": "00:00:06",
+      "log": ""
+    },
+    {
+      "test_id": "tests/parking_slots/test_parking_slots.py::TestParkingSlots::test_slot_05_verify_reserved_slot_status",
+      "module": "Module 3: Parking Lots & Slots",
+      "name": "test_slot_05_verify_reserved_slot_status",
+      "status": "Passed",
+      "duration": "00:00:06",
+      "log": ""
+    },
+    {
+      "test_id": "tests/parking_slots/test_parking_slots.py::TestParkingSlots::test_slot_06_verify_maintenance_slot_status",
+      "module": "Module 3: Parking Lots & Slots",
+      "name": "test_slot_06_verify_maintenance_slot_status",
+      "status": "Passed",
+      "duration": "00:00:05",
+      "log": ""
+    },
+    {
+      "test_id": "tests/parking_slots/test_parking_slots.py::TestParkingSlots::test_slot_07_verify_slot_status_updates_ui",
+      "module": "Module 3: Parking Lots & Slots",
+      "name": "test_slot_07_verify_slot_status_updates_ui",
+      "status": "Passed",
+      "duration": "00:00:06",
+      "log": ""
+    },
+    {
+      "test_id": "tests/pre_booking/test_pre_booking.py::TestPreBooking::test_book_01_create_valid_pre_booking",
+      "module": "Module 4: Pre-booking",
+      "name": "test_book_01_create_valid_pre_booking",
+      "status": "Passed",
+      "duration": "00:00:07",
+      "log": ""
+    },
+    {
+      "test_id": "tests/pre_booking/test_pre_booking.py::TestPreBooking::test_book_02_attempt_overlapping_reservation",
+      "module": "Module 4: Pre-booking",
+      "name": "test_book_02_attempt_overlapping_reservation",
+      "status": "Passed",
+      "duration": "00:00:06",
+      "log": ""
+    },
+    {
+      "test_id": "tests/pre_booking/test_pre_booking.py::TestPreBooking::test_book_03_attempt_booking_occupied_slot",
+      "module": "Module 4: Pre-booking",
+      "name": "test_book_03_attempt_booking_occupied_slot",
+      "status": "Passed",
+      "duration": "00:00:07",
+      "log": ""
+    },
+    {
+      "test_id": "tests/pre_booking/test_pre_booking.py::TestPreBooking::test_book_04_submit_booking_missing_details",
+      "module": "Module 4: Pre-booking",
+      "name": "test_book_04_submit_booking_missing_details",
+      "status": "Passed",
+      "duration": "00:00:06",
+      "log": ""
+    },
+    {
+      "test_id": "tests/pre_booking/test_pre_booking.py::TestPreBooking::test_book_05_submit_booking_invalid_date_time",
+      "module": "Module 4: Pre-booking",
+      "name": "test_book_05_submit_booking_invalid_date_time",
+      "status": "Skipped",
+      "duration": "0 ms",
+      "log": "(&#x27;C:\\\\Users\\\\gowni\\\\Projects\\\\SE\\\\SPMS\\\\testing\\\\tests\\\\pre_booking\\\\test_pre_booking.py&#x27;, 74, &#x27;Skipped: NOT IMPLEMENTED: Future date/time search and selection inputs are not implemented in the current SPMS UI.&#x27;)"
+    },
+    {
+      "test_id": "tests/pre_booking/test_pre_booking.py::TestPreBooking::test_book_06_complete_base_fare_payment_flow",
+      "module": "Module 4: Pre-booking",
+      "name": "test_book_06_complete_base_fare_payment_flow",
+      "status": "Passed",
+      "duration": "00:00:13",
+      "log": ""
+    },
+    {
+      "test_id": "tests/pre_booking/test_pre_booking.py::TestPreBooking::test_book_07_verify_parking_pass_activation",
+      "module": "Module 4: Pre-booking",
+      "name": "test_book_07_verify_parking_pass_activation",
+      "status": "Passed",
+      "duration": "00:00:08",
+      "log": ""
+    },
+    {
+      "test_id": "tests/profile_vehicle/test_profile_vehicle.py::TestProfileVehicle::test_prof_01_view_user_profile",
+      "module": "Module 2: Profile & Vehicle",
+      "name": "test_prof_01_view_user_profile",
+      "status": "Passed",
+      "duration": "00:00:06",
+      "log": ""
+    },
+    {
+      "test_id": "tests/profile_vehicle/test_profile_vehicle.py::TestProfileVehicle::test_prof_02_update_profile_details",
+      "module": "Module 2: Profile & Vehicle",
+      "name": "test_prof_02_update_profile_details",
+      "status": "Passed",
+      "duration": "00:00:10",
+      "log": ""
+    },
+    {
+      "test_id": "tests/profile_vehicle/test_profile_vehicle.py::TestProfileVehicle::test_prof_03_change_password_valid",
+      "module": "Module 2: Profile & Vehicle",
+      "name": "test_prof_03_change_password_valid",
+      "status": "Passed",
+      "duration": "00:00:12",
+      "log": ""
+    },
+    {
+      "test_id": "tests/profile_vehicle/test_profile_vehicle.py::TestProfileVehicle::test_prof_04_change_password_mismatched",
+      "module": "Module 2: Profile & Vehicle",
+      "name": "test_prof_04_change_password_mismatched",
+      "status": "Passed",
+      "duration": "00:00:09",
+      "log": ""
+    },
+    {
+      "test_id": "tests/profile_vehicle/test_profile_vehicle.py::TestProfileVehicle::test_veh_01_add_vehicle_valid",
+      "module": "Module 2: Profile & Vehicle",
+      "name": "test_veh_01_add_vehicle_valid",
+      "status": "Passed",
+      "duration": "00:00:08",
+      "log": ""
+    },
+    {
+      "test_id": "tests/profile_vehicle/test_profile_vehicle.py::TestProfileVehicle::test_veh_02_add_vehicle_missing_details",
+      "module": "Module 2: Profile & Vehicle",
+      "name": "test_veh_02_add_vehicle_missing_details",
+      "status": "Passed",
+      "duration": "00:00:07",
+      "log": ""
+    },
+    {
+      "test_id": "tests/profile_vehicle/test_profile_vehicle.py::TestProfileVehicle::test_veh_03_delete_vehicle",
+      "module": "Module 2: Profile & Vehicle",
+      "name": "test_veh_03_delete_vehicle",
+      "status": "Passed",
+      "duration": "00:00:09",
+      "log": ""
+    },
+    {
+      "test_id": "tests/profile_vehicle/test_profile_vehicle.py::TestProfileVehicle::test_veh_04_set_default_vehicle",
+      "module": "Module 2: Profile & Vehicle",
+      "name": "test_veh_04_set_default_vehicle",
+      "status": "Passed",
+      "duration": "00:00:08",
+      "log": ""
+    },
+    {
+      "test_id": "tests/qr_entry_exit/test_qr_entry_exit.py::TestQREntryExit::test_qr_01_verify_qr_code_generation",
+      "module": "Module 5: QR Entry & Exit",
+      "name": "test_qr_01_verify_qr_code_generation",
+      "status": "Passed",
+      "duration": "00:00:09",
+      "log": ""
+    },
+    {
+      "test_id": "tests/qr_entry_exit/test_qr_entry_exit.py::TestQREntryExit::test_qr_02_verify_qr_scanning_interface",
+      "module": "Module 5: QR Entry & Exit",
+      "name": "test_qr_02_verify_qr_scanning_interface",
+      "status": "Passed",
+      "duration": "00:00:08",
+      "log": ""
+    },
+    {
+      "test_id": "tests/qr_entry_exit/test_qr_entry_exit.py::TestQREntryExit::test_qr_03_verify_vehicle_entry_check_in",
+      "module": "Module 5: QR Entry & Exit",
+      "name": "test_qr_03_verify_vehicle_entry_check_in",
+      "status": "Passed",
+      "duration": "00:00:20",
+      "log": ""
+    },
+    {
+      "test_id": "tests/qr_entry_exit/test_qr_entry_exit.py::TestQREntryExit::test_qr_04_verify_vehicle_exit_check_out",
+      "module": "Module 5: QR Entry & Exit",
+      "name": "test_qr_04_verify_vehicle_exit_check_out",
+      "status": "Passed",
+      "duration": "00:00:18",
+      "log": ""
+    },
+    {
+      "test_id": "tests/qr_entry_exit/test_qr_entry_exit.py::TestQREntryExit::test_qr_05_verify_invalid_qr_data_rejected",
+      "module": "Module 5: QR Entry & Exit",
+      "name": "test_qr_05_verify_invalid_qr_data_rejected",
+      "status": "Passed",
+      "duration": "00:00:22",
+      "log": ""
+    },
+    {
+      "test_id": "tests/qr_entry_exit/test_qr_entry_exit.py::TestQREntryExit::test_qr_06_verify_tampered_qr_rejected",
+      "module": "Module 5: QR Entry & Exit",
+      "name": "test_qr_06_verify_tampered_qr_rejected",
+      "status": "Passed",
+      "duration": "00:00:26",
+      "log": ""
+    },
+    {
+      "test_id": "tests/qr_entry_exit/test_qr_entry_exit.py::TestQREntryExit::test_qr_07_verify_parking_duration_calculation",
+      "module": "Module 5: QR Entry & Exit",
+      "name": "test_qr_07_verify_parking_duration_calculation",
+      "status": "Passed",
+      "duration": "00:00:10",
+      "log": ""
+    },
+    {
+      "test_id": "tests/qr_entry_exit/test_qr_entry_exit.py::TestQREntryExit::test_qr_08_attempt_exit_without_entry",
+      "module": "Module 5: QR Entry & Exit",
+      "name": "test_qr_08_attempt_exit_without_entry",
+      "status": "Passed",
+      "duration": "00:00:34",
+      "log": ""
+    },
+    {
+      "test_id": "tests/qr_entry_exit/test_qr_entry_exit.py::TestQREntryExit::test_qr_09_attempt_reuse_expired_pass",
+      "module": "Module 5: QR Entry & Exit",
+      "name": "test_qr_09_attempt_reuse_expired_pass",
+      "status": "Passed",
+      "duration": "00:00:35",
+      "log": ""
+    },
+    {
+      "test_id": "tests/test_missing_features.py::TestMissingFeaturesSRS::test_missing_01_real_razorpay_gateway_integration",
+      "module": "SRS Missing Features (Tracked)",
+      "name": "test_missing_01_real_razorpay_gateway_integration",
+      "status": "Skipped",
+      "duration": "2 ms",
+      "log": "(&#x27;C:\\\\Users\\\\gowni\\\\Projects\\\\SE\\\\SPMS\\\\testing\\\\tests\\\\test_missing_features.py&#x27;, 11, &#x27;Skipped: NOT IMPLEMENTED: Real Razorpay payment gateway integration (Req-9) is not implemented.&#x27;)"
+    },
+    {
+      "test_id": "tests/test_missing_features.py::TestMissingFeaturesSRS::test_missing_02_user_self_service_live_booking",
+      "module": "SRS Missing Features (Tracked)",
+      "name": "test_missing_02_user_self_service_live_booking",
+      "status": "Skipped",
+      "duration": "2 ms",
+      "log": "(&#x27;C:\\\\Users\\\\gowni\\\\Projects\\\\SE\\\\SPMS\\\\testing\\\\tests\\\\test_missing_features.py&#x27;, 15, &#x27;Skipped: NOT IMPLEMENTED: User self-service live booking (Req-6) is not implemented.&#x27;)"
+    },
+    {
+      "test_id": "tests/test_missing_features.py::TestMissingFeaturesSRS::test_missing_03_advanced_lot_search_filtering",
+      "module": "SRS Missing Features (Tracked)",
+      "name": "test_missing_03_advanced_lot_search_filtering",
+      "status": "Skipped",
+      "duration": "2 ms",
+      "log": "(&#x27;C:\\\\Users\\\\gowni\\\\Projects\\\\SE\\\\SPMS\\\\testing\\\\tests\\\\test_missing_features.py&#x27;, 19, &#x27;Skipped: NOT IMPLEMENTED: Advanced parking lot search by location, date, and time (Req-3) is not implemented.&#x27;)"
+    },
+    {
+      "test_id": "tests/test_missing_features.py::TestMissingFeaturesSRS::test_missing_04_automated_nightly_backups",
+      "module": "SRS Missing Features (Tracked)",
+      "name": "test_missing_04_automated_nightly_backups",
+      "status": "Skipped",
+      "duration": "2 ms",
+      "log": "(&#x27;C:\\\\Users\\\\gowni\\\\Projects\\\\SE\\\\SPMS\\\\testing\\\\tests\\\\test_missing_features.py&#x27;, 23, &#x27;Skipped: NOT IMPLEMENTED: Automated nightly database backups and 30-day retention (Section 5.5) are not implemented.&#x27;)"
+    },
+    {
+      "test_id": "tests/test_missing_features.py::TestMissingFeaturesSRS::test_missing_05_admin_direct_user_administration",
+      "module": "SRS Missing Features (Tracked)",
+      "name": "test_missing_05_admin_direct_user_administration",
+      "status": "Skipped",
+      "duration": "2 ms",
+      "log": "(&#x27;C:\\\\Users\\\\gowni\\\\Projects\\\\SE\\\\SPMS\\\\testing\\\\tests\\\\test_missing_features.py&#x27;, 27, &#x27;Skipped: NOT IMPLEMENTED: Direct user administration (edit/suspend/delete) by admin (Req-13) is not implemented.&#x27;)"
+    }
+  ]
+}
