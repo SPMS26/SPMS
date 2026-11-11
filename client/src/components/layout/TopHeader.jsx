@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import UserAvatar from '../common/UserAvatar';
 
 const TopHeader = ({ onToggleSidebar, sidebarOpen, search }) => {
-  const { user, isAdmin, isSecurity } = useAuth();
+  const { user, isAdmin, isSecurity, isStaff } = useAuth();
   const location = useLocation();
 
   const isProfilePage = location.pathname === '/profile';
@@ -21,6 +21,11 @@ const TopHeader = ({ onToggleSidebar, sidebarOpen, search }) => {
         >
           <i className="fa-solid fa-bars"></i>
         </button>
+
+        {/* Owners and gate staff have no search box, so their header carries the system name */}
+        {isStaff && !isProfilePage && (
+          <span className="top-header-title">Smart Parking Management System</span>
+        )}
 
         {isProfilePage && (
           <Link to={homePath} className="nav-arrow-btn">

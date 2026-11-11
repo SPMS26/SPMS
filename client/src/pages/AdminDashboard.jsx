@@ -235,14 +235,14 @@ const AdminDashboard = () => {
           <div style={{ height: '220px', width: '100%' }}>
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={monthlyData}>
-                <CartesianGrid stroke="#E2E0D9" strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="month" stroke="#7D818B" fontSize={10} />
-                <YAxis yAxisId="bookings" stroke="#7D818B" fontSize={10} allowDecimals={false} />
-                <YAxis yAxisId="revenue" orientation="right" stroke="#7D818B" fontSize={10} />
+                <CartesianGrid stroke="#24242A" strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="month" stroke="#71717B" fontSize={10} />
+                <YAxis yAxisId="bookings" stroke="#71717B" fontSize={10} allowDecimals={false} />
+                <YAxis yAxisId="revenue" orientation="right" stroke="#71717B" fontSize={10} />
                 <Tooltip contentStyle={{ background: 'var(--surface)', borderColor: 'var(--line)', borderRadius: '8px' }} />
                 <Legend wrapperStyle={{ fontSize: '0.72rem' }} />
-                <Bar yAxisId="bookings" dataKey="bookings" name="Bookings" fill="#1E4ED8" radius={[4, 4, 0, 0]} />
-                <Line yAxisId="revenue" type="monotone" dataKey="revenue" name="Revenue (INR)" stroke="#1E4ED8" strokeWidth={2} dot={{ fill: '#1E4ED8' }} />
+                <Bar yAxisId="bookings" dataKey="bookings" name="Bookings" fill="#2E64E0" radius={[4, 4, 0, 0]} />
+                <Line yAxisId="revenue" type="monotone" dataKey="revenue" name="Revenue (INR)" stroke="#5B93FF" strokeWidth={2} dot={{ fill: '#5B93FF' }} />
               </ComposedChart>
             </ResponsiveContainer>
           </div>
@@ -263,11 +263,11 @@ const AdminDashboard = () => {
           <div style={{ height: '220px', width: '100%' }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={dailyRevenueData}>
-                <CartesianGrid stroke="#E2E0D9" strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="day" stroke="#7D818B" fontSize={10} />
-                <YAxis stroke="#7D818B" fontSize={10} />
+                <CartesianGrid stroke="#24242A" strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="day" stroke="#71717B" fontSize={10} />
+                <YAxis stroke="#71717B" fontSize={10} />
                 <Tooltip contentStyle={{ background: 'var(--surface)', borderColor: 'var(--line)', borderRadius: '8px' }} />
-                <Bar dataKey="revenue" name="Revenue (INR)" fill="#1E4ED8" radius={[2, 2, 0, 0]} />
+                <Bar dataKey="revenue" name="Revenue (INR)" fill="#2E64E0" radius={[2, 2, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>

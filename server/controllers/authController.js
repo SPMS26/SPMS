@@ -12,40 +12,66 @@ const generateToken = (id) => {
 // @desc    Register a new user & default vehicle (Raw SQL)
 // @route   POST /api/auth/register
 export const register = async (req, res, next) => {
+  const client = await db.getClient();
   try {
-    const { full_name, email, password, phone, vehicle_number, vehicle_type, vehicle_model, vehicle_color } = req.body;
+    const { full_name, password, phone, vehicle_number, vehicle_type, vehicle_model, vehicle_color } = req.body;
+    const email = typeof req.body.email === 'string' ? req.body.email.trim() : '';
+    const plate = String(vehicle_number || '').trim().toUpperCase();
+    const type = vehicle_type || 'four_wheeler';
 
-    if (!email || typeof email !== 'string' || !EMAIL_REGEX.test(email.trim())) {
+    if (!String(full_name || '').trim()) {
+      return res.status(400).json({ success: false, message: 'Please enter your name.' });
+    }
+    if (!EMAIL_REGEX.test(email)) {
       return res.status(400).json({ success: false, message: 'Invalid email address.' });
     }
+    if (typeof password !== 'string' || password.length < 6) {
+      return res.status(400).json({ success: false, message: 'Password must be at least 6 characters long.' });
+    }
+    if (!['four_wheeler', 'two_wheeler'].includes(type)) {
+      return res.status(400).json({ success: false, message: 'Vehicle type must be a car or a bike.' });
+    }
 
-    const checkRes = await db.query('SELECT id FROM users WHERE email = $1', [email]);
+    const checkRes = await client.query('SELECT id FROM users WHERE LOWER(email) = LOWER($1)', [email]);
     if (checkRes.rows.length > 0) {
       return res.status(400).json({ success: false, message: 'User with this email already exists.' });
+    }
+    // Checked up front: failing on the plate after the account exists would leave a half-made account
+    if (plate) {
+      const plateRes = await client.query(
+        "SELECT id FROM vehicles WHERE REPLACE(REPLACE(UPPER(vehicle_number), ' ', ''), '-', '') = $1",
+        [plate.replace(/[\s-]/g, '')]
+      );
+      if (plateRes.rows.length > 0) {
+        return res.status(400).json({ success: false, message: `Vehicle ${plate} is already registered to another account.` });
+      }
     }
 
     const salt = await bcrypt.genSalt(12);
     const passwordHash = await bcrypt.hash(password, salt);
 
-    const userRes = await db.query(
+    // Account and vehicle are created together or not at all
+    await client.query('BEGIN');
+    const userRes = await client.query(
       `INSERT INTO users (full_name, email, password_hash, phone, role, is_verified) 
        VALUES ($1, $2, $3, $4, 'USER', true) 
        RETURNING id, full_name, email, phone, role, profile_image, is_verified, created_at`,
-      [full_name, email, passwordHash, phone]
+      [String(full_name).trim(), email, passwordHash, phone]
     );
 
     const user = userRes.rows[0];
 
     let vehicle = null;
-    if (vehicle_number) {
-      const vehRes = await db.query(
+    if (plate) {
+      const vehRes = await client.query(
         `INSERT INTO vehicles (user_id, vehicle_number, vehicle_type, vehicle_model, vehicle_color, is_default)
          VALUES ($1, $2, $3, $4, $5, true)
          RETURNING *`,
-        [user.id, vehicle_number.toUpperCase(), vehicle_type || 'four_wheeler', vehicle_model, vehicle_color]
+        [user.id, plate, type, vehicle_model || null, vehicle_color || null]
       );
       vehicle = vehRes.rows[0];
     }
+    await client.query('COMMIT');
 
     const token = generateToken(user.id);
 
@@ -57,7 +83,10 @@ export const register = async (req, res, next) => {
       vehicle
     });
   } catch (err) {
+    await client.query('ROLLBACK').catch(() => {});
     next(err);
+  } finally {
+    client.release();
   }
 };
 

@@ -1,21 +1,22 @@
-const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { homeForRole } from '../components/layout/ProtectedRoute';
 import AuthShell from '../components/auth/AuthShell';
+import { AuthField, PasswordField, AuthError } from '../components/auth/AuthField';
+
+const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
 const DEMO_ACCOUNTS = [
-  { role: 'User', email: 'mehanna@spms.com', password: 'user123' },
-  { role: 'Lot Owner', email: 'admin@spms.com', password: 'admin123' },
-  { role: 'Gate Security', email: 'operator@spms.com', password: 'admin123' }
+  { role: 'Driver', icon: 'fa-car-side', email: 'mehanna@spms.com', password: 'user123' },
+  { role: 'Lot owner', icon: 'fa-building', email: 'admin@spms.com', password: 'admin123' },
+  { role: 'Gate staff', icon: 'fa-shield-halved', email: 'operator@spms.com', password: 'admin123' }
 ];
+
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [demoOpen, setDemoOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const { user, loading: authLoading, login } = useAuth();
@@ -47,7 +48,7 @@ const LoginPage = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!EMAIL_REGEX.test(email.trim())) {
-      setError('Invalid email address.');
+      setError('Enter a valid email address.');
       return;
     }
     signIn(email.trim(), password);
@@ -61,87 +62,50 @@ const LoginPage = () => {
 
   return (
     <AuthShell
-      title="Sign in"
+      title="Welcome back"
+      subtitle="Sign in to your SPMS account."
       footer={
         <>
-          <span>New user? <Link to="/register">Create an account</Link></span>
+          <span>New to SPMS? <Link to="/register">Create an account</Link></span>
           <span>Own a parking lot? <Link to="/register-owner">Register your lot</Link></span>
         </>
       }
     >
-      <form onSubmit={handleSubmit} noValidate={false}>
-        {error && (
-          <div className="auth-error" role="alert">
-            <i className="fa-solid fa-circle-exclamation"></i>
-            <span>{error}</span>
-          </div>
-        )}
+      <form onSubmit={handleSubmit}>
+        <AuthError message={error} />
 
-        <div className="auth-field">
-          <label className="auth-label" htmlFor="login-email">Email</label>
-          <input
-            id="login-email"
-            type="email"
-            className="auth-input"
-            value={email}
-            onChange={(e) => { setEmail(e.target.value); setError(''); }}
-            autoComplete="email"
-            autoFocus
-            required
-          />
-        </div>
+        <AuthField
+          id="login-email"
+          label="Email"
+          icon="fa-envelope"
+          type="email"
+          placeholder="you@example.com"
+          value={email}
+          onChange={(e) => { setEmail(e.target.value); setError(''); }}
+          autoComplete="email"
+          autoFocus
+          required
+        />
+        <PasswordField
+          id="login-password"
+          value={password}
+          onChange={(e) => { setPassword(e.target.value); setError(''); }}
+          required
+        />
 
-        <div className="auth-field">
-          <label className="auth-label" htmlFor="login-password">Password</label>
-          <div className="auth-pw-wrap">
-            <input
-              id="login-password"
-              type={showPassword ? 'text' : 'password'}
-              className="auth-input"
-              value={password}
-              onChange={(e) => { setPassword(e.target.value); setError(''); }}
-              autoComplete="current-password"
-              required
-            />
-            <button
-              type="button"
-              className="auth-pw-toggle"
-              onClick={() => setShowPassword((v) => !v)}
-              aria-label={showPassword ? 'Hide password' : 'Show password'}
-              tabIndex={-1}
-            >
-              <i className={`fa-solid ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
-            </button>
-          </div>
-        </div>
-
-        <button type="submit" className="btn-select-slot auth-submit" disabled={loading}>
-          {loading ? (
-            <span><i className="fa-solid fa-circle-notch fa-spin"></i> Signing in...</span>
-          ) : (
-            <span>Sign in</span>
-          )}
+        <button type="submit" className="btn btn-primary btn-block btn-lg auth-submit" disabled={loading}>
+          {loading ? <><i className="fa-solid fa-circle-notch fa-spin"></i> Signing in…</> : 'Sign in'}
         </button>
       </form>
 
-      <div className="auth-demo">
-        <button type="button" className="auth-demo-toggle" onClick={() => setDemoOpen((v) => !v)} aria-expanded={demoOpen}>
-          <span><i className="fa-solid fa-key" style={{ color: 'var(--accent-gold)', marginRight: '0.4rem' }}></i> Try a demo account</span>
-          <i className={`fa-solid ${demoOpen ? 'fa-chevron-up' : 'fa-chevron-down'}`}></i>
-        </button>
-        {demoOpen && (
-          <div className="auth-demo-list">
-            {DEMO_ACCOUNTS.map((acc) => (
-              <button key={acc.email} type="button" className="auth-demo-item" disabled={loading} onClick={() => handleDemo(acc)}>
-                <span>
-                  <div className="role">{acc.role}</div>
-                  <div className="email">{acc.email}</div>
-                </span>
-                <span className="go">Sign in <i className="fa-solid fa-arrow-right"></i></span>
-              </button>
-            ))}
-          </div>
-        )}
+      <div className="auth-divider"><span>or try a demo account</span></div>
+      <div className="auth-demo-row">
+        {DEMO_ACCOUNTS.map((acc) => (
+          <button key={acc.email} type="button" className="auth-demo-chip" disabled={loading} onClick={() => handleDemo(acc)} title={acc.email}>
+            <i className={`fa-solid ${acc.icon}`}></i>
+            <span>{acc.role}</span>
+          </button>
+        ))}
       </div>
     </AuthShell>
   );

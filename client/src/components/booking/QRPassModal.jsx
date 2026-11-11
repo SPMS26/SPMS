@@ -220,7 +220,7 @@ const QRPassModal = ({ isOpen, onClose, booking }) => {
             type="button"
             onClick={onClose}
             style={{
-              background: 'var(--primary)',
+              background: 'var(--accent-fill)',
               border: 'none',
               color: '#ffffff',
               padding: '0.6rem',
