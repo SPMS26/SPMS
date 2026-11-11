@@ -55,6 +55,10 @@
   --radius-pill: 999px;
   --shadow-pop: 0 18px 48px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.04);
   --glow-accent: rgba(46, 100, 224, 0.22);
+  /* Occupancy heatmap, low to high */
+  --heat-1: #16233F;
+  --heat-2: #1D3A78;
+  --heat-3: #2A57C4;
 
   --font-sans: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Consolas, monospace;
@@ -1377,3 +1381,115 @@ textarea.search-input { height: auto; min-height: 96px; padding: 0.6rem 0.75rem;
   .auth-nav .brand-full { display: none; }
   .auth-nav .brand-short { display: inline; }
 }
+
+/* =========================================================================
+   Theme toggle button
+   ========================================================================= */
+.theme-toggle {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--ink-2);
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+}
+.theme-toggle:hover { color: var(--ink); border-color: var(--ink-3); }
+.auth-nav-inner { justify-content: space-between; }
+
+/* =========================================================================
+   Light theme: same layout and meaning, paper surfaces and ink text.
+   Applied with <html data-theme="light">.
+   ========================================================================= */
+:root[data-theme='light'] {
+  color-scheme: light;
+
+  --paper: #F3F2EE;
+  --surface: #FFFFFF;
+  --surface-2: #F8F7F4;
+  --surface-3: #EFEEE9;
+  --line: #E2E0D9;
+  --line-strong: #C8C5BB;
+
+  --ink: #16181D;
+  --ink-2: #4B4F58;
+  --ink-3: #7D818B;
+
+  --accent: #1E4ED8;
+  --accent-hover: #1A42B6;
+  --accent-fill: #1E4ED8;
+  --accent-fill-hover: #1A42B6;
+  --accent-soft: #E9EFFD;
+  --accent-line: #B9CBF7;
+
+  --ok: #18794A;
+  --ok-soft: #E5F3EB;
+  --ok-line: #A9D7BD;
+  --warn: #A35C00;
+  --warn-soft: #FCF0DC;
+  --warn-line: #EDC98E;
+  --busy: #5B606B;
+  --busy-soft: #E7E8EA;
+  --busy-line: #C3C6CC;
+  --danger: #BE3229;
+  --danger-soft: #FBE8E6;
+  --danger-line: #F0B3AD;
+
+  --shadow-pop: 0 12px 32px rgba(22, 24, 29, 0.14), 0 2px 6px rgba(22, 24, 29, 0.06);
+  --glow-accent: rgba(30, 78, 216, 0.14);
+  --heat-1: #DCE5FB;
+  --heat-2: #AFC4F5;
+  --heat-3: #6E93EA;
+}
+
+:root[data-theme='light'] ::selection { background: #C9D7FA; color: var(--ink); }
+
+/* Frame */
+:root[data-theme='light'] .sidebar { background: var(--surface); }
+:root[data-theme='light'] .top-header { background: rgba(243, 242, 238, 0.88); }
+:root[data-theme='light'] .main-wrapper {
+  background:
+    radial-gradient(900px 380px at 70% -160px, rgba(30, 78, 216, 0.08), transparent 70%);
+  background-repeat: no-repeat;
+}
+:root[data-theme='light'] .main-wrapper::before {
+  background-image:
+    linear-gradient(rgba(22, 24, 29, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(22, 24, 29, 0.05) 1px, transparent 1px);
+}
+:root[data-theme='light'] .kpi-card,
+:root[data-theme='light'] .card,
+:root[data-theme='light'] .lot-summary-card,
+:root[data-theme='light'] .booking-card,
+:root[data-theme='light'] .slot-picker-box,
+:root[data-theme='light'] .slot-details-panel { background-image: none; }
+
+/* Occupied bays are a solid dark grey, so their label goes white */
+:root[data-theme='light'] .slot-item.status-occupied { color: #FFFFFF; }
+:root[data-theme='light'] .plate { box-shadow: inset 0 0 0 1px rgba(22, 24, 29, 0.55); }
+
+/* Auth pages */
+:root[data-theme='light'] .auth-page--center {
+  background:
+    radial-gradient(620px 440px at 50% 38%, rgba(30, 78, 216, 0.09), transparent 70%),
+    var(--paper);
+}
+:root[data-theme='light'] .auth-page::before,
+:root[data-theme='light'] .auth-page--center::before {
+  background-image:
+    linear-gradient(rgba(22, 24, 29, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(22, 24, 29, 0.05) 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+:root[data-theme='light'] .auth-page::after { -webkit-text-stroke: 2px rgba(30, 78, 216, 0.08); }
+:root[data-theme='light'] .auth-box {
+  background: var(--surface);
+  box-shadow: 0 24px 60px -24px rgba(22, 24, 29, 0.25), 0 0 0 1px rgba(22, 24, 29, 0.02);
+}
+:root[data-theme='light'] .auth-plate-input { background: #FFFFFF !important; border-color: #16181D !important; }

@@ -13,8 +13,16 @@ import { useLiveRefresh } from '../hooks/useLiveRefresh';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, CartesianGrid, ResponsiveContainer, Line, ComposedChart } from 'recharts';
 import toast from 'react-hot-toast';
 import { useConfirm } from '../components/common/ConfirmProvider';
+import { useTheme } from '../context/ThemeContext';
+
+// Recharts draws SVG attributes, which can't read CSS variables, so the colours come from the theme here
+const CHART_COLORS = {
+  dark: { grid: '#24242A', axis: '#71717B', bar: '#2E64E0', line: '#5B93FF' },
+  light: { grid: '#E2E0D9', axis: '#7D818B', bar: '#1E4ED8', line: '#1E4ED8' }
+};
 
 const AdminDashboard = () => {
+  const chart = CHART_COLORS[useTheme().theme];
   const confirm = useConfirm();
   const { socket } = useSocket();
   const [kpis, setKpis] = useState({
@@ -235,14 +243,14 @@ const AdminDashboard = () => {
           <div style={{ height: '220px', width: '100%' }}>
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={monthlyData}>
-                <CartesianGrid stroke="#24242A" strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="month" stroke="#71717B" fontSize={10} />
-                <YAxis yAxisId="bookings" stroke="#71717B" fontSize={10} allowDecimals={false} />
-                <YAxis yAxisId="revenue" orientation="right" stroke="#71717B" fontSize={10} />
+                <CartesianGrid stroke={chart.grid} strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="month" stroke={chart.axis} fontSize={10} />
+                <YAxis yAxisId="bookings" stroke={chart.axis} fontSize={10} allowDecimals={false} />
+                <YAxis yAxisId="revenue" orientation="right" stroke={chart.axis} fontSize={10} />
                 <Tooltip contentStyle={{ background: 'var(--surface)', borderColor: 'var(--line)', borderRadius: '8px' }} />
                 <Legend wrapperStyle={{ fontSize: '0.72rem' }} />
-                <Bar yAxisId="bookings" dataKey="bookings" name="Bookings" fill="#2E64E0" radius={[4, 4, 0, 0]} />
-                <Line yAxisId="revenue" type="monotone" dataKey="revenue" name="Revenue (INR)" stroke="#5B93FF" strokeWidth={2} dot={{ fill: '#5B93FF' }} />
+                <Bar yAxisId="bookings" dataKey="bookings" name="Bookings" fill={chart.bar} radius={[4, 4, 0, 0]} />
+                <Line yAxisId="revenue" type="monotone" dataKey="revenue" name="Revenue (INR)" stroke={chart.line} strokeWidth={2} dot={{ fill: chart.line }} />
               </ComposedChart>
             </ResponsiveContainer>
           </div>
@@ -263,11 +271,11 @@ const AdminDashboard = () => {
           <div style={{ height: '220px', width: '100%' }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={dailyRevenueData}>
-                <CartesianGrid stroke="#24242A" strokeDasharray="3 3" vertical={false} />
-                <XAxis dataKey="day" stroke="#71717B" fontSize={10} />
-                <YAxis stroke="#71717B" fontSize={10} />
+                <CartesianGrid stroke={chart.grid} strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="day" stroke={chart.axis} fontSize={10} />
+                <YAxis stroke={chart.axis} fontSize={10} />
                 <Tooltip contentStyle={{ background: 'var(--surface)', borderColor: 'var(--line)', borderRadius: '8px' }} />
-                <Bar dataKey="revenue" name="Revenue (INR)" fill="#2E64E0" radius={[2, 2, 0, 0]} />
+                <Bar dataKey="revenue" name="Revenue (INR)" fill={chart.bar} radius={[2, 2, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>

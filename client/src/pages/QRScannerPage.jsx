@@ -697,9 +697,9 @@ const QRScannerPage = () => {
             )}
 
             {cameraError && (
-              <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', padding: '2rem', color: 'var(--text-muted)', zIndex: 10 }}>
+              <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', padding: '2rem', color: '#A6A6B0', zIndex: 10 }}>
                 <i className="fa-solid fa-video-slash" style={{ fontSize: '3rem', color: 'var(--accent)', marginBottom: '0.75rem' }}></i>
-                <div style={{ fontWeight: 700, color: 'var(--text-main)', fontSize: '1.1rem', marginBottom: '0.35rem' }}>Camera Stream Notice</div>
+                <div style={{ fontWeight: 700, color: '#F1F1F3', fontSize: '1.1rem', marginBottom: '0.35rem' }}>Camera unavailable</div>
                 <div style={{ fontSize: '0.85rem' }}>{cameraError}</div>
               </div>
             )}
