@@ -69,6 +69,28 @@ const BookingsPage = () => {
     }
   };
 
+  const handleCancelBooking = async (booking) => {
+    const feePaid = booking.payment_status === 'paid';
+    const fee = Number(booking.pre_booking_fee || booking.total_amount || 0).toFixed(2);
+    const ok = await confirm({
+      title: 'Cancel this booking?',
+      message: feePaid
+        ? `Slot ${booking.slot?.slot_number || ''} will be released and your QR pass will stop working. The ₹${fee} reservation fee is non-refundable — you will not get this money back.`
+        : `Slot ${booking.slot?.slot_number || ''} will be released. You have not paid anything for this booking yet.`,
+      confirmLabel: feePaid ? `Cancel without refund` : 'Cancel Booking',
+      cancelLabel: 'Keep Booking',
+      danger: true
+    });
+    if (!ok) return;
+    try {
+      const res = await bookingService.cancelBooking(booking.id);
+      toast.success(res.message || 'Booking cancelled.');
+      await fetchBookings();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Could not cancel the booking.');
+    }
+  };
+
   const visibleBookings = bookings.filter((b) => matchesSearch(search, [
     b.vehicle?.vehicle_number,
     b.slot?.parking_lot?.name,
@@ -110,6 +132,8 @@ const BookingsPage = () => {
             const isPassExpired = Boolean(!isParked && !isCompleted && expiresAt && new Date(expiresAt).getTime() <= now);
             const isExpired = booking.booking_status === 'expired' || (booking.booking_status === 'reserved' && isPassExpired);
             const isReserved = booking.booking_status === 'reserved' && !isExpired;
+            const isCancelled = booking.booking_status === 'cancelled';
+            const canCancel = isReserved || booking.booking_status === 'pending_payment';
 
             return (
               <div
@@ -212,7 +236,15 @@ const BookingsPage = () => {
                   )}
                 </div>
 
-                {isPaymentPending ? (
+                <div>
+                {isCancelled ? (
+                  <div
+                    style={{ marginTop: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', padding: '0.6rem', borderRadius: '8px', border: '1px solid var(--border-subtle)', color: 'var(--text-muted)', fontSize: '0.85rem' }}
+                  >
+                    <i className="fa-solid fa-ban"></i>
+                    {booking.payment_status === 'paid' ? 'Cancelled · fee not refunded' : 'Cancelled'}
+                  </div>
+                ) : isPaymentPending ? (
                   <button
                     className="btn-select-slot"
                     style={{ marginTop: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', background: 'linear-gradient(135deg, var(--accent-gold), #B8955A)' }}
@@ -247,6 +279,16 @@ const BookingsPage = () => {
                     <i className="fa-solid fa-qrcode"></i> {isParked ? 'View Exit Pass' : 'View QR Pass'}
                   </button>
                 )}
+                {canCancel && (
+                  <button
+                    type="button"
+                    style={{ marginTop: '0.6rem', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', padding: '0.55rem', borderRadius: '8px', background: 'transparent', border: '1px solid rgba(239, 68, 68, 0.35)', color: '#EF4444', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}
+                    onClick={() => handleCancelBooking(booking)}
+                  >
+                    <i className="fa-solid fa-xmark"></i> Cancel Booking
+                  </button>
+                )}
+                </div>
               </div>
             );
           })}

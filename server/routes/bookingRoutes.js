@@ -8,6 +8,7 @@ router.use(protect);
 
 router.post('/pre-book', bookingController.createPreBooking);
 router.post('/:id/confirm-payment', bookingController.confirmPreBookingPayment);
+router.post('/:id/cancel', bookingController.cancelBooking);
 router.get('/', bookingController.getUserBookings);
 router.get('/:id', bookingController.getBookingById);
 

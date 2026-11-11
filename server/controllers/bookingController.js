@@ -267,6 +267,105 @@ export const confirmPreBookingPayment = async (req, res, next) => {
   }
 };
 
+// Cancel a pre-booking before check-in. A paid reservation fee is non-refundable: the payment stays
+// 'paid' (and counts as lot revenue); an unpaid one is simply dropped. The QR pass stops working and the slot is freed.
+export const cancelBooking = async (req, res, next) => {
+  const client = await db.getClient();
+  try {
+    await client.query('BEGIN');
+
+    const bookingRes = await client.query(
+      `SELECT b.id, b.user_id, b.slot_id, b.booking_status, b.payment_status, b.pre_booking_fee,
+              s.slot_number, s.lot_id, l.name AS lot_name
+       FROM bookings b
+       JOIN parking_slots s ON b.slot_id = s.id
+       JOIN parking_lots l ON s.lot_id = l.id
+       WHERE b.id = $1 FOR UPDATE OF b`,
+      [req.params.id]
+    );
+    if (bookingRes.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ success: false, message: 'Booking not found.' });
+    }
+
+    const booking = bookingRes.rows[0];
+    if (booking.user_id !== req.user.id) {
+      await client.query('ROLLBACK');
+      return res.status(403).json({ success: false, message: 'You can only cancel your own bookings.' });
+    }
+
+    if (!['pending_payment', 'reserved'].includes(booking.booking_status)) {
+      await client.query('ROLLBACK');
+      const message = ['active', 'parked'].includes(booking.booking_status)
+        ? 'You have already checked in, so this booking can no longer be cancelled.'
+        : `This booking is already ${booking.booking_status} and cannot be cancelled.`;
+      return res.status(400).json({ success: false, message });
+    }
+
+    const feeWasPaid = booking.payment_status === 'paid';
+
+    const updatedRes = await client.query(
+      `UPDATE bookings
+       SET booking_status = 'cancelled',
+           payment_status = CASE WHEN payment_status = 'paid' THEN 'paid' ELSE 'cancelled' END,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE id = $1
+       RETURNING *`,
+      [booking.id]
+    );
+    // An unpaid reservation payment is void; a paid one is kept as-is (no refund)
+    await client.query(
+      "UPDATE payments SET payment_status = 'cancelled' WHERE booking_id = $1 AND payment_status = 'pending'",
+      [booking.id]
+    );
+    await client.query('UPDATE qr_codes SET is_active = false WHERE booking_id = $1 AND is_active = true', [booking.id]);
+
+    // Free the slot unless another live booking is holding it
+    const freedRes = await client.query(
+      `UPDATE parking_slots SET status = 'available', updated_at = CURRENT_TIMESTAMP
+       WHERE id = $1 AND status = 'reserved'
+         AND NOT EXISTS (
+           SELECT 1 FROM bookings ob
+           WHERE ob.slot_id = parking_slots.id AND ob.booking_status IN ('pending_payment', 'reserved', 'active', 'parked')
+         )
+       RETURNING id`,
+      [booking.slot_id]
+    );
+
+    const fee = Number(booking.pre_booking_fee || 0).toFixed(2);
+    const noticeRes = await client.query(
+      `INSERT INTO notifications (user_id, title, message, type)
+       VALUES ($1, 'Booking Cancelled', $2, 'warning')
+       RETURNING *`,
+      [
+        booking.user_id,
+        `Your booking for slot ${booking.slot_number} at ${booking.lot_name} has been cancelled.` +
+          (feeWasPaid ? ` The ₹${fee} reservation fee is non-refundable.` : '')
+      ]
+    );
+
+    await client.query('COMMIT');
+
+    sendUserNotification(booking.user_id, noticeRes.rows[0]);
+    if (freedRes.rows.length > 0) {
+      broadcastSlotUpdate(booking.lot_id, booking.slot_id, 'available', booking.slot_number);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: feeWasPaid
+        ? `Booking cancelled. The ₹${fee} reservation fee is not refunded.`
+        : 'Booking cancelled.',
+      booking: updatedRes.rows[0]
+    });
+  } catch (err) {
+    await client.query('ROLLBACK');
+    next(err);
+  } finally {
+    client.release();
+  }
+};
+
 // Get user bookings with live QR details (Raw SQL Join)
 export const getUserBookings = async (req, res, next) => {
   try {
@@ -289,6 +388,7 @@ export const getUserBookings = async (req, res, next) => {
         b.entry_time,
         b.exit_time,
         b.duration_minutes,
+        b.pre_booking_fee,
         b.total_amount,
         b.payment_status,
         b.created_at,
