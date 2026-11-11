@@ -44,7 +44,7 @@ const Sidebar = ({ onClose }) => {
       <div>
         <div className="sidebar-top">
           <Link to="/" onClick={onClose} className="sidebar-brand">
-            <span className="brand-logo-icon" aria-hidden="true">P</span>
+            <span className="brand-logo-icon" aria-hidden="true"><i className="fa-solid fa-car"></i></span>
             <div>
               <h2>SPMS</h2>
               <small>{area}</small>
