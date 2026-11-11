@@ -15,7 +15,6 @@ import {
   expireStaleReservedBookings
 } from './services/bookingRules.js';
 import errorHandler from './middleware/errorHandler.js';
-import { uploadDir } from './middleware/upload.js';
 import { apiLimiter } from './middleware/rateLimit.js';
 
 // Route imports
@@ -71,9 +70,6 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(morgan('dev'));
 
-// Static uploads folder
-app.use('/uploads', express.static(uploadDir));
-
 // Flood guard for the whole API; stricter limits sit on login, sign-up and other sensitive routes
 app.use('/api', apiLimiter);
 
@@ -126,7 +122,7 @@ app.get('/api/health', (req, res) => {
 // so client-side routes like /admin survive a page refresh.
 const clientDist = path.join(__dirname, '../client/dist');
 app.use(express.static(clientDist));
-app.get(/^\/(?!api|uploads|socket\.io).*/, (req, res, next) => {
+app.get(/^\/(?!api|socket\.io).*/, (req, res, next) => {
   res.sendFile(path.join(clientDist, 'index.html'), (err) => {
     if (err) next(); // no build present (local dev uses Vite on :5173)
   });

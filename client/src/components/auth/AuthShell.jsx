@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 // Shared frame for login and both registration pages so the whole flow looks the same
-const AuthShell = ({ icon = 'fa-square-parking', title, subtitle, maxWidth = 460, children, footer }) => (
+const AuthShell = ({ title, subtitle, maxWidth = 440, children, footer }) => (
   <div className="auth-page">
     <div style={{ width: '100%', maxWidth }}>
       <Link to="/" className="auth-back">
@@ -10,15 +10,13 @@ const AuthShell = ({ icon = 'fa-square-parking', title, subtitle, maxWidth = 460
       </Link>
       <div className="auth-card">
         <div className="auth-head">
-          <div className="brand-logo-icon">
-            <i className={`fa-solid ${icon}`}></i>
-          </div>
+          <span className="brand-logo-icon" aria-hidden="true">P</span>
           <h2>{title}</h2>
           {subtitle && <p>{subtitle}</p>}
         </div>
         {children}
+        {footer && <div className="auth-footer">{footer}</div>}
       </div>
-      {footer && <div className="auth-footer">{footer}</div>}
     </div>
   </div>
 );

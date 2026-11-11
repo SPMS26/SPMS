@@ -1,75 +1,62 @@
 import React from 'react';
 
-export const lotIconClass = (name) => {
-  if (name.includes('Science')) return 'fa-flask';
-  if (name.includes('Library')) return 'fa-book';
-  if (name.includes('Hostel')) return 'fa-bed';
-  return 'fa-building-user';
-};
+export const lotIconClass = () => 'fa-square-parking';
 
 // Real slot prices, which is what gets billed. A lot can price its slots differently.
 export const lotPriceLabel = (lot) => {
   if (lot.min_hourly_price === null || lot.min_hourly_price === undefined) return 'No slots yet';
   const min = Number(lot.min_hourly_price);
   const max = Number(lot.max_hourly_price);
-  return min === max ? `₹${min}/hr` : `₹${min}-${max}/hr`;
+  return min === max ? `₹${min}/hr` : `₹${min}–${max}/hr`;
+};
+
+export const lotHoursLabel = (lot) => {
+  if (!lot.opening_time) return null;
+  const open = String(lot.opening_time).slice(0, 5);
+  const close = String(lot.closing_time || '').slice(0, 5);
+  return open === '00:00' && close === '23:59' ? 'Open 24h' : `${open}–${close}`;
+};
+
+// How full the lot is decides the label and the meter colour
+const availability = (lot) => {
+  const total = Number(lot.total_slots) || 0;
+  const free = Number(lot.available_slots) || 0;
+  if (total === 0 || free === 0) return { label: 'Full', badge: 'badge-danger', meter: 'full', share: 0 };
+  const share = free / total;
+  if (share < 0.2) return { label: 'Filling up', badge: 'badge-warn', meter: 'tight', share };
+  return { label: 'Spaces free', badge: 'badge-ok', meter: '', share };
 };
 
 const LotCard = ({ lot, selected, onSelect }) => {
-  const isBusy = lot.available_slots < 10;
+  const state = availability(lot);
+  const hours = lotHoursLabel(lot);
 
   return (
-    <div
+    <button
+      type="button"
       className={`lot-summary-card ${selected ? 'selected' : ''}`}
       onClick={() => onSelect(lot)}
+      aria-pressed={selected}
     >
-      <div className="lot-img-placeholder">
-        <i className={`fa-solid ${lotIconClass(lot.name)}`}></i>
+      <div className="lot-card-head">
+        <h3 className="lot-card-title">{lot.name}</h3>
+        <span className={`badge ${state.badge}`}>{state.label}</span>
       </div>
-
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <div>
-          <div className="lot-card-title">{lot.name}</div>
-          <div className="lot-card-sub">
-            <i className="fa-solid fa-location-dot"></i> {lot.address || 'Location not set'}
-          </div>
-          {lot.owner_name && (
-            <div className="lot-card-sub">
-              <i className="fa-solid fa-building"></i> {lot.owner_name}
-              {lot.opening_time && ` • ${String(lot.opening_time).slice(0, 5) === '00:00' && String(lot.closing_time || '').slice(0, 5) === '23:59' ? 'Open 24h' : `${String(lot.opening_time).slice(0, 5)}-${String(lot.closing_time || '').slice(0, 5)}`}`}
-            </div>
-          )}
-        </div>
-        <span
-          style={{
-            background: isBusy ? 'rgba(217, 191, 140, 0.15)' : 'rgba(227, 204, 154, 0.15)',
-            color: isBusy ? 'var(--status-reserved)' : 'var(--status-available)',
-            fontSize: '0.68rem',
-            padding: '0.15rem 0.45rem',
-            borderRadius: '4px',
-            fontWeight: 700
-          }}
-        >
-          {isBusy ? 'Busy' : 'Open'}
-        </span>
-      </div>
+      <div className="lot-card-sub">{lot.address || 'Location not set'}</div>
+      {(lot.owner_name || hours) && (
+        <div className="lot-card-sub">{[lot.owner_name, hours].filter(Boolean).join(' · ')}</div>
+      )}
 
       <div className="lot-card-stats">
-        <div>
-          <div style={{ fontSize: '1.1rem', fontWeight: 800 }}>{lot.total_slots ?? 0}</div>
-          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Total Slots</div>
+        <div className="lot-card-free">
+          {lot.available_slots ?? 0} <small>of {lot.total_slots ?? 0} free</small>
         </div>
-        <div>
-          <div style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--status-available)' }}>
-            {lot.available_slots}
-          </div>
-          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Available</div>
-        </div>
-        <div style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--accent-gold)' }}>
-          {lotPriceLabel(lot)}
-        </div>
+        <div className="lot-card-price">{lotPriceLabel(lot)}</div>
       </div>
-    </div>
+      <div className={`lot-meter ${state.meter}`} aria-hidden="true">
+        <span style={{ width: `${Math.round(state.share * 100)}%` }} />
+      </div>
+    </button>
   );
 };
 

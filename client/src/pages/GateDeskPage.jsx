@@ -16,7 +16,7 @@ const GateDeskPage = () => {
     <AppLayout>
       <div className="page-header-row">
         <div className="page-title-box">
-          <h1>Walk-in Desk</h1>
+          <h1>Walk-in desk</h1>
         </div>
       </div>
 

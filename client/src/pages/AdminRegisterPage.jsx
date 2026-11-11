@@ -77,7 +77,6 @@ const AdminRegisterPage = () => {
 
   return (
     <AuthShell
-      icon="fa-building-shield"
       title="Register your parking lot"
       subtitle={`One-time registration fee: ₹${Number(fee).toFixed(2)}`}
       maxWidth={540}
@@ -159,7 +158,7 @@ const AdminRegisterPage = () => {
               <div style={{ background: 'var(--bg-input)', border: '1px solid var(--border-subtle)', padding: '1rem', borderRadius: '8px', marginBottom: '1.25rem' }}>
                 <div className="details-row"><span className="key">Owner:</span><span className="val">{registration.full_name}</span></div>
                 <div className="details-row"><span className="key">Organization:</span><span className="val">{registration.organization_name}</span></div>
-                <div className="details-row" style={{ background: 'rgba(217, 191, 140, 0.08)', padding: '0.4rem 0.5rem', borderRadius: '6px', margin: '0.35rem 0' }}>
+                <div className="details-row" style={{ background: 'var(--accent-soft)', padding: '0.4rem 0.5rem', borderRadius: '6px', margin: '0.35rem 0' }}>
                   <span className="key" style={{ fontWeight: 700, color: 'var(--text-main)' }}>Registration fee:</span>
                   <span className="val" style={{ color: 'var(--accent-gold)', fontWeight: 800, fontSize: '1.05rem' }}>₹{formattedFee}</span>
                 </div>

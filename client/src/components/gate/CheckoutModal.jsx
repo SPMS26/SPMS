@@ -14,7 +14,7 @@ const CheckoutModal = ({ bill, confirming, onConfirm, onClose }) => {
           <div className="details-row"><span className="key">Slot:</span><span className="val">{bill.slot_number} ({bill.lot_name})</span></div>
           <div className="details-row"><span className="key">Duration:</span><span className="val">{bill.duration_minutes} min (billed {bill.duration_hours}h)</span></div>
           <div className="details-row"><span className="key">Rate:</span><span className="val">₹{Number(bill.hourly_rate).toFixed(2)} / hour</span></div>
-          <div className="details-row" style={{ background: 'rgba(217, 191, 140, 0.08)', padding: '0.4rem 0.5rem', borderRadius: '6px', margin: '0.35rem 0' }}>
+          <div className="details-row" style={{ background: 'var(--accent-soft)', padding: '0.4rem 0.5rem', borderRadius: '6px', margin: '0.35rem 0' }}>
             <span className="key" style={{ fontWeight: 700, color: 'var(--text-main)' }}>Collect now:</span>
             <span className="val" style={{ color: 'var(--accent-gold)', fontWeight: 800, fontSize: '1.15rem' }}>₹{Number(bill.amount_due).toFixed(2)}</span>
           </div>

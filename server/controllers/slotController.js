@@ -2,6 +2,7 @@ import db from '../config/database.js';
 import { broadcastSlotUpdate, sendUserNotification } from '../socket/socketManager.js';
 import { canAccessLot, forbidLot, lotIdForSlot } from '../middleware/scope.js';
 import { findLiveBooking } from '../services/bookingRules.js';
+import { slotTypeMismatchReason } from '../services/vehicleTypes.js';
 
 // Get slots for a parking lot (Raw SQL)
 export const getSlotsByLot = async (req, res, next) => {
@@ -107,6 +108,7 @@ export const updateSlotStatus = async (req, res, next) => {
 export const createSlot = async (req, res, next) => {
   try {
     const { lot_id, floor } = req.body;
+    const slotType = req.body.slot_type || 'car';
     const slotNumber = String(req.body.slot_number || '').trim().toUpperCase();
     const hourlyPrice = req.body.hourly_price === undefined || req.body.hourly_price === '' ? 30 : Number(req.body.hourly_price);
 
@@ -123,11 +125,13 @@ export const createSlot = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Hourly price must be a non-negative number.' });
     }
 
-    const lotRes = await db.query('SELECT id FROM parking_lots WHERE id = $1', [lot_id]);
+    const lotRes = await db.query('SELECT id, name, supported_vehicle_types FROM parking_lots WHERE id = $1', [lot_id]);
     if (lotRes.rows.length === 0) {
       return res.status(404).json({ success: false, message: 'Parking lot not found.' });
     }
     if (!(await canAccessLot(req.user, lot_id))) return forbidLot(res);
+    const typeError = slotTypeMismatchReason(lotRes.rows[0], slotType);
+    if (typeError) return res.status(400).json({ success: false, message: typeError });
 
     const existing = await db.query('SELECT id, is_active FROM parking_slots WHERE lot_id = $1 AND slot_number = $2', [lot_id, slotNumber]);
     let slot;
@@ -137,16 +141,16 @@ export const createSlot = async (req, res, next) => {
       }
       const revived = await db.query(
         `UPDATE parking_slots
-         SET is_active = true, status = 'available', floor = $1, hourly_price = $2, updated_at = CURRENT_TIMESTAMP
+         SET is_active = true, status = 'available', floor = $1, hourly_price = $2, slot_type = $4, updated_at = CURRENT_TIMESTAMP
          WHERE id = $3 RETURNING *`,
-        [String(floor).trim(), hourlyPrice, existing.rows[0].id]
+        [String(floor).trim(), hourlyPrice, existing.rows[0].id, slotType]
       );
       slot = revived.rows[0];
     } else {
       const inserted = await db.query(
-        `INSERT INTO parking_slots (lot_id, slot_number, floor, hourly_price)
-         VALUES ($1, $2, $3, $4) RETURNING *`,
-        [lot_id, slotNumber, String(floor).trim(), hourlyPrice]
+        `INSERT INTO parking_slots (lot_id, slot_number, floor, hourly_price, slot_type)
+         VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+        [lot_id, slotNumber, String(floor).trim(), hourlyPrice, slotType]
       );
       slot = inserted.rows[0];
     }
@@ -235,6 +239,12 @@ export const bulkCreateSlots = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Hourly price must be a non-negative number.' });
     }
     if (!(await canAccessLot(req.user, lot_id))) return forbidLot(res);
+    const lotRes = await db.query('SELECT id, name, supported_vehicle_types FROM parking_lots WHERE id = $1', [lot_id]);
+    if (lotRes.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Parking lot not found.' });
+    }
+    const typeError = slotTypeMismatchReason(lotRes.rows[0], slot_type || 'car');
+    if (typeError) return res.status(400).json({ success: false, message: typeError });
 
     await client.query('BEGIN');
     const created = [];
@@ -318,6 +328,11 @@ export const reassignSlot = async (req, res, next) => {
     if (newSlot.lot_id !== oldSlot.lot_id) {
       await client.query('ROLLBACK');
       return res.status(400).json({ success: false, message: 'The new slot must be in the same parking lot.' });
+    }
+    // A car stays in a car bay and a bike in a bike bay
+    if ((newSlot.slot_type || 'car') !== (oldSlot.slot_type || 'car')) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ success: false, message: `Slot ${newSlot.slot_number} is a ${newSlot.slot_type} bay; this vehicle needs a ${oldSlot.slot_type} bay.` });
     }
 
     await client.query("UPDATE parking_slots SET status = 'available', updated_at = CURRENT_TIMESTAMP WHERE id = $1", [oldSlot.id]);

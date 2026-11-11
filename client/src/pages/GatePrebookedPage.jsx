@@ -1,26 +1,23 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import AppLayout from '../components/layout/AppLayout';
-import NoResults from '../components/common/NoResults';
 import { useGateQueue } from '../components/gate/useGateQueue';
 import { useGateActions } from '../components/gate/useGateActions';
-import { matchesQuery, formatTime } from '../components/gate/gateUtils';
+import { formatTime } from '../components/gate/gateUtils';
 
 const GatePrebookedPage = () => {
   const { queue, loading, refresh } = useGateQueue();
   const actions = useGateActions(refresh);
-  const [search, setSearch] = useState('');
   const arrivals = useMemo(() => {
     const now = new Date();
     return (queue.pending_arrivals || [])
       .filter((i) => (!i.expires_at || new Date(i.expires_at) > now) && i.is_active !== false);
   }, [queue]);
-  const visible = arrivals.filter((item) => matchesQuery(item, search));
 
   return (
-    <AppLayout search={{ value: search, onChange: setSearch, placeholder: 'Search by vehicle number, ticket or name' }}>
+    <AppLayout>
       <div className="page-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
         <div className="page-title-box">
-          <h1>Pre-booked Vehicles</h1>
+          <h1>Pre-booked vehicles</h1>
         </div>
         <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', background: 'var(--grad-card)', padding: '0.4rem 0.85rem', borderRadius: '8px', border: '1px solid var(--border-bright)' }}>
           <strong style={{ color: 'var(--accent-gold)' }}>{arrivals.length}</strong> waiting to arrive
@@ -42,7 +39,7 @@ const GatePrebookedPage = () => {
               </tr>
             </thead>
             <tbody>
-              {visible.map((item) => (
+              {arrivals.map((item) => (
                 <tr key={item.id}>
                   <td style={{ whiteSpace: 'nowrap' }}><strong style={{ fontFamily: 'monospace', color: 'var(--accent-gold)' }}>{item.vehicleNo}</strong></td>
                   <td>{item.userName}</td>
@@ -57,9 +54,6 @@ const GatePrebookedPage = () => {
                   </td>
                 </tr>
               ))}
-              {arrivals.length > 0 && visible.length === 0 && (
-                <tr><td colSpan={7}><NoResults query={search} onClear={() => setSearch('')} /></td></tr>
-              )}
               {!loading && arrivals.length === 0 && (
                 <tr><td colSpan={7} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>No pre-booked arrivals right now.</td></tr>
               )}

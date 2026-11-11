@@ -146,8 +146,8 @@ export const bookingLimiter = rateLimit({
   message: 'Too many booking actions. Please wait a few minutes and try again.'
 });
 
-// Report uploads write images to disk
-export const uploadLimiter = rateLimit({
-  name: 'upload', windowMs: 60 * MINUTE, max: 10, keyBy: userOrIp, store: 'memory',
+// Incident reports go straight to the lot owner, so cap them to stop spam
+export const reportLimiter = rateLimit({
+  name: 'report', windowMs: 60 * MINUTE, max: 10, keyBy: userOrIp, store: 'memory',
   message: 'Too many reports submitted. Please try again later.'
 });

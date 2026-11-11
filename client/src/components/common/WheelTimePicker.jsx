@@ -119,7 +119,7 @@ const WheelTimePicker = ({
           onClick={() => onChangeVal(prevVal)}
           style={{
             fontSize: '1.4rem',
-            color: 'rgba(255, 255, 255, 0.28)',
+            color: 'var(--ink-2)',
             fontWeight: 500,
             cursor: 'pointer',
             padding: '0.2rem 0',
@@ -140,7 +140,7 @@ const WheelTimePicker = ({
             padding: '0.1rem 0',
             fontFamily: 'monospace',
             letterSpacing: '0.05em',
-            textShadow: '0 2px 8px rgba(0,0,0,0.5)'
+            textShadow: '0 2px 8px rgba(22, 24, 29, 0.12)'
           }}
         >
           {String(current).padStart(2, '0')}
@@ -151,7 +151,7 @@ const WheelTimePicker = ({
           onClick={() => onChangeVal(nextVal)}
           style={{
             fontSize: '1.4rem',
-            color: 'rgba(255, 255, 255, 0.28)',
+            color: 'var(--ink-2)',
             fontWeight: 500,
             cursor: 'pointer',
             padding: '0.2rem 0',
@@ -185,10 +185,10 @@ const WheelTimePicker = ({
           padding: '0.55rem 0.85rem',
           textAlign: 'left',
           background: 'var(--bg-input, #121824)',
-          border: isOpen ? '1px solid var(--accent-gold, #D9BF8C)' : '1px solid var(--border-subtle, rgba(255,255,255,0.1))',
+          border: isOpen ? '1px solid var(--accent-gold, var(--accent))' : '1px solid var(--border-subtle, var(--line))',
           borderRadius: '8px',
           color: 'var(--text-main, #FFFFFF)',
-          boxShadow: isOpen ? '0 0 0 2px rgba(217, 191, 140, 0.25)' : 'none',
+          boxShadow: isOpen ? '0 0 0 2px rgba(22, 24, 29, 0.12)' : 'none',
           transition: 'border-color 0.2s, box-shadow 0.2s'
         }}
       >
@@ -198,7 +198,7 @@ const WheelTimePicker = ({
         <i
           className="fa-regular fa-clock"
           style={{
-            color: isOpen ? 'var(--accent-gold, #D9BF8C)' : 'var(--text-muted, #8A8478)',
+            color: isOpen ? 'var(--accent-gold, var(--accent))' : 'var(--text-muted, var(--ink-3))',
             fontSize: '0.9rem'
           }}
         ></i>
@@ -213,9 +213,9 @@ const WheelTimePicker = ({
             left: 0,
             zIndex: 100,
             background: '#000000',
-            border: '1px solid rgba(217, 191, 140, 0.4)',
+            border: '1px solid var(--accent-line)',
             borderRadius: '12px',
-            boxShadow: '0 16px 36px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255,255,255,0.05)',
+            boxShadow: '0 16px 36px rgba(22, 24, 29, 0.12), 0 0 0 1px rgba(22, 24, 29, 0.06)',
             padding: '1rem 1.25rem 0.75rem',
             width: '240px',
             maxWidth: '90vw'
@@ -224,7 +224,7 @@ const WheelTimePicker = ({
           {/* Header indicator */}
           <div style={{
             fontSize: '0.7rem',
-            color: 'rgba(255,255,255,0.5)',
+            color: 'var(--ink-2)',
             textAlign: 'center',
             textTransform: 'uppercase',
             letterSpacing: '0.08em',
@@ -243,7 +243,7 @@ const WheelTimePicker = ({
               background: '#000000',
               padding: '0.5rem 0',
               borderRadius: '8px',
-              border: '1px solid rgba(255,255,255,0.08)'
+              border: '1px solid var(--line)'
             }}
           >
             {/* Hours Column */}
@@ -282,7 +282,7 @@ const WheelTimePicker = ({
               justifyContent: 'space-between',
               marginTop: '0.75rem',
               paddingTop: '0.5rem',
-              borderTop: '1px solid rgba(255,255,255,0.1)'
+              borderTop: '1px solid var(--line)'
             }}
           >
             <div style={{ display: 'flex', gap: '0.35rem' }}>
@@ -290,9 +290,9 @@ const WheelTimePicker = ({
                 type="button"
                 onClick={() => updateTime(0, 0)}
                 style={{
-                  background: 'rgba(255,255,255,0.08)',
+                  background: 'var(--surface-2)',
                   border: 'none',
-                  color: 'rgba(255,255,255,0.7)',
+                  color: 'var(--ink-2)',
                   borderRadius: '4px',
                   padding: '0.2rem 0.45rem',
                   fontSize: '0.68rem',
@@ -306,9 +306,9 @@ const WheelTimePicker = ({
                 type="button"
                 onClick={() => updateTime(23, 59)}
                 style={{
-                  background: 'rgba(255,255,255,0.08)',
+                  background: 'var(--surface-2)',
                   border: 'none',
-                  color: 'rgba(255,255,255,0.7)',
+                  color: 'var(--ink-2)',
                   borderRadius: '4px',
                   padding: '0.2rem 0.45rem',
                   fontSize: '0.68rem',
@@ -324,9 +324,9 @@ const WheelTimePicker = ({
               type="button"
               onClick={() => setIsOpen(false)}
               style={{
-                background: 'var(--accent-gold, #D9BF8C)',
+                background: 'var(--accent-gold, var(--accent))',
                 border: 'none',
-                color: '#121824',
+                color: '#FFFFFF',
                 fontWeight: 700,
                 borderRadius: '6px',
                 padding: '0.25rem 0.8rem',

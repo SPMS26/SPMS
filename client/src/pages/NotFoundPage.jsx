@@ -1,17 +1,19 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const NotFoundPage = () => {
+  const { user, isAdmin, isSecurity } = useAuth();
+  const home = !user ? '/' : isSecurity ? '/admin/scanner' : isAdmin ? '/admin' : '/dashboard';
+
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-main)', color: 'var(--text-main)', padding: '1rem', textAlign: 'center' }}>
-      <div style={{ fontSize: '4rem', color: 'var(--accent-gold)', marginBottom: '1rem' }}>
-        <i className="fa-solid fa-triangle-exclamation"></i> 404
+    <div className="auth-page">
+      <div style={{ maxWidth: 420, textAlign: 'center' }}>
+        <div className="mono" style={{ fontSize: '0.85rem', color: 'var(--ink-3)', marginBottom: '0.75rem' }}>Error 404</div>
+        <h1 style={{ margin: '0 0 0.5rem', fontSize: '1.75rem', letterSpacing: '-0.02em' }}>Wrong turn</h1>
+        <p className="muted" style={{ margin: '0 0 1.5rem' }}>There's no page at this address.</p>
+        <Link to={home} className="btn btn-primary">{user ? 'Back to the app' : 'Back to home'}</Link>
       </div>
-      <h1 style={{ fontFamily: 'Outfit, sans-serif', fontSize: '2rem', marginBottom: '0.5rem' }}>Page Not Found</h1>
-      <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>The requested page or parking resource does not exist.</p>
-      <Link to="/dashboard" className="btn-select-slot" style={{ width: 'auto', padding: '0.6rem 1.5rem', textDecoration: 'none' }}>
-        Return to Dashboard
-      </Link>
     </div>
   );
 };

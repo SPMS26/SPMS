@@ -1,19 +1,17 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import AppLayout from '../components/layout/AppLayout';
 import CheckoutModal from '../components/gate/CheckoutModal';
-import NoResults from '../components/common/NoResults';
 import { useGateActions } from '../components/gate/useGateActions';
 import { qrService } from '../services/qrService';
 import { useAuth } from '../context/AuthContext';
 import { useLiveRefresh } from '../hooks/useLiveRefresh';
-import { matchesQuery, formatDuration, estimateCharge, formatTime } from '../components/gate/gateUtils';
+import { formatDuration, estimateCharge, formatTime } from '../components/gate/gateUtils';
 
 const GateLivePage = () => {
   const { user } = useAuth();
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [, setTick] = useState(0);
-  const [search, setSearch] = useState('');
 
   const refresh = useCallback(async () => {
     try {
@@ -40,14 +38,13 @@ const GateLivePage = () => {
     matches: (event) => !user?.assigned_lot_id || event.lotId === user.assigned_lot_id
   });
 
-  const rows = sessions.filter((s) => matchesQuery(s, search));
   const activeCount = sessions.filter((s) => s.booking_status !== 'completed').length;
 
   return (
-    <AppLayout search={{ value: search, onChange: setSearch, placeholder: 'Search by vehicle number, ticket or name' }}>
+    <AppLayout>
       <div className="page-header-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
         <div className="page-title-box">
-          <h1>Live Bookings</h1>
+          <h1>Live bookings</h1>
         </div>
         <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', background: 'var(--grad-card)', padding: '0.4rem 0.85rem', borderRadius: '8px', border: '1px solid var(--border-bright)' }}>
           <strong style={{ color: 'var(--accent-gold)' }}>{activeCount}</strong> active • {sessions.length - activeCount} completed (24h)
@@ -71,7 +68,7 @@ const GateLivePage = () => {
               </tr>
             </thead>
             <tbody>
-              {rows.map((s) => {
+              {sessions.map((s) => {
                 const done = s.booking_status === 'completed';
                 return (
                   <tr key={s.id}>
@@ -98,9 +95,6 @@ const GateLivePage = () => {
                   </tr>
                 );
               })}
-              {sessions.length > 0 && rows.length === 0 && (
-                <tr><td colSpan={9}><NoResults query={search} onClear={() => setSearch('')} /></td></tr>
-              )}
               {!loading && sessions.length === 0 && (
                 <tr><td colSpan={9} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>No walk-in sessions yet. Check vehicles in from the Walk-in Desk.</td></tr>
               )}

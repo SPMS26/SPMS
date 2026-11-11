@@ -405,7 +405,7 @@ const ProfilePage = () => {
                         width: '44px',
                         height: '44px',
                         borderRadius: '10px',
-                        background: 'rgba(255, 255, 255, 0.05)',
+                        background: 'var(--surface-2)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -443,7 +443,7 @@ const ProfilePage = () => {
                     {v.is_default ? (
                       <span
                         style={{
-                          background: 'rgba(184, 149, 90, 0.15)',
+                          background: 'var(--accent-soft)',
                           color: 'var(--accent-gold)',
                           border: '1px solid var(--accent-gold)',
                           fontSize: '0.75rem',
@@ -470,7 +470,7 @@ const ProfilePage = () => {
                     )}
                     <button
                       className="change-btn"
-                      style={{ borderColor: 'rgba(138, 132, 120, 0.4)', color: 'var(--status-occupied)', minWidth: '80px' }}
+                      style={{ borderColor: 'var(--busy-line)', color: 'var(--status-occupied)', minWidth: '80px' }}
                       onClick={() => handleDeleteVehicle(v.id)}
                     >
                       <i className="fa-solid fa-trash"></i> Remove

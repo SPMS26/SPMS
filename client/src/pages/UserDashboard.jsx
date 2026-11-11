@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import AppLayout from '../components/layout/AppLayout';
 import LotCard from '../components/parking/LotCard';
 import LotSearchOverlay from '../components/parking/LotSearchOverlay';
@@ -18,6 +19,9 @@ import toast from 'react-hot-toast';
 
 const LOTS_PREVIEW_COUNT = 4;
 
+// A car can only use car bays and a bike only bike bays
+const BAY_FOR_VEHICLE = { four_wheeler: 'car', two_wheeler: 'bike' };
+
 const firstSlotOn = (slots, floor) => slots.find((slot) => slot.floor === floor) || null;
 
 // How far down the screen the slots can sit before tapping a card scrolls to them
@@ -27,11 +31,17 @@ const SCROLL_THRESHOLD = 0.75;
 const UserDashboard = () => {
   const { user, selectedVehicle } = useAuth();
   const { socket } = useSocket();
-  const { lots, loading, refresh: refreshLots } = useLots();
+  const vehicleType = selectedVehicle?.vehicle_type || null;
+  const bayType = vehicleType ? BAY_FOR_VEHICLE[vehicleType] : null;
+  const { lots, loading, refresh: refreshLots } = useLots(vehicleType);
+  const keepMyBays = (list) => (bayType ? list.filter((s) => (s.slot_type || 'car') === bayType) : list);
 
   const [pickedLotId, setPickedLotId] = useState(null);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [showOnlySelected, setShowOnlySelected] = useState(false);
+  // A picked search result is its own history entry, so Back (or the Find parking link) returns to all lots
+  const location = useLocation();
+  const navigate = useNavigate();
+  const showOnlySelected = Boolean(location.state?.searchLotId);
   const [showAllLots, setShowAllLots] = useState(false);
   // A lot and its slots change together, so the screen never shows one lot's slots under another's name
   const [slotData, setSlotData] = useState({ lotId: null, slots: [] });
@@ -79,7 +89,7 @@ const UserDashboard = () => {
     lotService.getSlotsByLot(selectedLot.id)
       .then((res) => {
         if (request !== slotRequest.current) return; // a newer lot was picked meanwhile
-        const lotSlots = res.slots || [];
+        const lotSlots = keepMyBays(res.slots || []);
         const floor = sortFloors(selectedLot.floors)[0] || '';
         setSlotData({ lotId: selectedLot.id, slots: lotSlots });
         setActiveFloor(floor);
@@ -89,7 +99,7 @@ const UserDashboard = () => {
         console.error('Error fetching slots:', err);
         if (request === slotRequest.current) toast.error('Could not load the slots for this lot.');
       });
-  }, [selectedLotId]);
+  }, [selectedLotId, bayType]);
 
   const refreshShownSlots = async () => {
     loadMyBookings();
@@ -97,7 +107,7 @@ const UserDashboard = () => {
     try {
       const res = await lotService.getSlotsByLot(slotData.lotId);
       if (request !== slotRequest.current) return;
-      const lotSlots = res.slots || [];
+      const lotSlots = keepMyBays(res.slots || []);
       setSlotData({ lotId: slotData.lotId, slots: lotSlots });
       setSelectedSlot((prev) => lotSlots.find((slot) => slot.id === prev?.id) || prev);
     } catch (err) {
@@ -137,9 +147,12 @@ const UserDashboard = () => {
   // A search pick replaces the content where it is and leaves the page position alone
   const handleSearchSelect = (lot) => {
     scrollPending.current = false;
-    setShowOnlySelected(true);
     setPickedLotId(lot.id);
+    navigate('/dashboard', { state: { searchLotId: lot.id }, replace: showOnlySelected });
   };
+
+  // Leave the search result and go back to the normal list of lots; the picked lot stays selected
+  const exitSearchResult = () => navigate('/dashboard', { replace: true, state: null });
 
   const handleFloorChange = (floor) => {
     setActiveFloor(floor);
@@ -217,13 +230,11 @@ const UserDashboard = () => {
 
   // Only a slot this user is holding right now counts as theirs
   const myBookingOnSelected = selectedSlot?.status === 'reserved' ? myBookingBySlot[selectedSlot.id] || null : null;
+  const mySlotIds = new Set(slots.filter((s) => s.status === 'reserved' && myBookingBySlot[s.id]).map((s) => s.id));
 
   const hasMoreLots = lots.length > LOTS_PREVIEW_COUNT;
 
-  const handleShowAllLots = () => {
-    setShowOnlySelected(false);
-    setShowAllLots(true);
-  };
+  const handleShowAllLots = () => setShowAllLots(true);
 
   // The preview always includes the selected lot, so collapsing the list never hides it
   const previewLots = () => {
@@ -240,20 +251,25 @@ const UserDashboard = () => {
     <AppLayout search={{ placeholder: 'Search lots by name or location', onOpen: () => setSearchOpen(true) }}>
       <div className="page-header-row">
         <div className="page-title-box">
-          <h1>Book a Parking Slot</h1>
+          <h1>Find parking</h1>
+          <p>Pick a lot, choose a free slot, and pay the reservation fee to get your pass.</p>
         </div>
         <VehicleSelector />
       </div>
 
       <div className="section-subtitle">
-        <span>{showOnlySelected ? '1. Search Result' : '1. Available Parking Lots'}</span>
-        {showOnlySelected || (hasMoreLots && !showAllLots) ? (
+        <span><span className="step-num">1</span>{showOnlySelected ? 'Search result' : 'Choose a lot'}</span>
+        {showOnlySelected ? (
+          <button type="button" className="change-btn" onClick={exitSearchResult}>
+            <i className="fa-solid fa-arrow-left"></i> All lots
+          </button>
+        ) : hasMoreLots && !showAllLots ? (
           <button type="button" className="change-btn" onClick={handleShowAllLots}>
-            <i className="fa-solid fa-table-cells-large"></i> Show all lots ({lots.length})
+            Show all {lots.length} lots
           </button>
         ) : hasMoreLots && (
           <button type="button" className="change-btn" onClick={() => setShowAllLots(false)}>
-            <i className="fa-solid fa-chevron-up"></i> Show fewer
+            Show fewer
           </button>
         )}
       </div>
@@ -272,7 +288,7 @@ const UserDashboard = () => {
       {shownLot ? (
         <div className="book-slot-section" ref={slotSection}>
           <div className="section-subtitle">
-            <span>2. Select Parking Slot - {shownLot.name}</span>
+            <span><span className="step-num">2</span>Choose a slot at {shownLot.name}</span>
           </div>
 
           <div className="slot-booking-layout">
@@ -283,6 +299,7 @@ const UserDashboard = () => {
               activeFloor={activeFloor}
               onFloorChange={handleFloorChange}
               onSlotClick={setSelectedSlot}
+              mySlotIds={mySlotIds}
             />
 
             <SlotDetailsPanel
@@ -295,8 +312,9 @@ const UserDashboard = () => {
           </div>
         </div>
       ) : !loading && lots.length === 0 && (
-        <div className="card" style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)', fontSize: '0.88rem' }}>
-          No parking lots available yet.
+        <div className="card empty-state">
+          <h3>{vehicleType ? `No lots take ${vehicleType === 'two_wheeler' ? 'bikes' : 'cars'} right now` : 'No parking lots yet'}</h3>
+          {vehicleType && <p>Switch vehicle with “Change” above to see lots for your other vehicles.</p>}
         </div>
       )}
 
