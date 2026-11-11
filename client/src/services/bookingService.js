@@ -11,6 +11,11 @@ export const bookingService = {
     return res.data;
   },
 
+  async cancelBooking(bookingId) {
+    const res = await api.post(`/bookings/${bookingId}/cancel`);
+    return res.data;
+  },
+
   async getUserBookings() {
     const res = await api.get('/bookings');
     return res.data;
