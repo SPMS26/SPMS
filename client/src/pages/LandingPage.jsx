@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import QRCode from 'qrcode';
 import { useAuth } from '../context/AuthContext';
 import { lotService } from '../services/lotService';
 import { authService } from '../services/authService';
@@ -65,7 +66,27 @@ const FAQS = [
 const DEMO_BAYS = 'ffoffrffofffoffxffofoffffofrfffffoffffxo';
 const BAY_CLASS = { f: 'free', o: 'busy', r: 'held', x: 'closed' };
 
-const HeroVisual = () => (
+// A real, scannable QR code for the example pass, drawn black on white like the printed thing
+const DEMO_PASS = 'BK-7F3C21A0';
+
+const useDemoQr = () => {
+  const [src, setSrc] = useState(null);
+  useEffect(() => {
+    let alive = true;
+    QRCode.toDataURL(`SPMS example pass ${DEMO_PASS}`, {
+      errorCorrectionLevel: 'M',
+      margin: 1,
+      width: 240,
+      color: { dark: '#0B0B0D', light: '#FFFFFF' }
+    }).then((url) => alive && setSrc(url)).catch(() => {});
+    return () => { alive = false; };
+  }, []);
+  return src;
+};
+
+const HeroVisual = () => {
+  const qr = useDemoQr();
+  return (
   <div className="lp-visual" aria-hidden="true">
     <div className="lp-visual-map">
       <div className="lp-visual-head">
@@ -86,18 +107,17 @@ const HeroVisual = () => (
         <span className="lp-ticket-slot">B4</span>
       </div>
       <div className="lp-ticket-qr">
-        {Array.from({ length: 49 }).map((_, i) => (
-          <span key={i} className={(i * 7 + (i % 5) * 3) % 4 === 0 || [0, 1, 7, 8, 5, 6, 12, 13, 35, 36, 42, 43].includes(i) ? 'on' : ''} />
-        ))}
+        {qr && <img src={qr} alt="" width="120" height="120" />}
       </div>
       <div className="lp-ticket-rows">
         <div><span>Vehicle</span><span className="plate">TS09 AB 1234</span></div>
-        <div><span>Pass</span><span className="mono">BK-7F3C21A0</span></div>
+        <div><span>Pass</span><span className="mono">{DEMO_PASS}</span></div>
         <div><span>Valid until</span><span className="mono">18:30</span></div>
       </div>
     </div>
   </div>
-);
+  );
+};
 
 const LandingPage = () => {
   const { user, logout } = useAuth();
@@ -126,9 +146,12 @@ const LandingPage = () => {
     <div className="lp">
       <nav className="lp-nav">
         <div className="lp-container lp-nav-inner">
-          <Link to="/" className="lp-brand">
+          <Link to="/" className="lp-brand" aria-label="Smart Parking Management System, home">
             <span className="brand-logo-icon" aria-hidden="true">P</span>
-            <span>SPMS</span>
+            <span className="brand-name">
+              <span className="brand-full">Smart Parking Management System</span>
+              <span className="brand-short" aria-hidden="true">SPMS</span>
+            </span>
           </Link>
           <ul className="lp-nav-links">
             <li><a href="#how">How it works</a></li>
@@ -155,6 +178,12 @@ const LandingPage = () => {
       <header className="lp-hero">
         <div className="lp-container lp-hero-grid">
           <div>
+            {stats && (
+              <div className="lp-eyebrow">
+                <span className="lp-live-dot" aria-hidden="true"></span>
+                <span><strong>{stats.free}</strong> bays free right now across {stats.lots} lots</span>
+              </div>
+            )}
             <h1 className="lp-title">Know you have a space before you leave home.</h1>
             <p className="lp-lead">
               SPMS shows which parking slots are free right now, lets you hold one with a small reservation fee,
@@ -264,11 +293,28 @@ const LandingPage = () => {
         </div>
       </section>
 
+      <section className="lp-cta-band">
+        <div className="lp-container">
+          <h2>Stop circling the block.</h2>
+          <p>Create an account, add your vehicle, and book your next bay in under a minute.</p>
+          <div className="lp-cta">
+            {user ? (
+              <Link to={homeForRole(user.role)} className="btn btn-primary btn-lg">Open the app</Link>
+            ) : (
+              <>
+                <Link to="/register" className="btn btn-primary btn-lg">Create a free account</Link>
+                <Link to="/register-owner" className="btn btn-lg">Register your lot</Link>
+              </>
+            )}
+          </div>
+        </div>
+      </section>
+
       <footer className="lp-footer">
         <div className="lp-container lp-footer-inner">
           <Link to="/" className="lp-brand">
             <span className="brand-logo-icon" aria-hidden="true">P</span>
-            <span>SPMS</span>
+            <span>Smart Parking Management System</span>
           </Link>
           <nav className="lp-footer-links">
             <Link to="/login">Sign in</Link>

@@ -472,9 +472,9 @@ const QRScannerPage = () => {
           type="button"
           onClick={() => setIsKioskMode(!isKioskMode)}
           style={{
-            background: isKioskMode ? 'var(--accent-gold)' : 'var(--bg-card)',
+            background: isKioskMode ? 'var(--accent-fill)' : 'var(--bg-card)',
             border: '1px solid var(--border-bright)',
-            color: isKioskMode ? '#000000' : 'var(--text-main)',
+            color: isKioskMode ? '#FFFFFF' : 'var(--text-main)',
             padding: '0.55rem 1.25rem',
             borderRadius: '8px',
             fontSize: '0.85rem',
@@ -487,7 +487,7 @@ const QRScannerPage = () => {
           }}
         >
           <i className={`fa-solid ${isKioskMode ? 'fa-compress' : 'fa-expand'}`}></i>
-          {isKioskMode ? 'Standard Layout' : 'Fullscreen Terminal View'}
+          {isKioskMode ? 'Exit full screen' : 'Full screen'}
         </button>
       </div>
 
@@ -615,7 +615,7 @@ const QRScannerPage = () => {
                   border: '1px solid currentColor',
                   backdropFilter: 'blur(8px)'
                 }}>
-                  {isProcessing ? 'VERIFYING PASS...' : (isBarrierOpen ? 'BARRIER OPENED' : '360° SCAN ACTIVE')}
+                  {isProcessing ? 'Checking pass…' : (isBarrierOpen ? 'Barrier open' : 'Scanning')}
                 </span>
 
                 <label style={{
@@ -755,7 +755,7 @@ const QRScannerPage = () => {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
                 <span style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                   <i className="fa-solid fa-list-check" style={{ color: 'var(--accent-gold)' }}></i>
-                  Live Gate Vehicles Queue
+                  Gate queue
                 </span>
                 <span style={{ fontSize: '0.72rem', color: 'var(--text-dim)' }}>
                   {validPendingArrivals.length + gateQueue.active_parked.length} vehicle(s) ready
@@ -908,8 +908,8 @@ const QRScannerPage = () => {
               }} />
             </div>
 
-            <div style={{ fontSize: '1.3rem', fontWeight: 800, color: isBarrierOpen ? 'var(--accent)' : (exitPaymentSession ? 'var(--accent)' : (scanResult?.error ? 'var(--ink-3)' : 'var(--text-muted)')) }}>
-              {isBarrierOpen ? 'ACCESS GRANTED • BARRIER OPENED' : (exitPaymentSession ? 'PAYMENT REQUIRED • BARRIER CLOSED' : (scanResult?.error ? 'ACCESS DENIED • BARRIER LOCKED' : 'BARRIER CLOSED • READY'))}
+            <div style={{ fontSize: '1.15rem', fontWeight: 600, color: isBarrierOpen ? 'var(--ok)' : (exitPaymentSession ? 'var(--warn)' : (scanResult?.error ? 'var(--danger)' : 'var(--text-muted)')) }}>
+              {isBarrierOpen ? 'Access granted · barrier open' : (exitPaymentSession ? 'Payment needed · barrier closed' : (scanResult?.error ? 'Access denied · barrier locked' : 'Barrier closed · ready'))}
             </div>
 
             {isBarrierOpen && (
@@ -1053,7 +1053,7 @@ const QRScannerPage = () => {
                       <button
                         type="button"
                         className="btn-select-slot"
-                        style={{ background: 'var(--accent)', fontWeight: 800, marginTop: 0 }}
+                        style={{ background: 'var(--accent-fill)', fontWeight: 700, marginTop: 0 }}
                         onClick={() => executeSecurityValidation(exitPaymentSession.rawCodeOrId)}
                         disabled={isProcessing}
                       >
@@ -1063,7 +1063,7 @@ const QRScannerPage = () => {
                       <button
                         type="button"
                         className="btn-select-slot"
-                        style={{ background: 'var(--accent)', fontWeight: 800, marginTop: 0, boxShadow: '0 4px 14px rgba(22, 24, 29, 0.12)' }}
+                        style={{ background: 'var(--accent-fill)', fontWeight: 700, marginTop: 0 }}
                         onClick={handleConfirmExitPayment}
                         disabled={isConfirmingExitPayment}
                       >
@@ -1147,7 +1147,7 @@ const QRScannerPage = () => {
           width: 100% !important;
           height: 100% !important;
           overflow: hidden !important;
-          background: var(--ink) !important;
+          background: #050507 !important; /* camera area stays black */
         }
         #autonomous-qr-video-feed video {
           position: absolute !important;

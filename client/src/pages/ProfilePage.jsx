@@ -139,7 +139,7 @@ const ProfilePage = () => {
         {/* User Identity Card */}
         <div>
           <h3 style={{ margin: '0 0 0.85rem 0', fontSize: '1.2rem', fontWeight: 600, color: 'var(--text-main)' }}>
-            User Identity Card
+            Your details
           </h3>
 
           <div className="card" style={{ padding: '1.5rem', borderRadius: '16px' }}>
@@ -374,7 +374,7 @@ const ProfilePage = () => {
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.85rem' }}>
               <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 600, color: 'var(--text-main)' }}>
-                Registered Vehicles
+                Your vehicles
               </h3>
             </div>
 
