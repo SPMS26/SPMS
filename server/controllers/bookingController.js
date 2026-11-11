@@ -302,8 +302,6 @@ export const cancelBooking = async (req, res, next) => {
       return res.status(400).json({ success: false, message });
     }
 
-    const feeWasPaid = booking.payment_status === 'paid';
-
     const updatedRes = await client.query(
       `UPDATE bookings
        SET booking_status = 'cancelled',
@@ -332,16 +330,11 @@ export const cancelBooking = async (req, res, next) => {
       [booking.slot_id]
     );
 
-    const fee = Number(booking.pre_booking_fee || 0).toFixed(2);
     const noticeRes = await client.query(
       `INSERT INTO notifications (user_id, title, message, type)
        VALUES ($1, 'Booking Cancelled', $2, 'warning')
        RETURNING *`,
-      [
-        booking.user_id,
-        `Your booking for slot ${booking.slot_number} at ${booking.lot_name} has been cancelled.` +
-          (feeWasPaid ? ` The ₹${fee} reservation fee is non-refundable.` : '')
-      ]
+      [booking.user_id, `Your booking for slot ${booking.slot_number} at ${booking.lot_name} has been cancelled.`]
     );
 
     await client.query('COMMIT');
@@ -353,9 +346,7 @@ export const cancelBooking = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: feeWasPaid
-        ? `Booking cancelled. The ₹${fee} reservation fee is not refunded.`
-        : 'Booking cancelled.',
+      message: 'Booking cancelled.',
       booking: updatedRes.rows[0]
     });
   } catch (err) {

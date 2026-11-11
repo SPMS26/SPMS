@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import AppLayout from '../components/layout/AppLayout';
 import LotCard from '../components/parking/LotCard';
 import LotSearchOverlay from '../components/parking/LotSearchOverlay';
@@ -12,6 +12,7 @@ import { useAuth } from '../context/AuthContext';
 import { useSocket } from '../context/SocketContext';
 import { lotService } from '../services/lotService';
 import { useLiveRefresh } from '../hooks/useLiveRefresh';
+import { useCancelBooking } from '../hooks/useCancelBooking';
 import { bookingService } from '../services/bookingService';
 import toast from 'react-hot-toast';
 
@@ -39,8 +40,28 @@ const UserDashboard = () => {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showQRModal, setShowQRModal] = useState(false);
   const [activeQRBooking, setActiveQRBooking] = useState(null);
+  // This user's bookings that can still be cancelled, by slot id, so their own slots offer a Cancel button
+  const [myBookingBySlot, setMyBookingBySlot] = useState({});
+  const cancelBooking = useCancelBooking();
   const slotRequest = useRef(0);
   const slotSection = useRef(null);
+
+  const loadMyBookings = useCallback(async () => {
+    try {
+      const res = await bookingService.getUserBookings();
+      const bySlot = {};
+      (res.bookings || []).forEach((b) => {
+        if (b.slot?.id && (b.booking_status === 'pending_payment' || b.booking_status === 'reserved')) bySlot[b.slot.id] = b;
+      });
+      setMyBookingBySlot(bySlot);
+    } catch (err) {
+      console.error('Error loading your bookings:', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadMyBookings();
+  }, [loadMyBookings]);
   const scrollPending = useRef(false);
 
   // The first lot is the default, and takes over if the picked lot stops being available
@@ -71,6 +92,7 @@ const UserDashboard = () => {
   }, [selectedLotId]);
 
   const refreshShownSlots = async () => {
+    loadMyBookings();
     const request = ++slotRequest.current;
     try {
       const res = await lotService.getSlotsByLot(slotData.lotId);
@@ -187,6 +209,15 @@ const UserDashboard = () => {
     }
   };
 
+  const handleCancelMyBooking = async (booking) => {
+    if (!(await cancelBooking(booking))) return;
+    refreshShownSlots();
+    refreshLots();
+  };
+
+  // Only a slot this user is holding right now counts as theirs
+  const myBookingOnSelected = selectedSlot?.status === 'reserved' ? myBookingBySlot[selectedSlot.id] || null : null;
+
   const hasMoreLots = lots.length > LOTS_PREVIEW_COUNT;
 
   const handleShowAllLots = () => {
@@ -258,6 +289,8 @@ const UserDashboard = () => {
               selectedSlot={selectedSlot}
               activeFloor={activeFloor}
               onConfirmSelect={handleOpenPaymentModal}
+              myBooking={myBookingOnSelected}
+              onCancelBooking={handleCancelMyBooking}
             />
           </div>
         </div>

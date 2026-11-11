@@ -7,6 +7,7 @@ import { bookingService } from '../services/bookingService';
 import toast from 'react-hot-toast';
 import { useConfirm } from '../components/common/ConfirmProvider';
 import { useLiveRefresh } from '../hooks/useLiveRefresh';
+import { useCancelBooking } from '../hooks/useCancelBooking';
 
 const formatParkedDuration = (startTime, currentNow) => {
   if (!startTime) return '00h 00m 00s';
@@ -19,6 +20,7 @@ const formatParkedDuration = (startTime, currentNow) => {
 
 const BookingsPage = () => {
   const confirm = useConfirm();
+  const cancelBooking = useCancelBooking();
   const [bookings, setBookings] = useState([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
@@ -70,25 +72,7 @@ const BookingsPage = () => {
   };
 
   const handleCancelBooking = async (booking) => {
-    const feePaid = booking.payment_status === 'paid';
-    const fee = Number(booking.pre_booking_fee || booking.total_amount || 0).toFixed(2);
-    const ok = await confirm({
-      title: 'Cancel this booking?',
-      message: feePaid
-        ? `Slot ${booking.slot?.slot_number || ''} will be released and your QR pass will stop working. The ₹${fee} reservation fee is non-refundable — you will not get this money back.`
-        : `Slot ${booking.slot?.slot_number || ''} will be released. You have not paid anything for this booking yet.`,
-      confirmLabel: feePaid ? `Cancel without refund` : 'Cancel Booking',
-      cancelLabel: 'Keep Booking',
-      danger: true
-    });
-    if (!ok) return;
-    try {
-      const res = await bookingService.cancelBooking(booking.id);
-      toast.success(res.message || 'Booking cancelled.');
-      await fetchBookings();
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Could not cancel the booking.');
-    }
+    if (await cancelBooking(booking)) await fetchBookings();
   };
 
   const visibleBookings = bookings.filter((b) => matchesSearch(search, [
@@ -242,7 +226,7 @@ const BookingsPage = () => {
                     style={{ marginTop: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', padding: '0.6rem', borderRadius: '8px', border: '1px solid var(--border-subtle)', color: 'var(--text-muted)', fontSize: '0.85rem' }}
                   >
                     <i className="fa-solid fa-ban"></i>
-                    {booking.payment_status === 'paid' ? 'Cancelled · fee not refunded' : 'Cancelled'}
+                    Cancelled
                   </div>
                 ) : isPaymentPending ? (
                   <button

@@ -1,7 +1,8 @@
 import React from 'react';
 import { floorLabel } from './SlotGrid';
 
-const SlotDetailsPanel = ({ selectedSlot, activeFloor, onConfirmSelect, isAdmin = false, onAdminAction }) => {
+// myBooking: the viewer's own cancellable booking on this slot, if any (user view only)
+const SlotDetailsPanel = ({ selectedSlot, activeFloor, onConfirmSelect, isAdmin = false, onAdminAction, myBooking = null, onCancelBooking }) => {
   if (!selectedSlot) {
     return (
       <div className="slot-details-panel">
@@ -56,7 +57,21 @@ const SlotDetailsPanel = ({ selectedSlot, activeFloor, onConfirmSelect, isAdmin 
         </div>
       </div>
 
-      {!isAdmin ? (
+      {!isAdmin && myBooking ? (
+        <div style={{ marginTop: '1.25rem' }}>
+          <div style={{ fontSize: '0.8rem', color: 'var(--accent-gold)', textAlign: 'center', marginBottom: '0.6rem' }}>
+            <i className="fa-solid fa-circle-check"></i> You have booked this slot
+          </div>
+          <button
+            type="button"
+            className="btn-select-slot"
+            style={{ marginTop: 0, background: 'transparent', border: '1px solid rgba(239, 68, 68, 0.45)', color: '#EF4444', boxShadow: 'none' }}
+            onClick={() => onCancelBooking(myBooking)}
+          >
+            <i className="fa-solid fa-xmark"></i> Cancel Booking
+          </button>
+        </div>
+      ) : !isAdmin ? (
         <button
           className="btn-select-slot"
           disabled={status !== 'available'}
