@@ -148,7 +148,7 @@ const LandingPage = () => {
       <nav className="lp-nav">
         <div className="lp-container lp-nav-inner">
           <Link to="/" className="lp-brand" aria-label="Smart Parking Management System, home">
-            <span className="brand-logo-icon" aria-hidden="true">P</span>
+            <span className="brand-logo-icon" aria-hidden="true"><i className="fa-solid fa-car"></i></span>
             <span className="brand-name">
               <span className="brand-full">Smart Parking Management System</span>
               <span className="brand-short" aria-hidden="true">SPMS</span>
@@ -315,7 +315,7 @@ const LandingPage = () => {
       <footer className="lp-footer">
         <div className="lp-container lp-footer-inner">
           <Link to="/" className="lp-brand">
-            <span className="brand-logo-icon" aria-hidden="true">P</span>
+            <span className="brand-logo-icon" aria-hidden="true"><i className="fa-solid fa-car"></i></span>
             <span>Smart Parking Management System</span>
           </Link>
           <nav className="lp-footer-links">

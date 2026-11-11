@@ -10,7 +10,7 @@ const AuthShell = ({ title, subtitle, children, footer, steps, maxWidth = 460 })
     <header className="auth-nav">
       <div className="auth-nav-inner">
         <Link to="/" className="auth-brand" aria-label="Smart Parking Management System, home">
-          <span className="brand-logo-icon" aria-hidden="true">P</span>
+          <span className="brand-logo-icon" aria-hidden="true"><i className="fa-solid fa-car"></i></span>
           <span className="brand-name">
             <span className="brand-full">Smart Parking Management System</span>
             <span className="brand-short" aria-hidden="true">SPMS</span>
