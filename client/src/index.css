@@ -1493,3 +1493,20 @@ textarea.search-input { height: auto; min-height: 96px; padding: 0.6rem 0.75rem;
   box-shadow: 0 24px 60px -24px rgba(22, 24, 29, 0.25), 0 0 0 1px rgba(22, 24, 29, 0.02);
 }
 :root[data-theme='light'] .auth-plate-input { background: #FFFFFF !important; border-color: #16181D !important; }
+
+/* Gate scanner: the amount the guard collects at the exit */
+.exit-collect {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  margin: 0.85rem 0 0.5rem;
+  padding: 1rem;
+  border: 1px solid var(--warn-line);
+  border-radius: var(--radius-lg);
+  background: var(--warn-soft);
+  text-align: center;
+}
+.exit-collect-label { font-size: 0.8rem; font-weight: 600; color: var(--warn); }
+.exit-collect-amount { font-family: var(--font-mono); font-size: 2rem; font-weight: 600; line-height: 1.15; color: var(--ink); }
+.exit-collect-hint { max-width: 32ch; font-size: 0.8rem; line-height: 1.45; color: var(--ink-2); }

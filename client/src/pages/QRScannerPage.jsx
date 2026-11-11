@@ -993,41 +993,18 @@ const QRScannerPage = () => {
 
                   <div className="details-row">
                     <span className="key">Pre-booking fee:</span>
-                    <span className="val">
-                      ₹{parseFloat(exitPaymentSession.booking?.pre_booking_fee || 0).toFixed(2)}
+                    <span className="val" style={{ color: 'var(--ink-3)' }}>
+                      ₹{parseFloat(exitPaymentSession.booking?.pre_booking_fee || 0).toFixed(2)} (already paid)
                     </span>
                   </div>
 
-                  <div className="details-row" style={{ background: 'var(--accent-soft)', padding: '0.4rem', borderRadius: '6px', margin: '0.4rem 0' }}>
-                    <span className="key" style={{ fontWeight: 800, color: 'var(--text-main)' }}>Total amount:</span>
-                    <span className="val" style={{ color: 'var(--accent-emerald)', fontWeight: 900, fontSize: '1.15rem' }}>
-                      ₹{parseFloat(exitPaymentSession.booking?.total_amount || exitPaymentSession.payment?.amount || 0).toFixed(2)}
+                  {/* What the guard collects now: the parking charge only. The pre-booking fee was paid when booking. */}
+                  <div className="exit-collect">
+                    <span className="exit-collect-label">Collect from the driver</span>
+                    <span className="exit-collect-amount">
+                      ₹{parseFloat(exitPaymentSession.payment?.amount ?? exitPaymentSession.booking?.parking_charge ?? 0).toFixed(2)}
                     </span>
-                  </div>
-
-                  <div className="details-row">
-                    <span className="key">Payment status:</span>
-                    <span className="val">
-                      <span style={{ fontSize: '0.72rem', fontWeight: 800, padding: '0.15rem 0.5rem', borderRadius: '4px', background: 'var(--accent-soft)', color: 'var(--accent)', textTransform: 'uppercase' }}>
-                        {exitPaymentSession.payment?.status || 'PENDING'}
-                      </span>
-                    </span>
-                  </div>
-
-                  {/* Exit Payment QR display */}
-                  <div style={{ textAlign: 'center', margin: '0.85rem 0 0.5rem 0', background: '#ffffff', padding: '0.75rem', borderRadius: '10px' }}>
-                    {exitPaymentSession.exit_payment_qr?.qr_image ? (
-                      <img
-                        src={exitPaymentSession.exit_payment_qr.qr_image}
-                        alt="Exit Payment QR"
-                        style={{ width: '150px', height: '150px', display: 'block', margin: '0 auto', filter: isExitPaymentExpired ? 'grayscale(100%) opacity(0.35)' : 'none' }}
-                      />
-                    ) : (
-                      <div style={{ padding: '1rem', color: 'var(--ink-3)' }}>QR Reference Generated</div>
-                    )}
-                    <div style={{ fontSize: '0.72rem', color: 'var(--ink-3)', fontWeight: 600, marginTop: '0.35rem' }}>
-                      Exit Payment QR (Reference for amount to pay outside system)
-                    </div>
+                    <span className="exit-collect-hint">Cash or the driver's own UPI. Then press <strong>Confirm payment received</strong> to open the barrier.</span>
                   </div>
 
                   {/* Payment Timeout Indicator */}
@@ -1070,7 +1047,7 @@ const QRScannerPage = () => {
                         {isConfirmingExitPayment ? (
                           <span><i className="fa-solid fa-circle-notch fa-spin"></i> Verifying Exit Payment...</span>
                         ) : (
-                          <span><i className="fa-solid fa-circle-check"></i> Confirm Payment Received</span>
+                          <span><i className="fa-solid fa-circle-check"></i> Confirm payment received</span>
                         )}
                       </button>
                     )}

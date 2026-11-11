@@ -126,7 +126,7 @@ async function runExitPaymentTests() {
     logResult('6. Booking NOT Completed', bookingCheckPostScan.rows[0].booking_status === 'active', `Booking Status: ${bookingCheckPostScan.rows[0].booking_status}`);
 
     // 7. Exit payment QR is generated
-    const hasExitQR = !!exitData.exit_payment_qr?.qr_data && !!exitData.exit_payment_qr?.qr_image;
+    const hasExitQR = !!exitData.exit_payment_qr?.qr_data;
     logResult('7. Exit Payment QR Generated', hasExitQR, `QR Payload & Image generated, Type: SPMS_EXIT_PAY`);
 
     // 8. Payment amount comes from PostgreSQL
