@@ -472,8 +472,6 @@ export const validateExit = async (req, res, next) => {
       passCode,
       expiresAt: paymentExpiresAt
     });
-    const exitQRDataURL = await renderQRDataURL(exitQRPayload.payloadString);
-    const upiUri = `upi://pay?pa=spmspay@bank&pn=SPMS%20Parking&am=${parkingCharge.toFixed(2)}&cu=INR&tn=Parking%20Fee%20Slot%20${booking.slot_number}`;
 
     const operatorName = req.user?.full_name || 'Autonomous Gate Terminal';
     const operatorId = req.user?.id || booking.user_id;
@@ -543,10 +541,9 @@ export const validateExit = async (req, res, next) => {
         total_amount: totalAmount,
         booking_status: booking.booking_status
       },
+      // Signed reference for this payment; confirm-exit-payment also accepts it. Payment itself is collected at the gate.
       exit_payment_qr: {
         qr_data: exitQRPayload.payloadString,
-        qr_image: exitQRDataURL,
-        upi_uri: upiUri,
         expires_at: paymentExpiresAt
       },
       operator: operatorName
