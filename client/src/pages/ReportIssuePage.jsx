@@ -10,7 +10,6 @@ const ReportIssuePage = () => {
   const [lots, setLots] = useState([]);
   const [lotId, setLotId] = useState('');
   const [description, setDescription] = useState('');
-  const [imageFile, setImageFile] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [reports, setReports] = useState([]);
   const [loadingReports, setLoadingReports] = useState(true);
@@ -44,18 +43,9 @@ const ReportIssuePage = () => {
 
     try {
       setSubmitting(true);
-      const formData = new FormData();
-      formData.append('category', category);
-      if (lotId) formData.append('lot_id', lotId);
-      formData.append('description', description.trim());
-      if (imageFile) {
-        formData.append('image', imageFile);
-      }
-
-      await reportService.submitReport(formData);
-      toast.success('Incident Report submitted successfully!');
+      await reportService.submitReport({ category, lot_id: lotId || undefined, description: description.trim() });
+      toast.success('Report sent to the lot owner.');
       setDescription('');
-      setImageFile(null);
       fetchReports();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to submit incident report.');
@@ -64,55 +54,10 @@ const ReportIssuePage = () => {
     }
   };
 
-  const getStatusBadge = (status) => {
-    const s = (status || 'pending').toLowerCase();
-    if (s === 'resolved') {
-      return (
-        <span style={{
-          background: 'var(--status-available-bg)',
-          color: 'var(--status-available)',
-          border: '1px solid var(--status-available-border)',
-          padding: '0.2rem 0.6rem',
-          borderRadius: '999px',
-          fontSize: '0.72rem',
-          fontWeight: 600,
-          textTransform: 'uppercase'
-        }}>
-          Resolved
-        </span>
-      );
-    }
-    if (s === 'investigating' || s === 'in_progress') {
-      return (
-        <span style={{
-          background: 'var(--status-reserved-bg)',
-          color: 'var(--status-reserved)',
-          border: '1px solid var(--status-reserved-border)',
-          padding: '0.2rem 0.6rem',
-          borderRadius: '999px',
-          fontSize: '0.72rem',
-          fontWeight: 600,
-          textTransform: 'uppercase'
-        }}>
-          Investigating
-        </span>
-      );
-    }
-    return (
-      <span style={{
-        background: 'rgba(138, 132, 120, 0.15)',
-        color: 'var(--status-occupied)',
-        border: '1px solid var(--status-occupied-border)',
-        padding: '0.2rem 0.6rem',
-        borderRadius: '999px',
-        fontSize: '0.72rem',
-        fontWeight: 600,
-        textTransform: 'uppercase'
-      }}>
-        Pending
-      </span>
-    );
-  };
+  // Server statuses are 'pending' and 'solved'
+  const getStatusBadge = (status) => (status === 'solved'
+    ? <span className="badge badge-ok">Solved</span>
+    : <span className="badge badge-warn">Pending</span>);
 
   return (
     <AppLayout>
@@ -120,7 +65,7 @@ const ReportIssuePage = () => {
         {/* Page Header */}
         <div className="page-header-row" style={{ marginBottom: 0 }}>
           <div className="page-title-box">
-            <h1>Report an Incident or Issue</h1>
+            <h1>Report an issue</h1>
           </div>
         </div>
 
@@ -197,22 +142,6 @@ const ReportIssuePage = () => {
                 onChange={(e) => setDescription(e.target.value)}
                 required
               />
-            </div>
-
-            <div>
-              <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600, display: 'block', marginBottom: '0.4rem' }}>
-                Attach Photo Evidence (Optional)
-              </label>
-              <input
-                type="file"
-                accept="image/*"
-                className="search-input"
-                style={{ width: '100%', padding: '0.5rem 0.75rem', boxSizing: 'border-box' }}
-                onChange={(e) => setImageFile(e.target.files?.[0] || null)}
-              />
-              <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: '0.25rem', display: 'block' }}>
-                Supported formats: JPG, PNG, WEBP.
-              </span>
             </div>
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem', marginTop: '0.5rem' }}>
@@ -297,25 +226,12 @@ const ReportIssuePage = () => {
                     {r.description}
                   </p>
 
-                  {r.image_url && (
-                    <div style={{ marginTop: '0.25rem' }}>
-                      <a
-                        href={r.image_url}
-                        target="_blank"
-                        rel="noreferrer"
-                        style={{ fontSize: '0.78rem', color: 'var(--accent-gold)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}
-                      >
-                        <i className="fa-solid fa-paperclip"></i> View Attached Photo
-                      </a>
-                    </div>
-                  )}
-
                   {r.admin_response && (
                     <div style={{
                       marginTop: '0.5rem',
                       padding: '0.75rem 1rem',
                       borderRadius: '8px',
-                      background: 'rgba(255, 255, 255, 0.03)',
+                      background: 'var(--surface-2)',
                       borderLeft: '3px solid var(--accent-gold)'
                     }}>
                       <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--accent-gold)', marginBottom: '0.2rem' }}>

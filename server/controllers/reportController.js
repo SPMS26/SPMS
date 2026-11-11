@@ -7,11 +7,6 @@ export const createReport = async (req, res, next) => {
     const { category, incident_type, description, booking_id, slot_id, lot_id } = req.body;
     const type = category || incident_type || 'Other Issue';
 
-    let imageUrl = null;
-    if (req.file) {
-      imageUrl = `/uploads/${req.file.filename}`;
-    }
-
     // Route the report to the owning lot via the slot, falling back to the booking's slot
     let lotId = null;
     if (lot_id) {
@@ -31,10 +26,10 @@ export const createReport = async (req, res, next) => {
     }
 
     const result = await db.query(
-      `INSERT INTO incident_reports (user_id, booking_id, slot_id, lot_id, incident_type, description, image_url, status)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, 'pending')
+      `INSERT INTO incident_reports (user_id, booking_id, slot_id, lot_id, incident_type, description, status)
+       VALUES ($1, $2, $3, $4, $5, $6, 'pending')
        RETURNING *`,
-      [req.user.id, booking_id || null, slot_id || null, lotId, type, description, imageUrl]
+      [req.user.id, booking_id || null, slot_id || null, lotId, type, description]
     );
 
     res.status(201).json({
@@ -86,6 +81,9 @@ export const updateReportStatus = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { status, admin_response } = req.body;
+    if (!['pending', 'solved'].includes(status)) {
+      return res.status(400).json({ success: false, message: 'Status must be pending or solved.' });
+    }
 
     const target = await db.query('SELECT lot_id FROM incident_reports WHERE id = $1', [id]);
     if (target.rows.length === 0) {
@@ -98,8 +96,8 @@ export const updateReportStatus = async (req, res, next) => {
       `UPDATE incident_reports
        SET status = COALESCE($1, status),
            admin_response = COALESCE($2, admin_response),
-           resolved_by = CASE WHEN $3 = true THEN $4 ELSE resolved_by END,
-           resolved_at = CASE WHEN $3 = true THEN CURRENT_TIMESTAMP ELSE resolved_at END
+           resolved_by = CASE WHEN $3 = true THEN $4::uuid ELSE NULL END,
+           resolved_at = CASE WHEN $3 = true THEN CURRENT_TIMESTAMP ELSE NULL END
        WHERE id = $5
        RETURNING *`,
       [status, admin_response, isSolved, req.user.id, id]

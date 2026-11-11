@@ -87,26 +87,25 @@ const BookingsPage = () => {
     <AppLayout search={{ value: search, onChange: setSearch, placeholder: 'Search by vehicle, lot, slot or booking ID' }}>
       <div className="page-header-row">
         <div className="page-title-box">
-          <h1>Booking History & QR Passes</h1>
+          <h1>My bookings</h1>
+          <p>Your parking passes, current and past.</p>
         </div>
       </div>
 
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '3rem', color: 'var(--accent-gold)' }}>
-          <i className="fa-solid fa-circle-notch fa-spin fa-2x"></i>
-        </div>
+        <div className="loading-block"><i className="fa-solid fa-circle-notch fa-spin fa-lg"></i></div>
       ) : bookings.length === 0 ? (
-        <div className="card" style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
-          <i className="fa-solid fa-qrcode" style={{ fontSize: '3rem', marginBottom: '1rem', opacity: 0.4 }}></i>
-          <h3>No Active Bookings or Passes</h3>
-          <p style={{ fontSize: '0.85rem' }}>Select an available slot from the Home dashboard to book parking.</p>
+        <div className="card empty-state">
+          <i className="fa-solid fa-ticket"></i>
+          <h3>No bookings yet</h3>
+          <p>Book a slot from Find parking and your pass will show up here.</p>
         </div>
       ) : visibleBookings.length === 0 ? (
         <div className="card">
           <NoResults query={search} onClear={() => setSearch('')} />
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(320px, 100%), 1fr))', gap: '1.25rem' }}>
+        <div className="booking-grid">
           {visibleBookings.map(booking => {
             const isCompleted = booking.booking_status === 'completed';
             const isParked = booking.booking_status === 'active' || booking.booking_status === 'parked';
@@ -118,162 +117,79 @@ const BookingsPage = () => {
             const isReserved = booking.booking_status === 'reserved' && !isExpired;
             const isCancelled = booking.booking_status === 'cancelled';
             const canCancel = isReserved || booking.booking_status === 'pending_payment';
+            const isLive = isReserved || isParked || isPaymentPending;
+            const fee = Number(booking.pre_booking_fee || booking.total_amount || 0).toFixed(2);
+
+            const status = isCancelled ? { label: 'Cancelled', badge: '' }
+              : isPaymentPending ? { label: 'Payment due', badge: 'badge-warn' }
+              : isExpired ? { label: 'Expired', badge: 'badge-danger' }
+              : isParked ? { label: 'Parked now', badge: 'badge-ok' }
+              : isReserved ? { label: 'Pass ready', badge: 'badge-accent' }
+              : isCompleted ? { label: 'Completed', badge: 'badge-busy' }
+              : { label: booking.booking_status, badge: '' };
 
             return (
-              <div
-                key={booking.id}
-                className="card"
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                  border: isExpired
-                    ? '1px solid rgba(239, 68, 68, 0.35)'
-                    : isPaymentPending
-                      ? '1px solid #D9BF8C'
-                      : isReserved
-                        ? '1px solid var(--accent-gold)'
-                        : '1px solid var(--border-subtle)'
-                }}
-              >
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                    <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--accent-gold)', background: 'var(--accent-gold-bg)', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>
-                      {booking.booking_type === 'pre_booking' ? 'Pre-Booking' : 'Live Booking'}
-                    </span>
-                    <span style={{
-                      fontSize: '0.72rem',
-                      fontWeight: 700,
-                      padding: '0.2rem 0.5rem',
-                      borderRadius: '4px',
-                      background: isPaymentPending
-                        ? 'rgba(217, 191, 140, 0.2)'
-                        : isExpired
-                          ? 'rgba(239, 68, 68, 0.15)'
-                          : isParked
-                            ? 'rgba(227, 204, 154, 0.15)'
-                            : isReserved
-                              ? 'rgba(217, 191, 140, 0.15)'
-                              : 'rgba(107, 114, 128, 0.15)',
-                      color: isPaymentPending
-                        ? '#D9BF8C'
-                        : isExpired
-                          ? '#EF4444'
-                          : isParked
-                            ? '#E3CC9A'
-                            : isReserved
-                              ? '#D9BF8C'
-                              : '#A8A39A'
-                    }}>
-                      {isPaymentPending
-                        ? 'PAYMENT PENDING'
-                        : isExpired
-                          ? 'EXPIRED'
-                          : isParked
-                            ? 'PARKED'
-                            : isReserved
-                              ? 'RESERVED'
-                              : booking.booking_status.toUpperCase()}
-                    </span>
-                  </div>
+              <article key={booking.id} className={`booking-card ${isLive && !isCancelled ? 'is-live' : ''}`}>
+                <div className="booking-card-top">
+                  <span className={`badge ${status.badge}`}>{status.label}</span>
+                  <span className="booking-card-kind">{booking.booking_type === 'pre_booking' ? 'Pre-booking' : 'Walk-in'}</span>
+                </div>
 
-                  <h3 style={{ fontSize: '1.25rem', margin: '0 0 0.5rem 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <span>Slot {booking.slot?.slot_number || '--'}</span>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 500 }}>
-                      Floor {booking.slot?.floor || '--'}
-                    </span>
-                  </h3>
+                <div className="booking-card-slot">
+                  <h3>{booking.slot?.slot_number || '—'}</h3>
+                  <span>Floor {booking.slot?.floor || '—'}</span>
+                </div>
+                <p className="booking-card-lot">{booking.slot?.parking_lot?.name || '—'}</p>
 
+                <div className="details-row">
+                  <span className="key">Pass code</span>
+                  <span className="val mono">BK-{booking.id.substring(0, 8).toUpperCase()}</span>
+                </div>
+                <div className="details-row">
+                  <span className="key">Vehicle</span>
+                  <span className="val">{booking.vehicle?.vehicle_number ? <span className="plate">{booking.vehicle.vehicle_number}</span> : '—'}</span>
+                </div>
+                <div className="details-row">
+                  <span className="key">Reservation fee</span>
+                  <span className="val mono">₹{fee}</span>
+                </div>
+                {isParked ? (
                   <div className="details-row">
-                    <span className="key">Pass Code:</span>
-                    <span className="val" style={{ color: 'var(--accent-gold)', fontFamily: 'monospace' }}>
-                      BK-{booking.id.substring(0, 8).toUpperCase()}
+                    <span className="key">Parked for</span>
+                    <span className="val mono">{formatParkedDuration(booking.entry_time || booking.booking_start || booking.created_at, now)}</span>
+                  </div>
+                ) : expiresAt && !isPaymentPending && !isCompleted && !isCancelled && (
+                  <div className="details-row">
+                    <span className="key">Pass valid</span>
+                    <span className="val" style={isExpired ? { color: 'var(--danger)' } : undefined}>
+                      {isExpired ? 'Expired' : `until ${new Date(expiresAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
                     </span>
                   </div>
-                  <div className="details-row">
-                    <span className="key">Parking Lot:</span>
-                    <span className="val">{booking.slot?.parking_lot?.name || '--'}</span>
-                  </div>
-                  <div className="details-row">
-                    <span className="key">Vehicle:</span>
-                    <span className="val" style={{ color: '#EBD9AE' }}>{booking.vehicle ? booking.vehicle.vehicle_number : 'TS09 AB 1234'}</span>
-                  </div>
-                  <div className="details-row">
-                    <span className="key">Reservation Fee:</span>
-                    <span className="val" style={{ color: 'var(--accent-emerald)', fontWeight: 700 }}>₹{Number(booking.pre_booking_fee || booking.total_amount || 0).toFixed(2)}</span>
-                  </div>
+                )}
 
-                  {isParked ? (
-                    <div className="details-row">
-                      <span className="key">Time Parked:</span>
-                      <span className="val" style={{ color: 'var(--accent-emerald)', fontFamily: 'monospace', fontWeight: 700 }}>
-                        {formatParkedDuration(booking.entry_time || booking.booking_start || booking.created_at, now)}
-                      </span>
-                    </div>
-                  ) : expiresAt && !isPaymentPending && !isCompleted && (
-                    <div className="details-row">
-                      <span className="key">Pass Validity:</span>
-                      <span className="val" style={{ color: isExpired ? '#EF4444' : 'var(--text-muted)', fontSize: '0.75rem', fontWeight: isExpired ? 600 : 400 }}>
-                        {isExpired ? 'Expired' : `Until ${new Date(expiresAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`}
-                      </span>
-                    </div>
+                <div className="booking-card-actions">
+                  {isCancelled ? (
+                    <div className="booking-card-status-note"><i className="fa-solid fa-ban"></i> Cancelled</div>
+                  ) : isPaymentPending ? (
+                    <button className="btn btn-primary btn-block" onClick={() => handlePayReservation(booking)}>
+                      Pay ₹{Number(booking.pre_booking_fee || 0).toFixed(2)} and get pass
+                    </button>
+                  ) : isLive ? (
+                    <button className="btn btn-primary btn-block" onClick={() => handleOpenQR(booking)}>
+                      <i className="fa-solid fa-qrcode"></i> {isParked ? 'Show exit pass' : 'Show pass'}
+                    </button>
+                  ) : (
+                    <button className="btn btn-block" onClick={() => handleOpenQR(booking)}>
+                      View pass
+                    </button>
+                  )}
+                  {canCancel && (
+                    <button type="button" className="btn btn-danger-outline btn-block" onClick={() => handleCancelBooking(booking)}>
+                      Cancel booking
+                    </button>
                   )}
                 </div>
-
-                <div>
-                {isCancelled ? (
-                  <div
-                    style={{ marginTop: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', padding: '0.6rem', borderRadius: '8px', border: '1px solid var(--border-subtle)', color: 'var(--text-muted)', fontSize: '0.85rem' }}
-                  >
-                    <i className="fa-solid fa-ban"></i>
-                    Cancelled
-                  </div>
-                ) : isPaymentPending ? (
-                  <button
-                    className="btn-select-slot"
-                    style={{ marginTop: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', background: 'linear-gradient(135deg, var(--accent-gold), #B8955A)' }}
-                    onClick={() => handlePayReservation(booking)}
-                  >
-                    <i className="fa-solid fa-lock"></i> Pay ₹{Number(booking.pre_booking_fee || 0).toFixed(2)} & Generate Pass
-                  </button>
-                ) : isExpired ? (
-                  <button
-                    className="btn-select-slot"
-                    style={{
-                      marginTop: '1.25rem',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '0.4rem',
-                      background: 'rgba(239, 68, 68, 0.08)',
-                      color: 'var(--text-muted)',
-                      border: '1px solid rgba(239, 68, 68, 0.3)',
-                      cursor: 'pointer'
-                    }}
-                    onClick={() => handleOpenQR(booking)}
-                  >
-                    <i className="fa-solid fa-ban" style={{ color: '#EF4444' }}></i> Pass Expired (View Pass)
-                  </button>
-                ) : (
-                  <button
-                    className="btn-select-slot"
-                    style={{ marginTop: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}
-                    onClick={() => handleOpenQR(booking)}
-                  >
-                    <i className="fa-solid fa-qrcode"></i> {isParked ? 'View Exit Pass' : 'View QR Pass'}
-                  </button>
-                )}
-                {canCancel && (
-                  <button
-                    type="button"
-                    style={{ marginTop: '0.6rem', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', padding: '0.55rem', borderRadius: '8px', background: 'transparent', border: '1px solid rgba(239, 68, 68, 0.35)', color: '#EF4444', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}
-                    onClick={() => handleCancelBooking(booking)}
-                  >
-                    <i className="fa-solid fa-xmark"></i> Cancel Booking
-                  </button>
-                )}
-                </div>
-              </div>
+              </article>
             );
           })}
         </div>

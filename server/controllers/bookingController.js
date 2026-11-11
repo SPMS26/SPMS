@@ -4,6 +4,7 @@ import { generateQRPayload, renderQRDataURL } from '../services/qrGenerator.js';
 import { broadcastSlotUpdate, sendUserNotification } from '../socket/socketManager.js';
 import { canAccessLot } from '../middleware/scope.js';
 import { findOverlappingBooking, describeConflict, lockVehicle, expireStalePendingBookings, expireStaleReservedBookings } from '../services/bookingRules.js';
+import { bayMismatchReason } from '../services/vehicleTypes.js';
 
 // Create Pre-Booking (Raw SQL + Transaction)
 export const createPreBooking = async (req, res, next) => {
@@ -47,6 +48,13 @@ export const createPreBooking = async (req, res, next) => {
 
     const lotRes = await client.query('SELECT * FROM parking_lots WHERE id = $1', [slot.lot_id]);
     const lot = lotRes.rows[0];
+
+    // A car can't take a bike bay (or the reverse), and the lot must accept the vehicle at all
+    const mismatch = bayMismatchReason({ lot, slot, vehicle });
+    if (mismatch) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ success: false, message: mismatch });
+    }
 
     // One vehicle cannot hold two slots at overlapping times (serialised per vehicle to avoid races)
     await lockVehicle(client, vehicle.vehicle_number);

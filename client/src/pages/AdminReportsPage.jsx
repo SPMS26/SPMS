@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import AppLayout from '../components/layout/AppLayout';
-import NoResults from '../components/common/NoResults';
-import { matchesSearch } from '../utils/searchUtils';
 import { reportService } from '../services/reportService';
 import toast from 'react-hot-toast';
 import { useConfirm } from '../components/common/ConfirmProvider';
@@ -9,7 +7,6 @@ import { useConfirm } from '../components/common/ConfirmProvider';
 const AdminReportsPage = () => {
   const confirm = useConfirm();
   const [reports, setReports] = useState([]);
-  const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
 
   const fetchReports = async () => {
@@ -27,33 +24,25 @@ const AdminReportsPage = () => {
     fetchReports();
   }, []);
 
-    const handleStatusChange = async (id, status) => {
+  const handleStatusChange = async (id, status) => {
     const ok = await confirm(status === 'solved'
-      ? { title: 'Mark this report as solved?', message: 'The user will see it as resolved.', confirmLabel: 'Mark Solved' }
-      : { title: 'Move this report back to pending?', message: 'The user will see it as open again.', confirmLabel: 'Set Pending' });
+      ? { title: 'Mark this report as solved?', message: 'The user will see it as resolved.', confirmLabel: 'Mark solved' }
+      : { title: 'Reopen this report?', message: 'The user will see it as open again.', confirmLabel: 'Reopen' });
     if (!ok) return;
     try {
-      await reportService.updateStatus(id, status, 'Resolved by Admin');
-      toast.success(`Report status updated to ${status.toUpperCase()}`);
+      await reportService.updateStatus(id, status, status === 'solved' ? 'Resolved by the lot owner' : undefined);
+      toast.success(status === 'solved' ? 'Report marked as solved.' : 'Report reopened.');
       fetchReports();
     } catch (err) {
       toast.error('Failed to update report status.');
     }
   };
 
-  const visibleReports = reports.filter((rep) => matchesSearch(search, [
-    rep.id.substring(0, 7),
-    rep.user?.full_name,
-    rep.incident_type,
-    rep.description,
-    rep.status
-  ]));
-
   return (
-    <AppLayout search={{ value: search, onChange: setSearch, placeholder: 'Search by user, category, description or status' }}>
+    <AppLayout>
       <div className="page-header-row">
         <div className="page-title-box">
-          <h1>Incident Reports Management</h1>
+          <h1>Incident reports</h1>
         </div>
       </div>
 
@@ -66,8 +55,6 @@ const AdminReportsPage = () => {
           <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
             No incident reports submitted yet.
           </div>
-        ) : visibleReports.length === 0 ? (
-          <NoResults query={search} onClear={() => setSearch('')} />
         ) : (
           <div style={{ overflowX: 'auto' }}>
             <table className="data-table">
@@ -77,45 +64,33 @@ const AdminReportsPage = () => {
                   <th>Submitted By</th>
                   <th>Category</th>
                   <th>Description</th>
-                  <th>Photo Evidence</th>
                   <th>Status</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {visibleReports.map(rep => (
+                {reports.map(rep => (
                   <tr key={rep.id}>
                     <td><strong style={{ color: 'var(--accent-gold)' }}>{rep.id.substring(0, 7).toUpperCase()}</strong></td>
                     <td>{rep.user ? rep.user.full_name : 'N/A'}</td>
                     <td><strong>{rep.incident_type}</strong></td>
                     <td style={{ fontSize: '0.8rem', color: 'var(--text-muted)', maxWidth: '250px' }}>{rep.description}</td>
                     <td>
-                      {rep.image_url ? (
-                        <a href={rep.image_url} target="_blank" rel="noreferrer" style={{ color: 'var(--accent-gold)', fontSize: '0.78rem', textDecoration: 'none' }}>
-                          <i className="fa-solid fa-image"></i> View Image
-                        </a>
+                      {rep.status === 'solved'
+                        ? <span className="badge badge-ok">Solved</span>
+                        : <span className="badge badge-warn">Pending</span>}
+                    </td>
+                    <td>
+                      {/* Only the move that makes sense from the current status */}
+                      {rep.status === 'solved' ? (
+                        <button className="change-btn" onClick={() => handleStatusChange(rep.id, 'pending')}>
+                          Reopen
+                        </button>
                       ) : (
-                        <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>None</span>
+                        <button className="btn btn-primary btn-sm" onClick={() => handleStatusChange(rep.id, 'solved')}>
+                          Mark solved
+                        </button>
                       )}
-                    </td>
-                    <td>
-                      <span style={{
-                        background: rep.status === 'solved' ? 'rgba(227, 204, 154, 0.18)' : 'rgba(217, 191, 140, 0.18)',
-                        color: rep.status === 'solved' ? 'var(--accent-emerald)' : 'var(--accent-gold)',
-                        padding: '0.15rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 700
-                      }}>
-                        {rep.status}
-                      </span>
-                    </td>
-                    <td>
-                      <div style={{ display: 'flex', gap: '0.4rem' }}>
-                        <button className="change-btn" style={{ borderColor: 'var(--accent-emerald)', color: 'var(--accent-emerald)' }} onClick={() => handleStatusChange(rep.id, 'solved')}>
-                          Mark Solved
-                        </button>
-                        <button className="change-btn" style={{ borderColor: 'var(--border-subtle)' }} onClick={() => handleStatusChange(rep.id, 'pending')}>
-                          Pending
-                        </button>
-                      </div>
                     </td>
                   </tr>
                 ))}

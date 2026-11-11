@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import AppLayout from '../components/layout/AppLayout';
-import NoResults from '../components/common/NoResults';
-import { matchesSearch } from '../utils/searchUtils';
 import { lotService } from '../services/lotService';
 import { sortFloors, floorLabel } from '../components/parking/SlotGrid';
 import toast from 'react-hot-toast';
@@ -11,11 +9,10 @@ import WheelTimePicker from '../components/common/WheelTimePicker';
 const AdminLotsPage = () => {
   const confirm = useConfirm();
   const [lots, setLots] = useState([]);
-  const [search, setSearch] = useState('');
   const [selectedLot, setSelectedLot] = useState(null);
   const [slots, setSlots] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [newSlot, setNewSlot] = useState({ slot_number: '', floor: '', hourly_price: '' });
+  const [newSlot, setNewSlot] = useState({ slot_number: '', floor: '', hourly_price: '', slot_type: 'car' });
   const [savingSlot, setSavingSlot] = useState(false);
   const [lotForm, setLotForm] = useState(null); // null = hidden, { id?, ...fields } = create/edit
   const [savingLot, setSavingLot] = useState(false);
@@ -90,7 +87,8 @@ const AdminLotsPage = () => {
         lot_id: selectedLot.id,
         slot_number: newSlot.slot_number,
         floor: newSlot.floor,
-        hourly_price: newSlot.hourly_price
+        hourly_price: newSlot.hourly_price,
+        slot_type: newBayType
       });
       toast.success(res.message);
       setNewSlot(prev => ({ ...prev, slot_number: '' }));
@@ -187,7 +185,7 @@ const AdminLotsPage = () => {
         if (!selectedLot) return;
     const sectionCount = bulk.sections.split(',').map(x => x.trim()).filter(Boolean).length;
     const slotCount = sectionCount * Number(bulk.count_per_section);
-    if (!(await confirm({ title: `Generate ${slotCount} slots?`, message: `Adds ${sectionCount} section(s) of ${bulk.count_per_section} slots on floor ${bulk.floor} to ${selectedLot.name}. Users can book them straight away.`, confirmLabel: 'Generate Slots' }))) return;
+    if (!(await confirm({ title: `Generate ${slotCount} slots?`, message: `Adds ${sectionCount} section(s) of ${bulk.count_per_section} slots on floor ${bulk.floor} to ${selectedLot.name} as ${bulkBayType} bays. Users can book them straight away.`, confirmLabel: 'Generate Slots' }))) return;
     setSavingBulk(true);
     try {
       const res = await lotService.bulkAddSlots({
@@ -195,7 +193,7 @@ const AdminLotsPage = () => {
         sections: bulk.sections.split(',').map(x => x.trim()).filter(Boolean),
         count_per_section: bulk.count_per_section,
         floor: bulk.floor,
-        slot_type: bulk.slot_type,
+        slot_type: bulkBayType,
         hourly_price: bulk.hourly_price === '' ? (selectedLot.default_hourly_price ?? 30) : bulk.hourly_price
       });
       toast.success(res.skipped ? `${res.message} ${res.skipped} already existed.` : res.message);
@@ -208,16 +206,20 @@ const AdminLotsPage = () => {
   };
 
   const lotFloors = selectedLot ? sortFloors(selectedLot.floors) : [];
+  // Only bay types the selected lot accepts can be created; a stale choice falls back to the first allowed one
+  const lotTypes = String(selectedLot?.supported_vehicle_types || 'four_wheeler,two_wheeler');
+  const bayTypes = [lotTypes.includes('four_wheeler') && 'car', lotTypes.includes('two_wheeler') && 'bike'].filter(Boolean);
+  const bulkBayType = bayTypes.includes(bulk.slot_type) ? bulk.slot_type : bayTypes[0];
+  const newBayType = bayTypes.includes(newSlot.slot_type) ? newSlot.slot_type : bayTypes[0];
   const setLotField = (name, value) => setLotForm(prev => ({ ...prev, [name]: value }));
   const fieldLabel = { display: 'block', fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '0.3rem' };
 
-  const visibleLots = lots.filter((lot) => matchesSearch(search, [lot.name, lot.address]));
 
   return (
-    <AppLayout search={{ value: search, onChange: setSearch, placeholder: 'Search your lots by name or address' }}>
+    <AppLayout>
       <div className="page-header-row">
         <div className="page-title-box">
-          <h1>Parking Lots & Slots Management</h1>
+          <h1>Lots & slots</h1>
         </div>
         <button className="btn-select-slot" style={{ marginTop: 0, width: 'auto', padding: '0.6rem 1.1rem' }} onClick={() => setLotForm({ ...blankLot })}>
           <i className="fa-solid fa-plus"></i> New Parking Lot
@@ -276,8 +278,7 @@ const AdminLotsPage = () => {
         {/* Lots List */}
         <div className="card">
           <h3 style={{ margin: '0 0 1rem 0', fontSize: '1.1rem' }}>Parking Lots</h3>
-          {lots.length > 0 && visibleLots.length === 0 && <NoResults query={search} onClear={() => setSearch('')} />}
-          {visibleLots.map(lot => (
+          {lots.map(lot => (
             <div
               key={lot.id}
               onClick={() => setSelectedLot(lot)}
@@ -335,11 +336,17 @@ const AdminLotsPage = () => {
               <input className="search-input" style={{ width: '90px' }} value={bulk.floor} onChange={(e) => setBulk(prev => ({ ...prev, floor: e.target.value }))} required />
             </div>
             <div>
+              <label style={fieldLabel}>Bay type</label>
+              <select className="search-input" style={{ width: '100px' }} value={bulkBayType || ''} onChange={(e) => setBulk(prev => ({ ...prev, slot_type: e.target.value }))}>
+                {bayTypes.map((t) => <option key={t} value={t}>{t === 'car' ? 'Car' : 'Bike'}</option>)}
+              </select>
+            </div>
+            <div>
               <label style={fieldLabel}>Price / hr (₹)</label>
               <input className="search-input" style={{ width: '120px' }} type="number" min="0" step="0.01" placeholder={String(selectedLot?.default_hourly_price ?? 30)} value={bulk.hourly_price} onChange={(e) => setBulk(prev => ({ ...prev, hourly_price: e.target.value }))} />
             </div>
             <button type="submit" className="btn-select-slot" style={{ marginTop: 0, width: 'auto', padding: '0.6rem 1.1rem' }} disabled={!selectedLot || savingBulk}>
-              <i className="fa-solid fa-wand-magic-sparkles"></i> {savingBulk ? 'Generating...' : 'Generate Slots'}
+              {savingBulk ? 'Generating...' : '+ Generate Slots'}
             </button>
           </form>
 
@@ -371,6 +378,12 @@ const AdminLotsPage = () => {
               <datalist id="lot-floors">
                 {lotFloors.map(f => <option key={f} value={f}>{floorLabel(f)}</option>)}
               </datalist>
+            </div>
+            <div>
+              <label style={fieldLabel}>Bay type</label>
+              <select className="search-input" style={{ width: '100px' }} value={newBayType || ''} onChange={(e) => setNewSlot(prev => ({ ...prev, slot_type: e.target.value }))}>
+                {bayTypes.map((t) => <option key={t} value={t}>{t === 'car' ? 'Car' : 'Bike'}</option>)}
+              </select>
             </div>
             <div>
               <label style={{ display: 'block', fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600, marginBottom: '0.3rem' }}>Price / hr (₹)</label>

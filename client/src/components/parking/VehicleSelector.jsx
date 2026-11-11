@@ -3,105 +3,73 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 
+const vehicleIcon = (v) => (v?.vehicle_type === 'two_wheeler' ? 'fa-motorcycle' : 'fa-car-side');
+const vehicleKind = (v) => (v?.vehicle_type === 'two_wheeler' ? 'Two-wheeler' : 'Car');
+
 const VehicleSelector = () => {
   const { vehicles, selectedVehicle, setSelectedVehicle } = useAuth();
   const navigate = useNavigate();
-  const [showVehicleDropdown, setShowVehicleDropdown] = useState(false);
-  const vehicleDropdownRef = useRef(null);
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef(null);
 
-  // Close dropdown on outside click or Escape
+  // Close on outside click or Escape
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (vehicleDropdownRef.current && !vehicleDropdownRef.current.contains(event.target)) {
-        setShowVehicleDropdown(false);
-      }
+    if (!open) return;
+    const onClick = (event) => {
+      if (rootRef.current && !rootRef.current.contains(event.target)) setOpen(false);
     };
-    const handleEscape = (e) => {
-      if (e.key === 'Escape') setShowVehicleDropdown(false);
-    };
-
-    if (showVehicleDropdown) {
-      document.addEventListener('mousedown', handleClickOutside);
-      window.addEventListener('keydown', handleEscape);
-    }
+    const onKey = (e) => e.key === 'Escape' && setOpen(false);
+    document.addEventListener('mousedown', onClick);
+    window.addEventListener('keydown', onKey);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      window.removeEventListener('keydown', handleEscape);
+      document.removeEventListener('mousedown', onClick);
+      window.removeEventListener('keydown', onKey);
     };
-  }, [showVehicleDropdown]);
+  }, [open]);
 
-  // Ensure an active vehicle is selected if available
+  // Make sure a vehicle is selected when the user has any
   useEffect(() => {
     if (!selectedVehicle && vehicles && vehicles.length > 0) {
-      const def = vehicles.find(v => v.is_default) || vehicles[0];
-      setSelectedVehicle(def);
+      setSelectedVehicle(vehicles.find((v) => v.is_default) || vehicles[0]);
     }
   }, [vehicles, selectedVehicle, setSelectedVehicle]);
 
+  const goToProfile = () => {
+    setOpen(false);
+    navigate('/profile');
+  };
+
   return (
-    <div style={{ position: 'relative' }} ref={vehicleDropdownRef}>
-      <div
-        className="vehicle-selector-pill"
-        style={{ cursor: 'pointer', userSelect: 'none' }}
-        onClick={() => setShowVehicleDropdown(prev => !prev)}
-        title="Click to select vehicle"
-      >
-        <div className="car-icon">
-          <i className={`fa-solid ${selectedVehicle?.vehicle_type === 'two_wheeler' ? 'fa-motorcycle' : 'fa-car-side'}`}></i>
-        </div>
+    <div style={{ position: 'relative' }} ref={rootRef}>
+      <div className="vehicle-selector-pill">
+        <div className="car-icon"><i className={`fa-solid ${vehicleIcon(selectedVehicle)}`}></i></div>
         <div>
-          <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-            {selectedVehicle?.vehicle_type === 'two_wheeler' ? '2-Wheeler' : selectedVehicle ? '4-Wheeler' : 'Current Vehicle'}
-          </div>
-          <div style={{ fontSize: '0.9rem', fontWeight: 700 }}>
-            {selectedVehicle ? selectedVehicle.vehicle_number : 'No Vehicle Added'}
-          </div>
+          <div className="dim" style={{ fontSize: '0.75rem' }}>Booking for</div>
+          {selectedVehicle
+            ? <span className="plate">{selectedVehicle.vehicle_number}</span>
+            : <strong style={{ fontSize: '0.9rem' }}>No vehicle added</strong>}
         </div>
         <button
           className="change-btn"
           type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            setShowVehicleDropdown(prev => !prev);
-          }}
-          aria-expanded={showVehicleDropdown}
+          onClick={() => setOpen((prev) => !prev)}
+          aria-expanded={open}
           aria-haspopup="listbox"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.35rem',
-            cursor: 'pointer'
-          }}
         >
-          <span>Change</span>
-          <i
-            className={`fa-solid fa-chevron-${showVehicleDropdown ? 'up' : 'down'}`}
-            style={{ fontSize: '0.65rem', opacity: 0.8 }}
-          ></i>
+          Change <i className={`fa-solid fa-chevron-${open ? 'up' : 'down'}`} style={{ fontSize: '0.65rem' }}></i>
         </button>
       </div>
 
-      {showVehicleDropdown && (
-        <div
-          className="vehicle-dropdown-menu"
-          role="listbox"
-          aria-label="Select Vehicle"
-        >
+      {open && (
+        <div className="vehicle-dropdown-menu" role="listbox" aria-label="Choose a vehicle">
           <div className="vehicle-dropdown-header">
-            <span className="vehicle-dropdown-title">
-              Select Vehicle
-            </span>
-            <span style={{ fontSize: '0.72rem', color: 'var(--accent-gold)' }}>
-              {vehicles && vehicles.length > 0 ? `${vehicles.length} available` : '0 registered'}
-            </span>
+            <span className="vehicle-dropdown-title">Your vehicles</span>
           </div>
 
           <div className="vehicle-dropdown-list">
             {vehicles && vehicles.length > 0 ? (
-              vehicles.map(v => {
+              vehicles.map((v) => {
                 const isSelected = selectedVehicle && selectedVehicle.id === v.id;
-                const isTwoWheeler = v.vehicle_type === 'two_wheeler';
-                const typeLabel = isTwoWheeler ? '2-Wheeler (Motorcycle)' : '4-Wheeler (Car)';
                 return (
                   <button
                     key={v.id}
@@ -109,79 +77,37 @@ const VehicleSelector = () => {
                     role="option"
                     aria-selected={isSelected}
                     className={`vehicle-dropdown-item ${isSelected ? 'active' : ''}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
+                    onClick={() => {
                       setSelectedVehicle(v);
-                      setShowVehicleDropdown(false);
-                      toast.success(`Active vehicle: ${v.vehicle_number}`);
+                      setOpen(false);
+                      toast.success(`Booking for ${v.vehicle_number}`);
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                      <div style={{
-                        width: '32px',
-                        height: '32px',
-                        borderRadius: '8px',
-                        background: isSelected ? 'var(--accent-gold-bg)' : 'rgba(255, 255, 255, 0.06)',
-                        color: isSelected ? 'var(--accent-gold)' : 'var(--text-muted)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '0.9rem',
-                        flexShrink: 0
-                      }}>
-                        <i className={`fa-solid ${isTwoWheeler ? 'fa-motorcycle' : 'fa-car'}`}></i>
-                      </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.7rem' }}>
+                      <div className="car-icon"><i className={`fa-solid ${vehicleIcon(v)}`}></i></div>
                       <div>
-                        <div style={{
-                          fontSize: '0.88rem',
-                          fontWeight: 700,
-                          color: isSelected ? 'var(--accent-gold)' : 'var(--text-main)',
-                          letterSpacing: '0.02em'
-                        }}>
-                          {v.vehicle_number}
-                        </div>
-                        <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>
-                          {typeLabel} {v.vehicle_model ? `• ${v.vehicle_model}` : ''}
+                        <span className="plate">{v.vehicle_number}</span>
+                        <div className="dim" style={{ fontSize: '0.78rem', marginTop: '0.2rem' }}>
+                          {[vehicleKind(v), v.vehicle_model].filter(Boolean).join(' · ')}
                         </div>
                       </div>
                     </div>
-
-                    {isSelected && (
-                      <i className="fa-solid fa-circle-check" style={{ color: 'var(--accent-gold)', fontSize: '0.95rem' }}></i>
-                    )}
+                    {isSelected && <i className="fa-solid fa-check" style={{ color: 'var(--accent)' }}></i>}
                   </button>
                 );
               })
             ) : (
-              <div style={{ padding: '0.85rem 0.5rem', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.8rem' }}>
-                <p style={{ margin: '0 0 0.5rem' }}>No vehicles registered yet.</p>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowVehicleDropdown(false);
-                    navigate('/profile');
-                  }}
-                  className="change-btn"
-                  style={{ borderColor: 'var(--accent-gold)', color: 'var(--accent-gold)' }}
-                >
-                  Add Vehicle in Profile
-                </button>
+              <div className="empty-state" style={{ padding: '1rem 0.5rem' }}>
+                <p style={{ marginBottom: '0.75rem' }}>You haven't added a vehicle yet.</p>
+                <button type="button" className="btn btn-primary btn-sm" onClick={goToProfile}>Add a vehicle</button>
               </div>
             )}
           </div>
 
           {vehicles && vehicles.length > 0 && (
             <div className="vehicle-dropdown-footer">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowVehicleDropdown(false);
-                  navigate('/profile');
-                }}
-                className="vehicle-dropdown-footer-btn"
-              >
-                <i className="fa-solid fa-gear" style={{ fontSize: '0.7rem' }}></i>
-                <span>Manage in Profile</span>
+              <button type="button" onClick={goToProfile} className="vehicle-dropdown-footer-btn">
+                Manage vehicles
               </button>
             </div>
           )}

@@ -1,6 +1,7 @@
 import db from '../config/database.js';
 import settingService from '../services/settingService.js';
 import { canAccessLot, forbidLot } from '../middleware/scope.js';
+import { VEHICLE_TYPES, SLOT_TYPE_FOR_VEHICLE, normaliseSupportedTypes, parseSupportedTypes } from '../services/vehicleTypes.js';
 
 const LOT_STATS_SQL = `
   l.*,
@@ -41,17 +42,23 @@ const validateLotBody = (body, { partial = false } = {}) => {
 };
 
 // Public: all active lots from every owner, with live slot counts
+// ?vehicle_type=four_wheeler|two_wheeler limits the list to lots that take that vehicle and have bays for it,
+// and counts, floors and prices then cover only those bays
 export const getAllLots = async (req, res, next) => {
   try {
+    const vehicleType = VEHICLE_TYPES.includes(req.query.vehicle_type) ? req.query.vehicle_type : null;
+    const slotType = vehicleType ? SLOT_TYPE_FOR_VEHICLE[vehicleType] : null;
     const result = await db.query(`
       SELECT ${LOT_STATS_SQL}
       FROM parking_lots l
-      LEFT JOIN parking_slots s ON l.id = s.lot_id
+      LEFT JOIN parking_slots s ON l.id = s.lot_id AND ($1::text IS NULL OR s.slot_type = $1::text)
       LEFT JOIN users o ON l.admin_id = o.id
       WHERE l.is_active = true
+        AND ($2::text IS NULL OR $2::text = ANY(string_to_array(REPLACE(COALESCE(l.supported_vehicle_types, ''), ' ', ''), ',')))
       GROUP BY l.id, o.organization_name
+      HAVING $1::text IS NULL OR COUNT(CASE WHEN s.is_active = true THEN 1 END) > 0
       ORDER BY l.name ASC
-    `);
+    `, [slotType, vehicleType]);
     res.status(200).json({ success: true, lots: await withEffectiveFee(result.rows) });
   } catch (err) {
     next(err);
@@ -105,6 +112,8 @@ export const createLot = async (req, res, next) => {
   try {
     const errors = validateLotBody(req.body);
     if (errors.length) return res.status(400).json({ success: false, message: errors[0] });
+    const types = normaliseSupportedTypes(req.body.supported_vehicle_types);
+    if (types.error) return res.status(400).json({ success: false, message: types.error });
 
     const b = req.body;
     const result = await db.query(
@@ -120,7 +129,7 @@ export const createLot = async (req, res, next) => {
         parseTime(b.opening_time) || '00:00', parseTime(b.closing_time) || '23:59',
         b.contact_phone || null,
         numOrNull(b.default_hourly_price) ?? 30,
-        b.supported_vehicle_types || 'four_wheeler,two_wheeler',
+        types.value || 'four_wheeler,two_wheeler',
         numOrNull(b.pre_booking_fee)
       ]
     );
@@ -144,6 +153,29 @@ export const updateLot = async (req, res, next) => {
 
     const errors = validateLotBody(req.body, { partial: true });
     if (errors.length) return res.status(400).json({ success: false, message: errors[0] });
+    const types = normaliseSupportedTypes(req.body.supported_vehicle_types);
+    if (types.error) return res.status(400).json({ success: false, message: types.error });
+
+    // Dropping cars or bikes would strand the bays of that kind, so they must be removed first
+    if (types.value) {
+      const keep = parseSupportedTypes(types.value);
+      const dropped = Object.entries(SLOT_TYPE_FOR_VEHICLE).filter(([vehicle]) => !keep.includes(vehicle)).map(([, slot]) => slot);
+      if (dropped.length) {
+        const left = await db.query(
+          `SELECT slot_type, COUNT(*)::int AS n FROM parking_slots
+           WHERE lot_id = $1 AND is_active = true AND slot_type = ANY($2::text[])
+           GROUP BY slot_type`,
+          [req.params.id, dropped]
+        );
+        if (left.rows.length) {
+          const { slot_type, n } = left.rows[0];
+          return res.status(409).json({
+            success: false,
+            message: `This lot still has ${n} ${slot_type} bay${n === 1 ? '' : 's'}. Remove them before the lot stops accepting ${slot_type === 'bike' ? 'bikes' : 'cars'}.`
+          });
+        }
+      }
+    }
 
     const b = req.body;
     const result = await db.query(
@@ -169,7 +201,7 @@ export const updateLot = async (req, res, next) => {
         b.description ?? null, parseTime(b.opening_time), parseTime(b.closing_time),
         b.contact_phone ?? null,
         numOrNull(b.default_hourly_price),
-        b.supported_vehicle_types || null,
+        types.value,
         numOrNull(b.pre_booking_fee),
         typeof b.is_active === 'boolean' ? b.is_active : null,
         req.params.id

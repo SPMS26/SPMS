@@ -44,7 +44,7 @@ const PaymentModal = ({ isOpen, onClose, slot, lot, onSubmitPayment }) => {
               <span className="key">Assigned Slot:</span>
               <span className="val">{slot.slot_number} ({lot.name})</span>
             </div>
-            <div className="details-row" style={{ background: 'rgba(217, 191, 140, 0.08)', padding: '0.4rem 0.5rem', borderRadius: '6px', margin: '0.35rem 0' }}>
+            <div className="details-row" style={{ background: 'var(--accent-soft)', padding: '0.4rem 0.5rem', borderRadius: '6px', margin: '0.35rem 0' }}>
               <span className="key" style={{ fontWeight: 700, color: 'var(--text-main)' }}>Pre-Booking Fee:</span>
               <span className="val" style={{ color: 'var(--accent-gold)', fontWeight: 800, fontSize: '1.05rem' }}>
                 ₹{formattedFee}
@@ -59,7 +59,7 @@ const PaymentModal = ({ isOpen, onClose, slot, lot, onSubmitPayment }) => {
             <div className="details-row">
               <span className="key">Payment Method:</span>
               <span className="val">
-                <i className="fa-solid fa-shield-halved" style={{ color: '#E3CC9A', marginRight: '0.3rem' }}></i>
+                <i className="fa-solid fa-shield-halved" style={{ color: 'var(--accent)', marginRight: '0.3rem' }}></i>
                 Project Simulated Payment
               </span>
             </div>

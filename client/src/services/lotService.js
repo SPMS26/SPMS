@@ -1,8 +1,9 @@
 import api from './api';
 
 export const lotService = {
-  async getAllLots() {
-    const res = await api.get('/lots');
+  // params.vehicle_type limits the list to lots (and bay counts) for that kind of vehicle
+  async getAllLots(params) {
+    const res = await api.get('/lots', params ? { params } : undefined);
     return res.data;
   },
 

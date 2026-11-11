@@ -3,12 +3,35 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useConfirm } from '../../components/common/ConfirmProvider';
 
+const USER_NAV = [
+  { to: '/dashboard', icon: 'fa-square-parking', label: 'Find parking' },
+  { to: '/bookings', icon: 'fa-ticket', label: 'My bookings' },
+  { to: '/report-issue', icon: 'fa-flag', label: 'Report an issue' }
+];
+
+const SECURITY_NAV = [
+  { to: '/admin/scanner', icon: 'fa-qrcode', label: 'Gate scanner' },
+  { to: '/admin/desk', icon: 'fa-person-walking', label: 'Walk-in desk' },
+  { to: '/admin/parked', icon: 'fa-car', label: 'Parked vehicles' },
+  { to: '/admin/prebooked', icon: 'fa-calendar-check', label: 'Pre-booked' },
+  { to: '/admin/live', icon: 'fa-list-ul', label: 'Live bookings' }
+];
+
+const OWNER_NAV = [
+  { to: '/admin', icon: 'fa-chart-simple', label: 'Overview' },
+  { to: '/admin/lots', icon: 'fa-layer-group', label: 'Lots & slots' },
+  { to: '/admin/reports', icon: 'fa-flag', label: 'Incident reports' },
+  { to: '/admin/security', icon: 'fa-user-shield', label: 'Security staff' },
+  { to: '/admin/users', icon: 'fa-users', label: 'Customers' }
+];
+
 const Sidebar = ({ onClose }) => {
   const location = useLocation();
   const confirm = useConfirm();
-  const { user, isStaff: isAdmin, isSecurity, logout } = useAuth();
+  const { isStaff, isSecurity, logout } = useAuth();
 
-    const isActive = (path) => location.pathname === path;
+  const items = isSecurity ? SECURITY_NAV : isStaff ? OWNER_NAV : USER_NAV;
+  const area = isSecurity ? 'Gate security' : isStaff ? 'Lot owner' : 'Driver';
 
   const handleLogout = async (e) => {
     e.preventDefault();
@@ -17,122 +40,42 @@ const Sidebar = ({ onClose }) => {
   };
 
   return (
-    <aside className={`sidebar ${isAdmin ? 'admin-nav' : ''}`}>
+    <aside className="sidebar" aria-label="Main navigation">
       <div>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Link to="/" onClick={onClose} style={{ textDecoration: 'none', display: 'block', flex: 1 }}>
-            <div className="sidebar-brand">
-              <div
-                className="brand-logo-icon"
-              >
-                <i className={`fa-solid ${isAdmin ? 'fa-shapes' : 'fa-square-parking'}`}></i>
-              </div>
-              <h2>{isSecurity ? 'Gate Security' : isAdmin ? 'Owner Panel' : 'Smart Parking'}</h2>
+        <div className="sidebar-top">
+          <Link to="/" onClick={onClose} className="sidebar-brand">
+            <span className="brand-logo-icon" aria-hidden="true">P</span>
+            <div>
+              <h2>SPMS</h2>
+              <small>{area}</small>
             </div>
           </Link>
-          <button
-            className="sidebar-close-btn"
-            onClick={onClose}
-            title="Close"
-            aria-label="Close menu"
-          >
+          <button className="sidebar-close-btn" onClick={onClose} aria-label="Close menu">
             <i className="fa-solid fa-xmark"></i>
           </button>
         </div>
 
         <ul className="sidebar-menu">
-          {!isAdmin ? (
-            <>
-              <li className={`nav-item ${isActive('/dashboard') ? 'active' : ''}`}>
-                <Link to="/dashboard" onClick={onClose}>
-                  <i className="fa-solid fa-house"></i>
-                  <span>Home</span>
-                </Link>
-              </li>
-              <li className={`nav-item ${isActive('/bookings') ? 'active' : ''}`}>
-                <Link to="/bookings" onClick={onClose}>
-                  <i className="fa-solid fa-calendar-check"></i>
-                  <span>Booking History</span>
-                </Link>
-              </li>
-              <li className={`nav-item ${isActive('/report-issue') ? 'active' : ''}`}>
-                <Link to="/report-issue" onClick={onClose}>
-                  <i className="fa-solid fa-triangle-exclamation" style={{ color: 'var(--accent-gold)' }}></i>
-                  <span>Report Issue</span>
-                </Link>
-              </li>
-            </>
-          ) : isSecurity ? (
-            <>
-              <li className={`nav-item ${isActive('/admin/scanner') ? 'active' : ''}`}>
-                <Link to="/admin/scanner" onClick={onClose}>
-                  <i className="fa-solid fa-qrcode"></i>
-                  <span>Gate Scanner</span>
-                </Link>
-              </li>
-              <li className={`nav-item ${isActive('/admin/desk') ? 'active' : ''}`}>
-                <Link to="/admin/desk" onClick={onClose}>
-                  <i className="fa-solid fa-person-walking-luggage"></i>
-                  <span>Walk-in Desk</span>
-                </Link>
-              </li>
-              <li className={`nav-item ${isActive('/admin/parked') ? 'active' : ''}`}>
-                <Link to="/admin/parked" onClick={onClose}>
-                  <i className="fa-solid fa-square-parking"></i>
-                  <span>Parked Vehicles</span>
-                </Link>
-              </li>
-              <li className={`nav-item ${isActive('/admin/prebooked') ? 'active' : ''}`}>
-                <Link to="/admin/prebooked" onClick={onClose}>
-                  <i className="fa-solid fa-calendar-check"></i>
-                  <span>Pre-booked Vehicles</span>
-                </Link>
-              </li>
-              <li className={`nav-item ${isActive('/admin/live') ? 'active' : ''}`}>
-                <Link to="/admin/live" onClick={onClose}>
-                  <i className="fa-solid fa-bolt"></i>
-                  <span>Live Bookings</span>
-                </Link>
-              </li>
-            </>
-          ) : (
-            <>
-              <li className={`nav-item ${isActive('/admin') ? 'active' : ''}`}>
-                <Link to="/admin" onClick={onClose}>
-                  <i className="fa-solid fa-border-all"></i>
-                  <span>Dashboard</span>
-                </Link>
-              </li>
-              <li className={`nav-item ${isActive('/admin/lots') ? 'active' : ''}`}>
-                <Link to="/admin/lots" onClick={onClose}>
-                  <i className="fa-solid fa-layer-group"></i>
-                  <span>Manage Lots & Slots</span>
-                </Link>
-              </li>
-              <li className={`nav-item ${isActive('/admin/reports') ? 'active' : ''}`}>
-                <Link to="/admin/reports" onClick={onClose}>
-                  <i className="fa-solid fa-triangle-exclamation"></i>
-                  <span>Incident Reports</span>
-                </Link>
-              </li>
-              <li className={`nav-item ${isActive('/admin/security') ? 'active' : ''}`}>
-                <Link to="/admin/security" onClick={onClose}>
-                  <i className="fa-solid fa-user-shield"></i>
-                  <span>Security Staff</span>
-                </Link>
-              </li>
-              <li className={`nav-item ${isActive('/admin/users') ? 'active' : ''}`}>
-                <Link to="/admin/users" onClick={onClose}>
-                  <i className="fa-solid fa-users"></i>
-                  <span>My Customers</span>
-                </Link>
-              </li>
-            </>
-          )}
+          {items.map((item) => (
+            <li key={item.to} className={`nav-item ${location.pathname === item.to ? 'active' : ''}`}>
+              <Link to={item.to} onClick={onClose} aria-current={location.pathname === item.to ? 'page' : undefined}>
+                <i className={`fa-solid ${item.icon}`}></i>
+                <span>{item.label}</span>
+              </Link>
+            </li>
+          ))}
         </ul>
       </div>
 
       <div className="sidebar-footer">
+        <ul className="sidebar-menu">
+          <li className={`nav-item ${location.pathname === '/profile' ? 'active' : ''}`}>
+            <Link to="/profile" onClick={onClose}>
+              <i className="fa-solid fa-circle-user"></i>
+              <span>Profile</span>
+            </Link>
+          </li>
+        </ul>
         <a href="#logout" className="logout-link" onClick={handleLogout}>
           <i className="fa-solid fa-arrow-right-from-bracket"></i>
           <span>Log out</span>

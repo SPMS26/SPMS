@@ -1,13 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import AppLayout from '../components/layout/AppLayout';
-import NoResults from '../components/common/NoResults';
-import { matchesSearch } from '../utils/searchUtils';
 import { adminService } from '../services/adminService';
 import toast from 'react-hot-toast';
 
 const AdminUsersPage = () => {
   const [users, setUsers] = useState([]);
-  const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
 
   const fetchUsers = async () => {
@@ -25,18 +22,11 @@ const AdminUsersPage = () => {
     fetchUsers();
   }, []);
 
-  const visibleUsers = users.filter((u) => matchesSearch(search, [
-    u.full_name,
-    u.email,
-    u.phone,
-    ...(u.vehicles || []).map((v) => v.vehicle_number)
-  ]));
-
   return (
-    <AppLayout search={{ value: search, onChange: setSearch, placeholder: 'Search by name, email, phone or vehicle' }}>
+    <AppLayout>
       <div className="page-header-row">
         <div className="page-title-box">
-          <h1>My Customers</h1>
+          <h1>Customers</h1>
         </div>
       </div>
 
@@ -45,8 +35,6 @@ const AdminUsersPage = () => {
           <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--accent-gold)' }}>
             <i className="fa-solid fa-circle-notch fa-spin fa-2x"></i>
           </div>
-        ) : users.length > 0 && visibleUsers.length === 0 ? (
-          <NoResults query={search} onClear={() => setSearch('')} />
         ) : (
           <div style={{ overflowX: 'auto' }}>
             <table className="data-table">
@@ -61,7 +49,7 @@ const AdminUsersPage = () => {
                 </tr>
               </thead>
               <tbody>
-                {visibleUsers.map(u => (
+                {users.map(u => (
                   <tr key={u.id}>
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
@@ -75,7 +63,7 @@ const AdminUsersPage = () => {
                     <td>{u.phone || 'N/A'}</td>
                     <td>
                       <span style={{
-                        background: u.role === 'ADMIN' ? 'rgba(227, 204, 154, 0.18)' : 'rgba(217, 191, 140, 0.18)',
+                        background: u.role === 'ADMIN' ? 'var(--accent-soft)' : 'var(--accent-soft)',
                         color: u.role === 'ADMIN' ? 'var(--accent-emerald)' : 'var(--accent-gold)',
                         padding: '0.15rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 700
                       }}>

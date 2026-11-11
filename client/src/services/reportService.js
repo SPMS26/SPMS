@@ -1,10 +1,8 @@
 import api from './api';
 
 export const reportService = {
-  async submitReport(formData) {
-    const res = await api.post('/reports', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    });
+  async submitReport(report) {
+    const res = await api.post('/reports', report);
     return res.data;
   },
 
