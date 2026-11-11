@@ -137,3 +137,23 @@ A: Change the PORT variable in `server/.env` and update the proxy or API URL
 ================================================================================
                       SETUP COMPLETED SUCCESSFULLY!
 ================================================================================
+
+================================================================================
+OPTIONAL: DEMO DATA
+================================================================================
+Adds realistic data alongside what is already in the database: 3 extra lot
+owners, 6 lots, 5 security accounts, 40 users, 6 months of bookings and payments,
+vehicles parked right now, upcoming reservations and incident reports.
+
+   cd server
+   npm run seed:demo         (adds it, or replaces an earlier demo set)
+   npm run seed:demo:clear   (removes the demo data and nothing else)
+
+Dates are relative to today, so run seed:demo again to refresh them.
+Do not confuse this with "npm run seed", which drops every table first.
+
+Every demo account uses the password demo1234:
+   Owners: rohan.mehta@seed.spms.test, anjali.rao@seed.spms.test,
+           suresh.kulkarni@seed.spms.test
+   Guard:  guard@seed.spms.test (Metro Mall Parking)
+   Users:  user@seed.spms.test, then user2 to user40 at the same address
