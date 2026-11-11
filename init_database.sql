@@ -230,8 +230,6 @@ VALUES
   ('44444444-4444-4444-4444-222222222222', 'Science Block Parking', 'Science Block, Campus', 17.3870, 78.4890, 40, 39, 'Covered parking area adjacent to Science & Technology Innovation Center'),
   ('44444444-4444-4444-4444-333333333333', 'Library Parking', 'Library Building', 17.3830, 78.4840, 40, 40, 'Quiet parking zone near Central Library with shaded tree canopy'),
   ('44444444-4444-4444-4444-444444444444', 'Hostel Parking', 'Hostel Area', 17.3890, 78.4910, 40, 38, 'Resident student and visitor parking area near campus hostels');
-
--- 4.4 Parking Slots (Generates 40 slots per lot: Sections A, B, C, D with 10 slots each)
 DO $$
 DECLARE
   v_lot_id UUID;

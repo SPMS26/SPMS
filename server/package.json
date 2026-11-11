@@ -7,7 +7,9 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "seed": "node seeders/initialSeed.js"
+    "seed": "node seeders/initialSeed.js",
+    "seed:demo": "node seeders/demoSeed.js",
+    "seed:demo:clear": "node seeders/demoSeed.js --clear"
   },
   "keywords": [
     "parking",

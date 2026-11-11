@@ -1,0 +1,6 @@
+# Secrets (Neon connection strings, JWT/QR secrets)
+.env
+.env.*
+!.env.example
+
+node_modules/

@@ -52,8 +52,10 @@ app.use(cors({
   credentials: true
 }));
 
+// CSP is off because the client loads scripts, fonts and QR images from external CDNs
 app.use(helmet({
-  crossOriginResourcePolicy: false
+  crossOriginResourcePolicy: false,
+  contentSecurityPolicy: false
 }));
 
 app.use(express.json({ limit: '10mb' }));
@@ -85,6 +87,16 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Serve the built React client (production); unknown non-API paths fall back to index.html
+// so client-side routes like /admin survive a page refresh.
+const clientDist = path.join(__dirname, '../client/dist');
+app.use(express.static(clientDist));
+app.get(/^\/(?!api|uploads|socket\.io).*/, (req, res, next) => {
+  res.sendFile(path.join(clientDist, 'index.html'), (err) => {
+    if (err) next(); // no build present (local dev uses Vite on :5173)
+  });
+});
+
 // Global Error Handler
 app.use(errorHandler);
 
@@ -103,9 +115,22 @@ server.on('error', (err) => {
   }
 });
 
+// Where the pool actually connects, for logs only (never includes the password)
+const DB_LABEL = (() => {
+  if (process.env.DATABASE_URL) {
+    try {
+      const u = new URL(process.env.DATABASE_URL);
+      return `'${u.pathname.slice(1)}' on ${u.hostname}`;
+    } catch {
+      return '(DATABASE_URL)';
+    }
+  }
+  return `'${process.env.DB_NAME || 'spms'}' on ${process.env.DB_HOST || 'localhost'}:${process.env.DB_PORT || 5432}`;
+})();
+
 async function startServer() {
   try {
-    console.log(`[Server] Connecting to PostgreSQL database '${process.env.DB_NAME || 'spms'}' on ${process.env.DB_HOST || 'localhost'}:${process.env.DB_PORT || 5432}...`);
+    console.log(`[Server] Connecting to PostgreSQL database ${DB_LABEL}...`);
     
     // Verify DB pool connection
     await db.query('SELECT 1');
@@ -118,13 +143,15 @@ async function startServer() {
     server.listen(PORT, () => {
       console.log(`=======================================================`);
       console.log(` SPMS Backend API Server (Raw SQL) running on port ${PORT}`);
-      console.log(` Database: PostgreSQL (${process.env.DB_NAME || 'spms'}@${process.env.DB_HOST || 'localhost'})`);
+      console.log(` Database: PostgreSQL ${DB_LABEL}`);
       console.log(` WebSocket Server attached via Socket.io`);
       console.log(` Healthcheck: http://localhost:${PORT}/api/health`);
       console.log(`=======================================================`);
     });
   } catch (err) {
     console.error('[Server] Failed to connect to PostgreSQL database:', err.message);
+    // Exit so the host reports the failure instead of waiting on a port that never opens
+    process.exit(1);
   }
 }
 
