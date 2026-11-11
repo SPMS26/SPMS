@@ -1,0 +1,8 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "https://spms-cama.vercel.app/api/:path*" },
+    { "source": "/uploads/:path*", "destination": "https://spms-cama.vercel.app/uploads/:path*" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
