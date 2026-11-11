@@ -22,7 +22,7 @@ export const useLots = () => {
     refresh();
   }, [refresh]);
 
-  useLiveRefresh(refresh, { groupMs: 1000 });
+  useLiveRefresh(refresh, { groupMs: 1000, disconnectedPollMs: 20000 });
 
   return { lots, loading, refresh };
 };
